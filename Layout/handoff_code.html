@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Handoff Confirmed | AuditQR</title>
-<link rel="stylesheet" href="../design-tokens.css"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Handoff Confirmed | AuditQR</title>
+  <link rel="stylesheet" href="../design-tokens.css" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script>
     tailwind.config = {
       darkMode: "class",
       theme: {
@@ -26,97 +30,122 @@
         }
       }
     };
-</script>
+  </script>
 </head>
+
 <body class="min-h-screen flex flex-col">
 
-<nav class="navbar">
-  <div class="navbar-content">
-    <a href="#" class="navbar-logo"><span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1; color: #3185FC; font-size: 24px;'>qr_code_2</span><span>AuditQR</span></a>
-  </div>
-</nav>
-
-<main class="flex-1 page-offset pb-16 glow-green-top">
-<div class="page-container-narrow">
-
-<!-- Header — left-aligned -->
-<header class="mb-10">
-  <div class="flex items-center gap-3 mb-4">
-    <div class="w-12 h-12 rounded-full bg-green/15 border border-green/30 flex items-center justify-center">
-      <span class="material-symbols-outlined text-green text-[28px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="navbar-logo"><span class="material-symbols-outlined"
+          style='font-variation-settings: "FILL" 1; color: #3185FC; font-size: 24px;'>qr_code_2</span><span>AuditQR</span></a>
     </div>
-    <div>
-      <h1 class="font-headline text-[28px] font-medium text-white leading-tight">Handoff confirmed</h1>
-    </div>
-  </div>
-  <p class="font-body text-muted text-[15px] leading-relaxed">Your receipt of Premium Honey has been permanently recorded on the audit trail.</p>
-</header>
+  </nav>
 
-<!-- Handoff Details Card -->
-<section class="bg-surface border border-border rounded-xl p-6 space-y-6 mb-6">
-  <div class="flex items-center justify-between">
-    <span class="font-body text-[11px] uppercase tracking-widest text-muted font-medium">Handoff details</span>
-    <span class="bg-green/10 border border-green/30 text-green font-body text-[11px] font-medium px-3 py-1 rounded-full">Verified</span>
-  </div>
-  <div class="space-y-4">
-    <div class="space-y-1">
-      <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Product</label>
-      <div class="font-body text-white text-[15px]">Premium Honey</div>
-    </div>
-    <div class="grid grid-cols-2 gap-4">
-      <div class="space-y-1">
-        <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Batch</label>
-        <div class="font-mono text-white text-[13px]">GF-2026-A</div>
+  <main class="flex-1 page-offset pb-16 glow-green-top">
+    <div class="page-container-narrow">
+
+      <!-- Header — left-aligned -->
+      <header class="mb-10">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-full bg-green/15 border border-green/30 flex items-center justify-center">
+            <span class="material-symbols-outlined text-green text-[28px]"
+              style="font-variation-settings: 'FILL' 1;">check_circle</span>
+          </div>
+          <div>
+            <h1 class="font-headline text-[28px] font-medium text-white leading-tight">Handoff confirmed</h1>
+          </div>
+        </div>
+        <p class="font-body text-muted text-[15px] leading-relaxed">Your receipt of Premium Honey has been permanently
+          recorded on the audit trail.</p>
+      </header>
+
+      <!-- Handoff Details Card -->
+      <section class="bg-surface border border-outline-variant rounded-xl p-6 space-y-6 mb-6">
+        <div class="flex items-center justify-between">
+          <span class="font-body text-[11px] uppercase tracking-widest text-muted font-medium">Handoff details</span>
+          <span
+            class="bg-green/10 border border-green/30 text-green font-body text-[11px] font-medium px-3 py-1 rounded-full">Verified</span>
+        </div>
+        <div class="space-y-4">
+          <div class="space-y-1">
+            <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Product</label>
+            <div class="font-body text-white text-[15px]">Premium Honey</div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Batch</label>
+              <div class="font-mono text-white text-[13px]">GF-2026-A</div>
+            </div>
+            <div class="space-y-1">
+              <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Date</label>
+              <div class="font-body text-white text-[13px]">14 Apr 2026, 11:30</div>
+            </div>
+          </div>
+          <div class="space-y-1">
+            <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received from</label>
+            <div class="font-body text-white text-[14px]">Golden Farms Ltd · Lagos</div>
+          </div>
+          <div class="space-y-1">
+            <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received by</label>
+            <div class="font-body text-white text-[14px]">Swift Logistics · Benin City</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pass Code to Next Person -->
+      <section class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 space-y-6 mb-6"
+        style="border-top-color: #D6FFB7;">
+        <h2 class="font-body text-[11px] uppercase tracking-widest text-muted font-medium">Pass this code to the next
+          person</h2>
+        <div class="flex justify-center gap-3">
+          <div
+            class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">
+            7</div>
+          <div
+            class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">
+            4</div>
+          <div
+            class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">
+            2</div>
+          <div
+            class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">
+            9</div>
+        </div>
+        <div class="space-y-3">
+          <p class="font-body text-muted text-[14px] leading-relaxed">Give this code to the retailer who will receive
+            this product next. They will need it to confirm the final handoff.</p>
+          <div class="flex items-start gap-2 text-danger">
+            <span class="material-symbols-outlined text-[16px] mt-0.5">warning</span>
+            <p class="font-body text-[12px] leading-tight">This code expires after one use and cannot be reused or
+              recovered.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Blockchain Reference -->
+      <div class="bg-surface-2 border border-border rounded-lg p-4 mb-8">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-muted text-[16px]">link</span>
+          <span class="font-body text-[11px] text-muted uppercase tracking-wider">Transaction Record</span>
+        </div>
+        <p class="font-mono text-[11px] text-muted">0x3c1...b550 · Polygon Amoy Testnet</p>
+        <a href="#" class="text-blue text-[12px] hover:underline mt-1 inline-flex items-center gap-1">View on blockchain
+          explorer
+          <span class="material-symbols-outlined text-[12px]">open_in_new</span></a>
       </div>
-      <div class="space-y-1">
-        <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Date</label>
-        <div class="font-body text-white text-[13px]">14 Apr 2026, 11:30</div>
-      </div>
-    </div>
-    <div class="space-y-1">
-      <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received from</label>
-      <div class="font-body text-white text-[14px]">Golden Farms Ltd · Lagos</div>
-    </div>
-    <div class="space-y-1">
-      <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received by</label>
-      <div class="font-body text-white text-[14px]">Swift Logistics · Benin City</div>
-    </div>
-  </div>
-</section>
 
-<!-- Pass Code to Next Person -->
-<section class="bg-surface border border-border border-t-2 rounded-xl p-6 space-y-6 mb-6" style="border-top-color: #D6FFB7;">
-  <h2 class="font-body text-[11px] uppercase tracking-widest text-muted font-medium">Pass this code to the next person</h2>
-  <div class="flex justify-center gap-3">
-    <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">7</div>
-    <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">4</div>
-    <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">2</div>
-    <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">9</div>
-  </div>
-  <div class="space-y-3">
-    <p class="font-body text-muted text-[14px] leading-relaxed">Give this code to the retailer who will receive this product next. They will need it to confirm the final handoff.</p>
-    <div class="flex items-start gap-2 text-danger">
-      <span class="material-symbols-outlined text-[16px] mt-0.5">warning</span>
-      <p class="font-body text-[12px] leading-tight">This code expires after one use and cannot be reused or recovered.</p>
+      <!-- Done — end of transporter handoff flow -->
+      <button
+        class="w-full bg-blue hover:bg-blue-dark text-white font-body font-medium py-4 rounded-lg flex justify-center items-center gap-2 transition-all active:scale-[0.98]"
+        type="button" onclick="window.location.href='dashboard.html'">Done</button>
+
     </div>
-  </div>
-</section>
+  </main>
 
-<!-- Blockchain Reference -->
-<div class="bg-surface-2 border border-border rounded-lg p-4 mb-8">
-  <div class="flex items-center gap-2 mb-2">
-    <span class="material-symbols-outlined text-muted text-[16px]">link</span>
-    <span class="font-body text-[11px] text-muted uppercase tracking-wider">Transaction Record</span>
-  </div>
-  <p class="font-mono text-[11px] text-muted">0x3c1...b550 · Polygon Amoy Testnet</p>
-  <a href="#" class="text-blue text-[12px] hover:underline mt-1 inline-flex items-center gap-1">View on explorer <span class="material-symbols-outlined text-[12px]">open_in_new</span></a>
-</div>
-
-</div>
-</main>
-
-<footer class="footer-compact">
-  <p>© 2026 AuditQR · Built for Nigerian SMEs</p>
-</footer>
+  <footer class="footer-compact">
+    <p>© 2026 AuditQR · Built for Nigerian SMEs</p>
+  </footer>
 </body>
+
 </html>

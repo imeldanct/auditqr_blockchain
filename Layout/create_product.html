@@ -33,19 +33,57 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-<!-- Navbar — Flow page: Logo + Back link (NO hamburger) -->
+<!-- Navbar with Hamburger -->
 <nav class="navbar">
   <div class="navbar-content">
     <a href="dashboard.html" class="navbar-logo" id="nav-logo">
       <span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1; color: #3185FC; font-size: 24px;'>qr_code_2</span>
       <span>AuditQR</span>
     </a>
-    <a href="dashboard.html" class="nav-back-link" id="back-to-dashboard">
-      <span class="material-symbols-outlined text-sm">arrow_back</span>
-      Back to Dashboard
-    </a>
+    <div class="navbar-right">
+      <button class="hamburger-btn" onclick="toggleSidebar()" id="hamburger-btn">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
   </div>
 </nav>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar Menu -->
+<div class="sidebar-menu" id="sidebarMenu">
+  <div>
+    <p class="sidebar-section-label">Main</p>
+    <div class="space-y-1">
+      <a class="sidebar-link" href="dashboard.html" id="sidebar-dashboard">
+        <span class="material-symbols-outlined text-sm">dashboard</span>
+        <span>Dashboard</span>
+      </a>
+      <a class="sidebar-link" href="products_list.html" id="sidebar-products">
+        <span class="material-symbols-outlined text-sm">inventory_2</span>
+        <span>My Products</span>
+      </a>
+      <a class="sidebar-link active" href="create_product.html" id="sidebar-create">
+        <span class="material-symbols-outlined text-sm">add_box</span>
+        <span>Create Product</span>
+      </a>
+    </div>
+  </div>
+  <div class="mt-8">
+    <p class="sidebar-section-label">Account</p>
+    <div class="space-y-1">
+      <a class="sidebar-link" href="#" id="sidebar-settings">
+        <span class="material-symbols-outlined text-sm">settings</span>
+        <span>Settings</span>
+      </a>
+      <a class="sidebar-link danger" href="#" id="sidebar-logout">
+        <span class="material-symbols-outlined text-sm">logout</span>
+        <span>Log out</span>
+      </a>
+    </div>
+  </div>
+</div>
 
 <!-- Main Content -->
 <main class="flex-1 page-offset pb-16">
@@ -130,15 +168,6 @@
 </div>
 </div>
 
-<!-- Origin -->
-<div class="space-y-2">
-<label class="form-label" for="origin">Origin / Farm Location</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted text-lg">location_on</span>
-<input class="w-full bg-surface-2 border border-border rounded-lg pl-10 pr-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body" placeholder="Oyo State, Nigeria" type="text" id="origin"/>
-</div>
-</div>
-
 <!-- Submit -->
 <div class="pt-4 text-center">
 <button class="w-full bg-blue hover:bg-blue-dark text-white font-body py-3 px-6 rounded-lg font-medium transition-all flex items-center justify-center gap-2 active:scale-[0.98]" type="submit" id="confirm-details-btn">
@@ -155,6 +184,17 @@
 
 <!-- Decorative glow -->
 <div class="glow-blue-center"></div>
+
+<script>
+  function toggleSidebar() {
+    document.getElementById('sidebarMenu').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebarMenu').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+  }
+</script>
 
 </body>
 </html>
