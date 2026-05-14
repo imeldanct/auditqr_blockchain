@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QR Codes Ready | AuditQR</title>
+<meta name="description" content="Download your Parent and Child QR codes for your product."/>
+<link rel="stylesheet" href="../design-tokens.css"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "bg": "#080708", "surface": "#111111", "surface-2": "#1A1A1A",
+            "surface-elevated": "#272a31", "green": "#D6FFB7", "blue": "#3185FC",
+            "blue-dark": "#1E4D99", "muted": "#77867F", "danger": "#FF6B6B",
+            "warning": "#FFAA00", "border": "rgba(119,134,127,0.15)",
+            "text-primary": "#E0E2EC", "outline-variant": "#414754"
+          },
+          fontFamily: {
+            headline: ["Noto Serif", "serif"], display: ["Noto Serif", "serif"],
+            body: ["Space Grotesk", "sans-serif"], label: ["Space Grotesk", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+</script>
+</head>
+<body class="flex flex-col min-h-screen">
+
+<!-- Navbar — Logo only (user must download before leaving) -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <a href="dashboard.html" class="navbar-logo" id="nav-logo">
+      <span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1; color: #3185FC; font-size: 24px;'>qr_code_2</span>
+      <span>AuditQR</span>
+    </a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="flex-1 page-offset pb-16">
+<div class="page-container">
+
+<!-- Step Indicator + Header -->
+<div class="max-w-[600px] mb-10">
+<div class="step-indicator">
+  <span class="step-indicator-label">Step 3 of 3 — Download QR Codes</span>
+  <div class="step-dots">
+    <div class="step-dot completed"></div>
+    <div class="step-dot completed"></div>
+    <div class="step-dot active"></div>
+  </div>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-green text-3xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<h1 class="font-headline text-[28px] font-medium text-white leading-tight">Your QR codes are ready</h1>
+</div>
+<p class="text-muted text-[15px]">
+  <span class="text-white font-medium">Premium Honey</span> · Batch GF-2026-A
+</p>
+</div>
+
+<!-- Warning Banner -->
+<div class="max-w-[600px] bg-warning/5 border border-warning/20 rounded-lg p-4 mb-8 flex gap-3" id="download-warning">
+<span class="material-symbols-outlined text-warning text-[20px] mt-0.5">warning</span>
+<div>
+<p class="text-white text-[13px] font-medium">Save your QR codes before leaving</p>
+<p class="text-muted text-[12px] mt-1">QR codes can only be downloaded from this page. Once you navigate away, you'll need to access them from your product details page.</p>
+</div>
+</div>
+
+<!-- Parent QR Section -->
+<section class="max-w-[600px] bg-surface border border-outline-variant border-t-2 rounded-xl p-6 md:p-8 mb-6" style="border-top-color: #3185FC;" id="parent-qr-section">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-blue text-[18px]">deployed_code</span>
+<h2 class="font-body text-[15px] font-medium text-white">Parent QR Code</h2>
+<span class="ml-auto px-2.5 py-0.5 rounded-full bg-blue/10 border border-blue/20 text-blue text-[10px] font-medium uppercase tracking-wider">Carton Label</span>
+</div>
+<div class="flex flex-col sm:flex-row gap-6 items-center">
+<!-- QR Preview -->
+<div class="w-[180px] h-[180px] bg-white rounded-lg flex items-center justify-center flex-shrink-0 p-3">
+<div class="w-full h-full bg-surface-2 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-muted text-6xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+</div>
+<!-- QR Details + Actions -->
+<div class="flex-1 w-full">
+<div class="space-y-3 mb-6">
+  <div>
+    <p class="text-[10px] text-muted uppercase tracking-wider mb-1">Encodes</p>
+    <p class="font-mono text-[11px] text-white">Product metadata + blockchain reference</p>
+  </div>
+  <div>
+    <p class="text-[10px] text-muted uppercase tracking-wider mb-1">Affixed to</p>
+    <p class="text-[13px] text-white">Outer shipping carton</p>
+  </div>
+  <div>
+    <p class="text-[10px] text-muted uppercase tracking-wider mb-1">Smart Contract</p>
+    <p class="font-mono text-[11px] text-muted">0x7F2...D901 · Polygon Amoy</p>
+  </div>
+</div>
+<div class="flex gap-3">
+  <button class="flex-1 bg-blue hover:bg-blue-dark text-white py-2.5 rounded-lg text-[13px] font-medium transition-all flex items-center justify-center gap-2 active:scale-[0.98]" id="download-parent-btn">
+    <span class="material-symbols-outlined text-[16px]">download</span>
+    Download
+  </button>
+  <button class="flex-1 border border-border text-text-primary py-2.5 rounded-lg text-[13px] font-medium transition-all hover:bg-surface-2 flex items-center justify-center gap-2 active:scale-[0.98]" id="print-parent-btn">
+    <span class="material-symbols-outlined text-[16px]">print</span>
+    Print
+  </button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Child QR Section -->
+<section class="max-w-[600px] bg-surface border border-outline-variant border-t-2 rounded-xl p-6 md:p-8 mb-8" style="border-top-color: #D6FFB7;" id="child-qr-section">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-green text-[18px]">data_array</span>
+<h2 class="font-body text-[15px] font-medium text-white">Child QR Codes</h2>
+<span class="ml-auto px-2.5 py-0.5 rounded-full bg-green/10 border border-green/20 text-green text-[10px] font-medium uppercase tracking-wider">12 Items</span>
+</div>
+<!-- Child QR Grid Preview -->
+<div class="grid grid-cols-4 sm:grid-cols-6 gap-3 mb-6">
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+<div class="aspect-square bg-white rounded flex items-center justify-center p-1.5">
+  <span class="material-symbols-outlined text-muted text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+</div>
+</div>
+<p class="text-muted text-[12px] mb-6">Each child QR code is unique and should be affixed to an individual product unit inside the carton.</p>
+<!-- Download All Actions -->
+<div class="flex gap-3">
+<button class="flex-1 bg-green text-bg py-3 rounded-lg text-[13px] font-bold transition-all flex items-center justify-center gap-2 active:scale-[0.98] hover:opacity-90" id="download-all-children-btn">
+  <span class="material-symbols-outlined text-[16px]">download</span>
+  Download All (ZIP)
+</button>
+<button class="flex-1 border border-border text-text-primary py-3 rounded-lg text-[13px] font-medium transition-all hover:bg-surface-2 flex items-center justify-center gap-2 active:scale-[0.98]" id="print-all-children-btn">
+  <span class="material-symbols-outlined text-[16px]">print</span>
+  Print Sheet
+</button>
+</div>
+</section>
+
+<!-- Confirm & Continue -->
+<div class="max-w-[600px] space-y-4">
+<div class="flex items-start gap-3 bg-surface-2 border border-border rounded-lg p-4" id="confirmation-checkbox-area">
+<input type="checkbox" class="mt-0.5 rounded border-muted/30 bg-surface-2 text-green focus:ring-green/30 focus:ring-offset-0" id="confirm-saved-checkbox"/>
+<label for="confirm-saved-checkbox" class="text-[13px] text-muted leading-relaxed cursor-pointer">
+  I have downloaded and saved the QR codes for <span class="text-white font-medium">Premium Honey (GF-2026-A)</span>.
+</label>
+</div>
+<button class="w-full bg-blue hover:bg-blue-dark text-white py-4 rounded-lg font-body font-medium transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed" disabled id="done-btn">
+            Done — Go to My Products
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+
+</div>
+</main>
+
+<!-- Decorative glow -->
+<div class="glow-blue-center"></div>
+
+<script>
+  // Enable "Done" button only after checkbox is checked
+  const checkbox = document.getElementById('confirm-saved-checkbox');
+  const doneBtn = document.getElementById('done-btn');
+  checkbox.addEventListener('change', () => {
+    doneBtn.disabled = !checkbox.checked;
+  });
+</script>
+</body>
+</html>
