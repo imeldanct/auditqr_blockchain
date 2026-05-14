@@ -28,7 +28,7 @@
     };
 </script>
 </head>
-<body class="min-h-screen flex flex-col items-center">
+<body class="min-h-screen flex flex-col">
 
 <nav class="navbar">
   <div class="navbar-content">
@@ -36,91 +36,86 @@
   </div>
 </nav>
 
-<main class="flex-1 page-offset pb-12 glow-green-top">
-<div class="page-container-xs space-y-16">
+<main class="flex-1 page-offset pb-16 glow-green-top">
+<div class="page-container-narrow">
 
-<!-- STATE A: FIRST HANDOFF SUCCESS -->
-<section class="space-y-8" id="state-a">
-  <div class="text-center space-y-4">
-    <div class="flex justify-center"><div class="w-16 h-16 rounded-full bg-green/15 border border-green/30 flex items-center justify-center"><span class="material-symbols-outlined text-green text-[48px]" style="font-variation-settings: 'FILL' 1;">check_circle</span></div></div>
-    <h1 class="font-headline text-3xl font-medium text-white leading-tight">Handoff confirmed</h1>
-    <p class="font-body text-muted text-[15px] leading-relaxed">Your receipt of Premium Honey has been permanently recorded on the audit trail.</p>
-  </div>
-
-  <div class="bg-surface border border-border rounded-xl p-6 space-y-6">
-    <div class="flex items-center justify-between">
-      <span class="font-body text-[11px] uppercase tracking-widest text-muted font-medium">Handoff details</span>
-      <span class="bg-green/10 border border-green/30 text-green font-body text-[11px] font-medium px-3 py-1 rounded-full">Handoff verified</span>
+<!-- Header — left-aligned -->
+<header class="mb-10">
+  <div class="flex items-center gap-3 mb-4">
+    <div class="w-12 h-12 rounded-full bg-green/15 border border-green/30 flex items-center justify-center">
+      <span class="material-symbols-outlined text-green text-[28px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
     </div>
-    <div class="grid grid-cols-1 gap-4">
-      <div class="space-y-1"><label class="block font-body text-[10px] uppercase tracking-wider text-muted">Product</label><div class="font-body text-white text-[15px]">Premium Honey</div></div>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-1"><label class="block font-body text-[10px] uppercase tracking-wider text-muted">Batch</label><div class="font-mono text-white text-[13px]">GF-2026-A</div></div>
-        <div class="space-y-1"><label class="block font-body text-[10px] uppercase tracking-wider text-muted">Date</label><div class="font-body text-white text-[13px]">14 Apr 2026, 11:30</div></div>
-      </div>
-      <div class="space-y-1"><label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received from</label><div class="font-body text-white text-[14px]">Golden Farms Ltd · Lagos</div></div>
-      <div class="space-y-1"><label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received by</label><div class="font-body text-white text-[14px]">Swift Logistics · Benin City</div></div>
+    <div>
+      <h1 class="font-headline text-[28px] font-medium text-white leading-tight">Handoff confirmed</h1>
     </div>
   </div>
+  <p class="font-body text-muted text-[15px] leading-relaxed">Your receipt of Premium Honey has been permanently recorded on the audit trail.</p>
+</header>
 
-  <div class="bg-surface border border-border border-t-2 rounded-xl p-6 space-y-6" style="border-top-color: #D6FFB7;">
-    <span class="block font-body text-[11px] uppercase tracking-widest text-muted font-medium">Pass this code to the next person</span>
-    <div class="flex justify-center gap-3">
-      <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">7</div>
-      <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">4</div>
-      <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">2</div>
-      <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">9</div>
+<!-- Handoff Details Card -->
+<section class="bg-surface border border-border rounded-xl p-6 space-y-6 mb-6">
+  <div class="flex items-center justify-between">
+    <span class="font-body text-[11px] uppercase tracking-widest text-muted font-medium">Handoff details</span>
+    <span class="bg-green/10 border border-green/30 text-green font-body text-[11px] font-medium px-3 py-1 rounded-full">Verified</span>
+  </div>
+  <div class="space-y-4">
+    <div class="space-y-1">
+      <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Product</label>
+      <div class="font-body text-white text-[15px]">Premium Honey</div>
     </div>
-    <div class="space-y-4">
-      <p class="font-body text-muted text-[14px] leading-relaxed">Give this code to the retailer who will receive this product next. They will need it to confirm the final handoff.</p>
-      <div class="flex items-start gap-2 text-danger">
-        <span class="material-symbols-outlined text-[16px] mt-0.5">warning</span>
-        <p class="font-body text-[12px] leading-tight">This code expires after one use and cannot be reused or recovered.</p>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="space-y-1">
+        <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Batch</label>
+        <div class="font-mono text-white text-[13px]">GF-2026-A</div>
       </div>
+      <div class="space-y-1">
+        <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Date</label>
+        <div class="font-body text-white text-[13px]">14 Apr 2026, 11:30</div>
+      </div>
+    </div>
+    <div class="space-y-1">
+      <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received from</label>
+      <div class="font-body text-white text-[14px]">Golden Farms Ltd · Lagos</div>
+    </div>
+    <div class="space-y-1">
+      <label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received by</label>
+      <div class="font-body text-white text-[14px]">Swift Logistics · Benin City</div>
     </div>
   </div>
 </section>
 
-<!-- Separator for Prototype -->
-<div class="border-t border-white/5 pt-12 relative">
-  <span class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-bg px-4 font-mono text-[10px] text-muted uppercase tracking-widest">Variant: Final handoff — chain complete</span>
+<!-- Pass Code to Next Person -->
+<section class="bg-surface border border-border border-t-2 rounded-xl p-6 space-y-6 mb-6" style="border-top-color: #D6FFB7;">
+  <h2 class="font-body text-[11px] uppercase tracking-widest text-muted font-medium">Pass this code to the next person</h2>
+  <div class="flex justify-center gap-3">
+    <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">7</div>
+    <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">4</div>
+    <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">2</div>
+    <div class="w-[52px] h-[60px] bg-surface-2 border border-green/30 rounded-lg flex items-center justify-center font-mono text-[32px] text-green">9</div>
+  </div>
+  <div class="space-y-3">
+    <p class="font-body text-muted text-[14px] leading-relaxed">Give this code to the retailer who will receive this product next. They will need it to confirm the final handoff.</p>
+    <div class="flex items-start gap-2 text-danger">
+      <span class="material-symbols-outlined text-[16px] mt-0.5">warning</span>
+      <p class="font-body text-[12px] leading-tight">This code expires after one use and cannot be reused or recovered.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Blockchain Reference -->
+<div class="bg-surface-2 border border-border rounded-lg p-4 mb-8">
+  <div class="flex items-center gap-2 mb-2">
+    <span class="material-symbols-outlined text-muted text-[16px]">link</span>
+    <span class="font-body text-[11px] text-muted uppercase tracking-wider">Transaction Record</span>
+  </div>
+  <p class="font-mono text-[11px] text-muted">0x3c1...b550 · Polygon Amoy Testnet</p>
+  <a href="#" class="text-blue text-[12px] hover:underline mt-1 inline-flex items-center gap-1">View on explorer <span class="material-symbols-outlined text-[12px]">open_in_new</span></a>
 </div>
-
-<!-- STATE B: FINAL HANDOFF SUCCESS -->
-<section class="space-y-8 opacity-90" id="state-b">
-  <div class="text-center space-y-4">
-    <div class="flex justify-center"><div class="w-16 h-16 rounded-full bg-green/15 border border-green/30 flex items-center justify-center"><span class="material-symbols-outlined text-green text-[48px]" style="font-variation-settings: 'FILL' 1;">verified</span></div></div>
-    <h2 class="font-headline text-3xl font-medium text-white leading-tight">Chain of custody complete</h2>
-    <p class="font-body text-muted text-[15px] leading-relaxed">The full journey of Premium Honey has been verified and permanently recorded.</p>
-  </div>
-
-  <div class="bg-surface border border-border rounded-xl p-6 space-y-6">
-    <div class="flex items-center justify-between">
-      <span class="font-body text-[11px] uppercase tracking-widest text-muted font-medium">Final Handoff Details</span>
-      <span class="bg-green/10 border border-green/30 text-green font-body text-[11px] font-medium px-3 py-1 rounded-full">Delivered</span>
-    </div>
-    <div class="grid grid-cols-1 gap-4">
-      <div class="space-y-1"><label class="block font-body text-[10px] uppercase tracking-wider text-muted">Product</label><div class="font-body text-white text-[15px]">Premium Honey</div></div>
-      <div class="space-y-1"><label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received from</label><div class="font-body text-white text-[14px]">Swift Logistics · Benin City</div></div>
-      <div class="space-y-1"><label class="block font-body text-[10px] uppercase tracking-wider text-muted">Received by</label><div class="font-body text-white text-[14px]">FreshMart · Onitsha</div></div>
-    </div>
-  </div>
-
-  <div class="bg-surface border border-border border-t-2 rounded-xl p-6 space-y-6" style="border-top-color: #D6FFB7;">
-    <span class="block font-body text-[11px] uppercase tracking-widest text-muted font-medium">Audit trail complete</span>
-    <div class="space-y-5">
-      <div class="flex items-center gap-4"><span class="material-symbols-outlined text-green text-[20px]">check_circle</span><div class="font-body text-white text-[14px]">QR code generated — Golden Farms Ltd</div></div>
-      <div class="flex items-center gap-4"><span class="material-symbols-outlined text-green text-[20px]">check_circle</span><div class="font-body text-white text-[14px]">Handoff verified — Swift Logistics</div></div>
-      <div class="flex items-center gap-4"><span class="material-symbols-outlined text-green text-[20px]">check_circle</span><div class="font-body text-white text-[14px]">Handoff verified — FreshMart</div></div>
-    </div>
-    <p class="font-body text-muted text-[13px] leading-relaxed pt-2 border-t border-white/5">The chain of custody for this product is now complete. No further handoffs are required.</p>
-  </div>
-</section>
 
 </div>
 </main>
 
-<footer class="footer-compact w-full">
+<footer class="footer-compact">
   <p>© 2026 AuditQR · Built for Nigerian SMEs</p>
 </footer>
 </body>
