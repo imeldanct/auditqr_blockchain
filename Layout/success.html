@@ -33,57 +33,15 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-<!-- Navbar with Hamburger (flow complete — user needs navigation) -->
+<!-- Navbar — Logo only (success state, no sidebar needed) -->
 <nav class="navbar">
   <div class="navbar-content">
-    <a href="dashboard.html" class="navbar-logo" id="nav-logo">
+    <a href="landing.html" class="navbar-logo" id="nav-logo">
       <span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1; color: #3185FC; font-size: 24px;'>qr_code_2</span>
       <span>AuditQR</span>
     </a>
-    <div class="navbar-right">
-      <button class="hamburger-btn" onclick="toggleSidebar()" id="hamburger-btn">
-        <span class="material-symbols-outlined">menu</span>
-      </button>
-    </div>
   </div>
 </nav>
-
-<!-- Sidebar Overlay -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-<!-- Sidebar Menu -->
-<div class="sidebar-menu" id="sidebarMenu">
-  <div>
-    <p class="sidebar-section-label">Main</p>
-    <div class="space-y-1">
-      <a class="sidebar-link" href="dashboard.html" id="sidebar-dashboard">
-        <span class="material-symbols-outlined text-sm">dashboard</span>
-        <span>Dashboard</span>
-      </a>
-      <a class="sidebar-link" href="products_list.html" id="sidebar-products">
-        <span class="material-symbols-outlined text-sm">inventory_2</span>
-        <span>My Products</span>
-      </a>
-      <a class="sidebar-link active" href="create_product.html" id="sidebar-create">
-        <span class="material-symbols-outlined text-sm">add_box</span>
-        <span>Create Product</span>
-      </a>
-    </div>
-  </div>
-  <div class="mt-8">
-    <p class="sidebar-section-label">Account</p>
-    <div class="space-y-1">
-      <a class="sidebar-link" href="#" id="sidebar-settings">
-        <span class="material-symbols-outlined text-sm">settings</span>
-        <span>Settings</span>
-      </a>
-      <a class="sidebar-link danger" href="#" id="sidebar-logout">
-        <span class="material-symbols-outlined text-sm">logout</span>
-        <span>Log out</span>
-      </a>
-    </div>
-  </div>
-</div>
 
 <!-- Main Content -->
 <main class="flex-1 flex flex-col items-center justify-center page-offset px-6 pb-16 glow-green-top">
@@ -145,13 +103,13 @@ View on blockchain explorer
 
 <!-- Action Buttons -->
 <div class="w-full max-w-[480px] flex flex-col gap-3" id="action-buttons">
-<button class="w-full bg-blue hover:bg-blue-dark text-white py-3 rounded-lg text-[14px] font-medium transition-all active:scale-[0.98]" id="go-to-products-btn">
+<button class="w-full bg-blue hover:bg-blue-dark text-white py-3 rounded-lg text-[14px] font-medium transition-all active:scale-[0.98]" id="go-to-products-btn" onclick="window.location.href='products_list.html'">
   Go to My Products
 </button>
-<button class="w-full border border-green/30 text-green py-3 rounded-lg text-[14px] font-medium transition-all hover:bg-green/5 active:scale-[0.98]" id="create-another-btn">
+<button class="w-full border border-green/30 text-green py-3 rounded-lg text-[14px] font-medium transition-all hover:bg-green/5 active:scale-[0.98]" id="create-another-btn" onclick="window.location.href='create_product.html'">
   Create another product
 </button>
-<button class="w-full border border-border text-muted py-3 rounded-lg text-[14px] font-medium transition-all hover:text-white hover:border-muted active:scale-[0.98]" id="go-to-dashboard-btn">
+<button class="w-full border border-border text-muted py-3 rounded-lg text-[14px] font-medium transition-all hover:text-white hover:border-muted active:scale-[0.98]" id="go-to-dashboard-btn" onclick="window.location.href='dashboard.html'">
   Go to Dashboard
 </button>
 </div>
@@ -159,14 +117,8 @@ View on blockchain explorer
 </main>
 
 <script>
-  function toggleSidebar() {
-    document.getElementById('sidebarMenu').classList.toggle('open');
-    document.getElementById('sidebarOverlay').classList.toggle('open');
-  }
-  function closeSidebar() {
-    document.getElementById('sidebarMenu').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('open');
-  }
+  function toggleSidebar() {}
+  function closeSidebar() {}
 </script>
 </body>
 </html>
