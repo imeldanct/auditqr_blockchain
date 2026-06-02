@@ -1,0 +1,262 @@
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Create Account | AuditQR</title>
+    <meta name="description" content="Set up your administrator account for AuditQR." />
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../config.js"></script>
+    <script src="./toast.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              bg: "#080708",
+              surface: "#111111",
+              "surface-2": "#1A1A1A",
+              "surface-elevated": "#272a31",
+              green: "#D6FFB7",
+              blue: "#3185FC",
+              "blue-dark": "#1E4D99",
+              muted: "#77867F",
+              danger: "#FF6B6B",
+              warning: "#FFAA00",
+              border: "rgba(119,134,127,0.15)",
+              "text-primary": "#E0E2EC",
+              "outline-variant": "#414754",
+            },
+            fontFamily: {
+              headline: ["Noto Serif", "serif"],
+              display: ["Noto Serif", "serif"],
+              body: ["Space Grotesk", "sans-serif"],
+              label: ["Space Grotesk", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- Navbar — Logo only (pre-auth) -->
+    <nav class="navbar">
+      <div class="navbar-content">
+        <a href="landing.html" class="navbar-logo" id="nav-logo">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 16 16"
+          >
+            <path d="M0 0h16v16H0z" fill="none" />
+            <g fill="#3185FC">
+              <path d="M2 2h2v2H2z" />
+              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+              <path
+                d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"
+              />
+              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+            </g>
+          </svg>
+          <span>AuditQR</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="page-offset pb-20">
+      <div class="page-container-narrow">
+        <header class="mb-10">
+          <div class="step-indicator">
+            <span class="step-indicator-label">Step 2 of 2</span>
+            <div class="step-dots">
+              <div class="step-dot completed"></div>
+              <div class="step-dot active"></div>
+            </div>
+          </div>
+          <h1 class="font-headline text-[36px] font-medium text-white leading-tight mb-3">
+            Set up your account
+          </h1>
+          <p class="font-body text-[15px] text-muted leading-relaxed">
+            You'll use these credentials to log in and issue verifiable QR codes.
+          </p>
+        </header>
+
+        <!-- Account Details Card -->
+        <section
+          class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 md:p-8 mb-8"
+          style="border-top-color: #d6ffb7"
+          id="account-details-card"
+        >
+          <div class="flex items-center gap-2 mb-8">
+            <span class="material-symbols-outlined text-blue text-[18px]">person</span>
+            <h2 class="font-body text-[17px] font-medium text-white">Account Details</h2>
+          </div>
+          <div class="space-y-6">
+            <div>
+              <label class="form-label" for="work-email">Work Email</label>
+              <input
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                placeholder="admin@yourbusiness.com"
+                type="email"
+                id="work-email"
+                autocomplete="email"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="password">Password</label>
+              <div class="relative">
+                <input
+                  class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 pr-11 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                  placeholder="Min. 8 characters"
+                  type="password"
+                  id="password"
+                  autocomplete="new-password"
+                />
+                <button
+                  type="button"
+                  tabindex="-1"
+                  id="toggle-password"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                >
+                  <span
+                    class="material-symbols-outlined text-[20px]"
+                    id="toggle-password-icon"
+                    >visibility</span
+                  >
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="form-label" for="confirm-password">Confirm Password</label>
+              <div class="relative">
+                <input
+                  class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 pr-11 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                  placeholder="Re-enter your password"
+                  type="password"
+                  id="confirm-password"
+                  autocomplete="new-password"
+                />
+                <button
+                  type="button"
+                  tabindex="-1"
+                  id="toggle-confirm-password"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                >
+                  <span
+                    class="material-symbols-outlined text-[20px]"
+                    id="toggle-confirm-password-icon"
+                    >visibility</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Submit Actions -->
+        <div class="space-y-4">
+          <button
+            class="w-full bg-blue hover:bg-blue-dark text-white py-[12px] rounded-lg font-body font-medium active:scale-[0.98] transition-all text-[14px]"
+            id="submit-registration-btn"
+            onclick="completeRegistration(event)"
+          >
+            Complete Registration
+          </button>
+        </div>
+      </div>
+    </main>
+    <div class="glow-blue-center"></div>
+    <footer class="footer-compact">
+      <p>© 2026 AuditQR. Built for Nigerian SMEs</p>
+    </footer>
+
+    <script>
+      // Password visibility toggles
+      function setupToggle(btnId, inputId, iconId) {
+        document.getElementById(btnId).addEventListener("click", () => {
+          const input = document.getElementById(inputId);
+          const icon = document.getElementById(iconId);
+          if (input.type === "password") {
+            input.type = "text";
+            icon.textContent = "visibility_off";
+          } else {
+            input.type = "password";
+            icon.textContent = "visibility";
+          }
+        });
+      }
+      setupToggle("toggle-password", "password", "toggle-password-icon");
+      setupToggle(
+        "toggle-confirm-password",
+        "confirm-password",
+        "toggle-confirm-password-icon",
+      );
+
+      async function completeRegistration(e) {
+        e.preventDefault();
+        const btn = document.getElementById("submit-registration-btn");
+        btn.innerText = "Creating Account...";
+        btn.disabled = true;
+
+        try {
+          const businessName = localStorage.getItem("businessName");
+          const rcNumber = localStorage.getItem("rcNumber");
+          if (!businessName || !rcNumber) {
+            window.location.href = "register.html";
+            return;
+          }
+          const email = document.getElementById("work-email").value;
+          const password = document.getElementById("password").value;
+          const confirmPassword = document.getElementById("confirm-password").value;
+
+          if (!password || password.length < 8) {
+            showToast("Password must be at least 8 characters.", "error");
+            btn.innerText = "Complete Registration";
+            btn.disabled = false;
+            return;
+          }
+          if (password !== confirmPassword) {
+            showToast("Passwords do not match.", "error");
+            btn.innerText = "Complete Registration";
+            btn.disabled = false;
+            return;
+          }
+
+          const res = await apiFetch("/api/sme/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ businessName, rcNumber, email, password }),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            showToast("Account created successfully! Redirecting…", "success");
+            window.location.href = "login.html";
+          } else {
+            showToast("Registration failed: " + (data.error || "Unknown error"), "error");
+            btn.innerText = "Complete Registration";
+            btn.disabled = false;
+          }
+        } catch (err) {
+          showToast("Network error. Is the server running?", "error");
+          btn.innerText = "Complete Registration";
+          btn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>

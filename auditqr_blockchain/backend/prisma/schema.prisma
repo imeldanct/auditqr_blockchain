@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model SME {
+  smeID        String   @id @default(uuid())
+  businessName String
+  rcNumber     String   @unique
+  email        String   @unique
+  passwordHash String
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  products     Product[]
+}
+
+model Product {
+  productID   String   @id @default(uuid())
+  smeID       String
+  productName String
+  description String
+  category    String?
+  createdAt   DateTime @default(now())
+
+  sme         SME      @relation(fields: [smeID], references: [smeID])
+  parentQRs   ParentQRCode[]
+}
+
+model ParentQRCode {
+  parentQRID String   @id @default(uuid())
+  productID  String
+  qrData     String
+  createdAt  DateTime @default(now())
+
+  product    Product  @relation(fields: [productID], references: [productID], onDelete: Cascade)
+  childQRs   ChildQRCode[]
+}
+
+enum QRStage {
+  pending
+  transit
+  delivered
+}
+
+model ChildQRCode {
+  childQRID    String   @id @default(uuid())
+  parentQRID   String
+  itemNumber   Int
+  qrData       String
+  currentStage QRStage  @default(pending)
+  createdAt    DateTime @default(now())
+
+  parentQR   ParentQRCode @relation(fields: [parentQRID], references: [parentQRID], onDelete: Cascade)
+  scanEvents ScanEvent[]
+}
+
+model ScanEvent {
+  scanID      String   @id @default(uuid())
+  childQRID   String
+  scannerRole String
+  ipLocation  String
+  timestamp   DateTime @default(now())
+  txHash      String?
+
+  childQR     ChildQRCode  @relation(fields: [childQRID], references: [childQRID])
+  handoffCode HandoffCode?
+}
+
+model HandoffCode {
+  codeID    String   @id @default(uuid())
+  scanID    String   @unique
+  codeValue String
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  scanEvent ScanEvent @relation(fields: [scanID], references: [scanID])
+}

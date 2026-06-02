@@ -1,0 +1,302 @@
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Create Product | AuditQR</title>
+    <meta
+      name="description"
+      content="Create a new product entry and configure QR codes for your supply chain."
+    />
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              bg: "#080708",
+              surface: "#111111",
+              "surface-2": "#1A1A1A",
+              "surface-elevated": "#272a31",
+              green: "#D6FFB7",
+              blue: "#3185FC",
+              "blue-dark": "#1E4D99",
+              muted: "#77867F",
+              danger: "#FF6B6B",
+              warning: "#FFAA00",
+              border: "rgba(119,134,127,0.15)",
+              "text-primary": "#E0E2EC",
+              "outline-variant": "#414754",
+            },
+            fontFamily: {
+              headline: ["Noto Serif", "serif"],
+              display: ["Noto Serif", "serif"],
+              body: ["Space Grotesk", "sans-serif"],
+              label: ["Space Grotesk", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="flex flex-col min-h-screen">
+    <!-- Navbar with Hamburger -->
+    <nav class="navbar">
+      <div class="navbar-content">
+        <a href="landing.html" class="navbar-logo" id="nav-logo">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 16 16"
+          >
+            <path d="M0 0h16v16H0z" fill="none" />
+            <g fill="#3185FC">
+              <path d="M2 2h2v2H2z" />
+              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+              <path
+                d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"
+              />
+              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+            </g>
+          </svg>
+          <span>AuditQR</span>
+        </a>
+        <div class="navbar-right">
+          <button class="hamburger-btn" onclick="toggleSidebar()" id="hamburger-btn">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar-menu" id="sidebarMenu">
+      <div>
+        <p class="sidebar-section-label">Main</p>
+        <div class="space-y-1">
+          <a class="sidebar-link" href="dashboard.html" id="sidebar-dashboard">
+            <span class="material-symbols-outlined text-sm">dashboard</span>
+            <span>Dashboard</span>
+          </a>
+          <a class="sidebar-link" href="products_list.html" id="sidebar-products">
+            <span class="material-symbols-outlined text-sm">inventory_2</span>
+            <span>My Products</span>
+          </a>
+          <a class="sidebar-link active" href="create_product.html" id="sidebar-create">
+            <span class="material-symbols-outlined text-sm">add_box</span>
+            <span>Create Product</span>
+          </a>
+        </div>
+      </div>
+      <div class="mt-8">
+        <p class="sidebar-section-label">Account</p>
+        <div class="space-y-1">
+          <a class="sidebar-link" href="#" id="sidebar-settings">
+            <span class="material-symbols-outlined text-sm">settings</span>
+            <span>Settings</span>
+          </a>
+          <a class="sidebar-link danger" href="login.html" id="sidebar-logout">
+            <span class="material-symbols-outlined text-sm">logout</span>
+            <span>Log out</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 page-offset pb-16">
+      <div class="page-container">
+        <!-- Step Indicator + Header -->
+        <div class="max-w-[600px] mx-auto mb-12">
+          <div class="step-indicator">
+            <span class="step-indicator-label">Step 1 of 3 — Product Details</span>
+            <div class="step-dots">
+              <div class="step-dot active"></div>
+              <div class="step-dot"></div>
+              <div class="step-dot"></div>
+            </div>
+          </div>
+          <h1 class="font-headline text-[32px] font-medium text-white leading-tight">
+            Create a new product
+          </h1>
+          <p class="text-muted font-body text-[15px] mt-2">
+            Fill in your product details. You'll review everything before QR codes are
+            generated.
+          </p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="max-w-[600px] mx-auto">
+          <div
+            class="bg-surface border border-outline-variant border-t-2 rounded-xl overflow-hidden shadow-2xl"
+            style="border-top-color: #d6ffb7"
+            id="create-product-card"
+          >
+            <form class="p-8 space-y-6" id="create-product-form">
+              <!-- Product Name -->
+              <div class="space-y-2">
+                <label class="form-label" for="product-name">Product Name</label>
+                <input
+                  class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                  placeholder="e.g. Premium Cassava Flour"
+                  type="text"
+                  id="product-name"
+                />
+              </div>
+
+              <!-- Product Description -->
+              <div class="space-y-2">
+                <label class="form-label" for="product-description"
+                  >Product Description</label
+                >
+                <textarea
+                  class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 resize-none focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                  placeholder="Briefly describe the product, its qualities, and any handling instructions..."
+                  rows="4"
+                  id="product-description"
+                ></textarea>
+              </div>
+
+              <!-- PARENT / CHILD QR CONFIGURATION -->
+              <div
+                class="space-y-2 p-5 bg-surface-2/50 border border-blue/20 border-l-[3px] border-l-blue rounded-lg"
+              >
+                <div class="flex items-center gap-2 mb-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M0 0h16v16H0z" fill="none" />
+                    <g fill="#3185FC">
+                      <path d="M2 2h2v2H2z" />
+                      <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+                      <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+                      <path
+                        d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"
+                      />
+                      <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+                    </g>
+                  </svg>
+                  <h3 class="font-body text-[14px] font-medium text-white">
+                    QR Code Configuration
+                  </h3>
+                </div>
+                <div class="space-y-4">
+                  <div>
+                    <label class="form-label" for="items-per-carton"
+                      >Number of items per carton</label
+                    >
+                    <input
+                      class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                      placeholder="e.g. 12"
+                      type="number"
+                      min="0"
+                      id="items-per-carton"
+                    />
+                    <p class="form-helper mt-2">
+                      <span class="text-green">1 Parent QR</span> will be generated for
+                      the carton. <br />
+                      <span class="text-blue">N Child QRs</span> will be generated for
+                      each individual item inside.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Category & Weight -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label class="form-label" for="category">Category</label>
+                  <input
+                    class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                    placeholder="e.g. Processed Food, Textiles..."
+                    type="text"
+                    id="category"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="form-label" for="unit-weight">Unit Weight (KG)</label>
+                  <input
+                    class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                    placeholder="0.00"
+                    step="0.01"
+                    type="number"
+                    id="unit-weight"
+                  />
+                </div>
+              </div>
+
+              <!-- Dates -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label class="form-label" for="mfg-date">Manufacture Date</label>
+                  <input
+                    class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                    type="date"
+                    id="mfg-date"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="form-label" for="exp-date">Expiry Date</label>
+                  <input
+                    class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                    type="date"
+                    id="exp-date"
+                  />
+                </div>
+              </div>
+
+              <!-- Submit -->
+              <div class="pt-4 text-center">
+                <button
+                  class="w-full bg-blue hover:bg-blue-dark text-white font-body py-3 px-6 rounded-lg font-medium transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                  type="button"
+                  id="confirm-details-btn"
+                >
+                  Review product details
+                  <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Decorative glow -->
+    <div class="glow-blue-center"></div>
+
+    <script>
+      function toggleSidebar() {
+        document.getElementById("sidebarMenu").classList.toggle("open");
+        document.getElementById("sidebarOverlay").classList.toggle("open");
+      }
+      function closeSidebar() {
+        document.getElementById("sidebarMenu").classList.remove("open");
+        document.getElementById("sidebarOverlay").classList.remove("open");
+      }
+    </script>
+
+    <script src="../config.js"></script>
+    <script src="./toast.js"></script>
+    <script src="./create_product.js"></script>
+  </body>
+</html>

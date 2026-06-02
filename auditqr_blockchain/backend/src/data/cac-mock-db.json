@@ -1,0 +1,102 @@
+{
+  "RC-123456": {
+    "businessName": "CHUKWUEMEKA AND SONS TRADING LIMITED",
+    "businessType": "Private Limited Liability Company (LTD)",
+    "status": "Active",
+    "rcNumber": "RC-123456",
+    "registeredAddress": "14, Broad Street, Lagos Island",
+    "state": "Lagos State",
+    "natureOfBusiness": "Wholesale and Retail Trade of Food & Beverage Products",
+    "registrationDate": "2014-03-22"
+  },
+  "RC-234567": {
+    "businessName": "NORTHERN PLAINS AGRO INDUSTRIES LIMITED",
+    "businessType": "Private Limited Liability Company (LTD)",
+    "status": "Active",
+    "rcNumber": "RC-234567",
+    "registeredAddress": "Plot 7, Bello Road Industrial Estate",
+    "state": "Kano State",
+    "natureOfBusiness": "Agricultural Processing and Export",
+    "registrationDate": "2010-08-15"
+  },
+  "RC-345678": {
+    "businessName": "PINNACLE PHARMACEUTICALS NIGERIA LIMITED",
+    "businessType": "Private Limited Liability Company (LTD)",
+    "status": "Active",
+    "rcNumber": "RC-345678",
+    "registeredAddress": "Suite 4, NNPC Towers Annex, Central Business District",
+    "state": "Abuja (FCT)",
+    "natureOfBusiness": "Pharmaceutical Manufacturing and Distribution",
+    "registrationDate": "2008-11-03"
+  },
+  "RC-456789": {
+    "businessName": "GOLDEN HARVEST FARMS",
+    "businessType": "Business Name (Sole Proprietorship)",
+    "status": "Active",
+    "rcNumber": "RC-456789",
+    "registeredAddress": "Km 12, Sagamu-Abeokuta Expressway",
+    "state": "Ogun State",
+    "natureOfBusiness": "Crop Farming and Fresh Produce Supply",
+    "registrationDate": "2017-05-30"
+  },
+  "RC-567890": {
+    "businessName": "DELTANIC OIL AND GAS SERVICES LIMITED",
+    "businessType": "Private Limited Liability Company (LTD)",
+    "status": "Active",
+    "rcNumber": "RC-567890",
+    "registeredAddress": "23, Aba Road, Port Harcourt",
+    "state": "Rivers State",
+    "natureOfBusiness": "Oil & Gas Logistics and Equipment Supply",
+    "registrationDate": "2012-02-19"
+  },
+  "RC-678901": {
+    "businessName": "SUNRISE TEXTILE MANUFACTURING LIMITED",
+    "businessType": "Private Limited Liability Company (LTD)",
+    "status": "Active",
+    "rcNumber": "RC-678901",
+    "registeredAddress": "Industrial Estate Road 3, Challawa",
+    "state": "Kano State",
+    "natureOfBusiness": "Textile Production and Garment Manufacturing",
+    "registrationDate": "2006-09-11"
+  },
+  "RC-789012": {
+    "businessName": "EKO CONSUMER GOODS LIMITED",
+    "businessType": "Private Limited Liability Company (LTD)",
+    "status": "Active",
+    "rcNumber": "RC-789012",
+    "registeredAddress": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "state": "Lagos State",
+    "natureOfBusiness": "Manufacturing and Distribution of Consumer Goods",
+    "registrationDate": "2015-07-04"
+  },
+  "RC-890123": {
+    "businessName": "GREAT PLAINS FOOD INDUSTRIES LIMITED",
+    "businessType": "Private Limited Liability Company (LTD)",
+    "status": "Active",
+    "rcNumber": "RC-890123",
+    "registeredAddress": "Plot 21, Kaduna South Industrial Area",
+    "state": "Kaduna State",
+    "natureOfBusiness": "Food Processing and Packaging",
+    "registrationDate": "2011-01-28"
+  },
+  "RC-901234": {
+    "businessName": "ANAMBRA FRESH PRODUCE ENTERPRISE",
+    "businessType": "Business Name (Sole Proprietorship)",
+    "status": "Active",
+    "rcNumber": "RC-901234",
+    "registeredAddress": "45, Zik Avenue, Awka",
+    "state": "Anambra State",
+    "natureOfBusiness": "Fresh Produce Trading and Distribution",
+    "registrationDate": "2019-04-16"
+  },
+  "RC-012345": {
+    "businessName": "WESTBRIDGE ELECTRONICS LIMITED",
+    "businessType": "Private Limited Liability Company (LTD)",
+    "status": "Active",
+    "rcNumber": "RC-012345",
+    "registeredAddress": "10, Computer Village Road, Ikeja",
+    "state": "Lagos State",
+    "natureOfBusiness": "Electronics Retail and Distribution",
+    "registrationDate": "2013-06-07"
+  }
+}
