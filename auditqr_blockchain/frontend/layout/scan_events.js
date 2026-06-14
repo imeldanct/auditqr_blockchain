@@ -12,20 +12,34 @@ function logout() {
 }
 
 var statusMap = {
-  pending: { label: "Pending", badge: "text-muted bg-muted/10 border-muted/30" },
-  transit: { label: "In Transit", badge: "text-blue bg-blue/10 border-blue/30" },
-  delivered: { label: "Delivered", badge: "text-green bg-green/10 border-green/30" },
+  pending: {
+    label: "Pending",
+    badge: "text-muted bg-muted/10 border-muted/30",
+    accentColor: "rgba(119,134,127,0.35)",
+    dotColor: "#77867F",
+  },
+  transit: {
+    label: "In Transit",
+    badge: "text-blue bg-blue/10 border-blue/30",
+    accentColor: "#3185FC",
+    dotColor: "#3185FC",
+  },
+  delivered: {
+    label: "Delivered",
+    badge: "text-green bg-green/10 border-green/30",
+    accentColor: "#D6FFB7",
+    dotColor: "#D6FFB7",
+  },
 };
 
-var filterMap = {
-  all: null,
-  pending: ["pending"],
-  transit: ["transit"],
-  delivered: ["delivered"],
-};
-
-var _allItems = [];
+var _allProducts = [];
 var _activeFilter = "all";
+
+function deriveParentStage(stages) {
+  if (stages.every(function (s) { return s === "pending"; })) return "pending";
+  if (stages.every(function (s) { return s === "delivered"; })) return "delivered";
+  return "transit";
+}
 
 function setStatusFilter(btn) {
   _activeFilter = btn.dataset.status;
@@ -35,55 +49,50 @@ function setStatusFilter(btn) {
   });
   btn.classList.add("border-blue", "bg-blue/10", "text-blue");
   btn.classList.remove("border-outline-variant", "text-muted");
-  renderItems();
+  renderProducts();
 }
 
-function renderItems() {
+function renderProducts() {
   var tbody = document.getElementById("scan-events-tbody");
-  var stages = filterMap[_activeFilter];
-  var filtered = stages
-    ? _allItems.filter(function (it) {
-        return stages.indexOf(it.currentStage) !== -1;
-      })
-    : _allItems;
+  var filtered = _activeFilter === "all"
+    ? _allProducts
+    : _allProducts.filter(function (p) { return p.currentStage === _activeFilter; });
 
   if (filtered.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="4" class="px-6 py-10 text-center text-muted text-sm">No items found.</td></tr>';
+      '<tr><td colspan="4" class="px-6 py-10 text-center text-muted text-sm">No products found.</td></tr>';
     return;
   }
 
   tbody.innerHTML = "";
-  filtered.forEach(function (it) {
-    var s = statusMap[it.currentStage] || statusMap.unscanned;
-    var lastScan = it.lastScanAt
-      ? new Date(it.lastScanAt).toLocaleString("en-NG", {
+  filtered.forEach(function (p) {
+    var s = statusMap[p.currentStage] || statusMap.pending;
+    var lastEvent = p.lastScanAt
+      ? new Date(p.lastScanAt).toLocaleString("en-NG", {
           day: "numeric",
           month: "short",
           year: "numeric",
           hour: "2-digit",
           minute: "2-digit",
         })
-      : "\u2014";
+      : "—";
     tbody.innerHTML +=
-      '<tr class="hover:bg-white/[0.02] transition-colors cursor-pointer" onclick="window.location.href=\'journey.html?id=' +
-      it.childQRID +
-      "'\">" +
-      '<td class="px-6 py-4 font-body text-white text-[14px] font-medium">' +
-      it.productName +
-      "</td>" +
-      '<td class="px-6 py-4 font-body text-muted text-[13px]">Unit ' +
-      it.itemNumber +
-      "</td>" +
-      '<td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-[10px] font-medium uppercase border ' +
-      s.badge +
-      '">' +
-      s.label +
-      "</span></td>" +
+      '<tr class="hover:bg-white/[0.02] transition-colors">' +
+      '<td class="px-6 py-4 border-l-2" style="border-left-color:' + s.accentColor + '">' +
+        '<div class="font-body text-white text-[14px] font-medium">' + p.productName + '</div>' +
+        '<div class="font-mono text-muted text-[11px] mt-0.5">' + p.productID.split("-")[0] + '</div>' +
+      '</td>' +
       '<td class="px-6 py-4 font-body text-muted text-[13px]">' +
-      lastScan +
-      "</td>" +
-      "</tr>";
+        p.unitCount + ' unit' + (p.unitCount !== 1 ? 's' : '') +
+      '</td>' +
+      '<td class="px-6 py-4">' +
+        '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium border rounded-full ' + s.badge + '">' +
+          '<span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:' + s.dotColor + '"></span>' +
+          s.label +
+        '</span>' +
+      '</td>' +
+      '<td class="px-6 py-4 font-body text-muted text-[13px]">' + lastEvent + '</td>' +
+      '</tr>';
   });
 }
 
@@ -102,19 +111,49 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       res.json().then(function (body) {
-        _allItems = body.items || [];
-        // Sort: most recently scanned first, then by item number
-        _allItems.sort(function (a, b) {
+        var items = body.items || [];
+
+        // Group children by parent product
+        var productMap = {};
+        items.forEach(function (it) {
+          if (!productMap[it.productID]) {
+            productMap[it.productID] = {
+              productID: it.productID,
+              productName: it.productName,
+              stages: [],
+              lastScanAt: null,
+              unitCount: 0,
+            };
+          }
+          var entry = productMap[it.productID];
+          entry.stages.push(it.currentStage);
+          entry.unitCount++;
+          if (it.lastScanAt) {
+            if (!entry.lastScanAt || new Date(it.lastScanAt) > new Date(entry.lastScanAt)) {
+              entry.lastScanAt = it.lastScanAt;
+            }
+          }
+        });
+
+        // Derive aggregate stage per product and sort
+        _allProducts = Object.values(productMap).map(function (p) {
+          return Object.assign({}, p, { currentStage: deriveParentStage(p.stages) });
+        });
+
+        // Most recently active first, then alphabetical
+        _allProducts.sort(function (a, b) {
           if (a.lastScanAt && b.lastScanAt)
             return new Date(b.lastScanAt) - new Date(a.lastScanAt);
           if (a.lastScanAt) return -1;
           if (b.lastScanAt) return 1;
-          return a.itemNumber - b.itemNumber;
+          return a.productName.localeCompare(b.productName);
         });
-        renderItems();
+
+        renderProducts();
       });
     })
     .catch(function () {
-      document.getElementById("scan-events-empty").textContent = "Could not load items.";
+      document.getElementById("scan-events-empty").textContent =
+        "Could not load items.";
     });
 });

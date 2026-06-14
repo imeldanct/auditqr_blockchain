@@ -131,7 +131,7 @@
               Item Tracking
             </h1>
             <p class="text-muted text-[15px]">
-              Current status of all units across your supply chain
+              Registered product batches and their authentication record
             </p>
           </div>
         </header>
@@ -142,30 +142,22 @@
             data-status="all"
             class="status-pill active px-3 py-1.5 rounded-full text-[11px] font-medium border border-blue bg-blue/10 text-blue transition-all"
             onclick="setStatusFilter(this)"
-          >
-            All
-          </button>
+          >All</button>
           <button
             data-status="pending"
             class="status-pill px-3 py-1.5 rounded-full text-[11px] font-medium border border-outline-variant text-muted hover:border-muted/50 transition-all"
             onclick="setStatusFilter(this)"
-          >
-            Pending
-          </button>
+          >Pending</button>
           <button
             data-status="transit"
             class="status-pill px-3 py-1.5 rounded-full text-[11px] font-medium border border-outline-variant text-muted hover:border-muted/50 transition-all"
             onclick="setStatusFilter(this)"
-          >
-            In Transit
-          </button>
+          >In Transit</button>
           <button
             data-status="delivered"
             class="status-pill px-3 py-1.5 rounded-full text-[11px] font-medium border border-outline-variant text-muted hover:border-muted/50 transition-all"
             onclick="setStatusFilter(this)"
-          >
-            Delivered
-          </button>
+          >Delivered</button>
         </div>
 
         <div
@@ -182,7 +174,7 @@
                 <th
                   class="px-6 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium"
                 >
-                  Unit
+                  Units
                 </th>
                 <th
                   class="px-6 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium"
@@ -192,7 +184,7 @@
                 <th
                   class="px-6 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium"
                 >
-                  Last Scan
+                  Last Event
                 </th>
               </tr>
             </thead>

@@ -166,28 +166,14 @@
           </div>
           <div class="relative w-[160px]">
             <select
-              class="w-full bg-surface-2 border border-outline-variant/20 rounded-lg py-2.5 px-4 text-[14px] font-body text-white focus:outline-none appearance-none"
-              id="status-filter"
-            >
-              <option>Status</option>
-              <option>Delivered</option>
-              <option>In Transit</option>
-              <option>Pending</option>
-            </select>
-            <span
-              class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none text-[18px]"
-              >expand_more</span
-            >
-          </div>
-          <div class="relative w-[160px]">
-            <select
-              class="w-full bg-surface-2 border border-outline-variant/20 rounded-lg py-2.5 px-4 text-[14px] font-body text-white focus:outline-none appearance-none"
+              class="w-full bg-surface-2 border border-outline-variant/20 rounded-lg py-2.5 px-4 text-[14px] font-body text-muted focus:outline-none appearance-none"
               id="date-filter"
+              onchange="this.classList.remove('text-muted'); this.classList.add('text-white')"
             >
-              <option>Date created</option>
-              <option>Last 7 days</option>
-              <option>Last 30 days</option>
-              <option>Last year</option>
+              <option value="" disabled selected hidden>Date created</option>
+              <option style="color: white; background: #1A1A1A">Last 7 days</option>
+              <option style="color: white; background: #1A1A1A">Last 30 days</option>
+              <option style="color: white; background: #1A1A1A">Last year</option>
             </select>
             <span
               class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none text-[18px]"
