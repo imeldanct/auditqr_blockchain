@@ -614,27 +614,30 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A([Retailer scans QR code]) --> B[POST /api/scan\nchildQRID + scannerRole=auto]
+  A([Retailer scans QR code]) --> B[POST /api/scan\nchildQRID]
   B --> C{currentStage?}
-  C -- transit --> D{HandoffCode isUsed?}
-  D -- No --> E[Return 403\nHandoff not yet confirmed]
+  C -- transit --> D{Transporter handoff\ncode generated?}
+  D -- No --> E[Return 403\nAsk transporter to generate code]
   E --> F[Show error on qr_scanner.html]
-  D -- Yes --> G[Create ScanEvent\nAdvance stage to delivered]
-  G --> H[Return isRetailerScan=true]
-  H --> I[Redirect to code.html]
-  I --> J[Fetch /api/scan/history/:id\nDisplay product details]
-  J --> K[Retailer enters 4-digit code]
-  K --> L[POST /api/handoff/confirm\ncodeValue in body]
-  L --> M{Code valid & unused?}
-  M -- No --> N[Show error: Invalid code]
-  M -- Yes --> O[Set HandoffCode.isUsed = true]
-  O --> P[Redirect to retailer_confirmed.html]
+  D -- Yes --> G[Return isRetailerScan=true\nneedsConfirmation=true\nNo ScanEvent, no stage change]
+  G --> H[Redirect to code.html]
+  H --> I[Fetch /api/scan/history/:id\nDisplay product details]
+  I --> J[Retailer enters 4-digit code]
+  J --> K[POST /api/handoff/confirm\ncodeValue + childQRID]
+  K --> L{Matches THIS unit's\ncode & unused?}
+  L -- No --> M[Show error: Invalid code]
+  L -- Yes --> N[Transaction:\nmark code used +\ncreate retailer ScanEvent +\nadvance stage to delivered]
+  N --> O[Redirect to retailer_confirmed.html]
 ```
 
-> **Note**: There is an intentional ordering nuance here. The retailer's scan first
-> checks if the _previous_ HandoffCode (from the transporter) was confirmed. The
-> `/api/handoff/confirm` endpoint then marks the code as used — this is the retailer
-> declaring "I have received this item." These are two distinct actions by design.
+> **Note**: The retailer's scan is deliberately inert — it records nothing and changes no
+> state. It exists only to route the retailer to the code-entry screen, and only succeeds
+> if the transporter has already generated a code to share. The single state-changing act
+> is `/api/handoff/confirm`: the retailer entering the code _is_ them declaring "I have
+> received this item." That endpoint validates the code against **that specific unit's**
+> handoff code (never globally), then marks it used, records the retailer `ScanEvent`, and
+> advances the stage to `delivered` — all in one transaction so the chain can never be
+> left half-confirmed.
 
 ### Flow 4: Customer Verification
 
@@ -672,17 +675,20 @@ flowchart TD
 
 ### Authentication
 
-| Method | Endpoint            | Auth | Description              |
-| ------ | ------------------- | ---- | ------------------------ |
-| POST   | `/api/sme/register` | No   | Register new SME account |
-| POST   | `/api/sme/login`    | No   | Login, returns JWT       |
+| Method | Endpoint              | Auth | Description                                            |
+| ------ | --------------------- | ---- | ----------------------------------------------------- |
+| POST   | `/api/sme/verify-cac` | No   | Validate business against the CAC registry (mock)     |
+| POST   | `/api/sme/register`   | No   | Register new SME account (re-runs CAC check)           |
+| POST   | `/api/sme/login`      | No   | Login, returns JWT                                    |
 
 ### SME Dashboard
 
-| Method | Endpoint         | Auth | Description                               |
-| ------ | ---------------- | ---- | ----------------------------------------- |
-| GET    | `/api/sme/stats` | Yes  | Unit counts by stage + totals             |
-| GET    | `/api/sme/items` | Yes  | All child QRs with stage + last scan time |
+| Method | Endpoint                   | Auth | Description                               |
+| ------ | -------------------------- | ---- | ----------------------------------------- |
+| GET    | `/api/sme/profile`         | Yes  | Business profile + product/scan counts    |
+| GET    | `/api/sme/stats`           | Yes  | Unit counts by stage + totals             |
+| GET    | `/api/sme/items`           | Yes  | All child QRs with stage + last scan time |
+| GET    | `/api/sme/recent-activity` | Yes  | Most recent scan events across all units  |
 
 ### Products
 
@@ -706,7 +712,7 @@ flowchart TD
 | POST   | `/api/scan`                 | No   | Process a scan, determine role, advance stage |
 | GET    | `/api/scan/history/:id`     | No   | Get product info + scan timeline              |
 | POST   | `/api/scan/:scanId/handoff` | No   | Generate handoff code for transporter         |
-| POST   | `/api/handoff/confirm`      | No   | Confirm handoff code (retailer action)        |
+| POST   | `/api/handoff/confirm`      | No   | Confirm handoff (retailer): `codeValue` + `childQRID`; advances unit to `delivered` |
 
 ---
 
@@ -859,12 +865,13 @@ Express pattern that is straightforward to mock).
 
 | ID   | Test                                          | Expected                                                            | Pass/Fail |
 | ---- | --------------------------------------------- | ------------------------------------------------------------------- | --------- |
-| T020 | Scan a `pending` QR code                      | Stage → `transit`, handoff code generated, redirect to handoff.html | ✓         |
-| T021 | Scan a `transit` QR code (no handoff confirm) | 403: "Handoff not yet confirmed"                                    | ✓         |
-| T022 | Confirm handoff code, then scan `transit` QR  | Stage → `delivered`, redirect to retailer_confirmed.html            | ✓         |
-| T023 | Scan a `delivered` QR code                    | Redirect to journey.html, no ScanEvent created                      | ✓         |
-| T024 | Enter wrong handoff code                      | Error toast: Invalid code                                           | ✓         |
-| T025 | Enter already-used handoff code               | Error: code already used                                            | ✓         |
+| T020 | Scan a `pending` QR code                          | Stage → `transit`, redirect to handoff.html; transporter can generate a code        | ✓         |
+| T021 | Scan a `transit` QR before any code is generated  | 403: "Handoff code not generated yet"                                               | ✓         |
+| T022 | Scan a `transit` QR (code generated), enter correct code | Retailer `ScanEvent` recorded, stage → `delivered`, redirect to retailer_confirmed.html | ✓         |
+| T023 | Scan a `delivered` QR code                        | Redirect to journey.html, no ScanEvent created                                      | ✓         |
+| T024 | Enter wrong handoff code                          | Error toast: Invalid code                                                           | ✓         |
+| T025 | Enter already-used handoff code                   | Error: code already used                                                            | ✓         |
+| T026 | Enter a valid code belonging to a _different_ unit | Rejected — codes are validated per-unit, not globally                               | ✓         |
 
 #### Dashboard
 

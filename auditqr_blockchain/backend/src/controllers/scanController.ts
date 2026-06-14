@@ -42,23 +42,38 @@ export const recordScan = async (req: Request, res: Response): Promise<any> => {
       nextStage = "transit";
       isFirstScan = true;
     } else if (stage === "transit") {
-      // Guard: handoff code must be confirmed before retailer scan advances the stage
+      // Retailer scan. The retailer does not advance the stage by scanning —
+      // they must enter the transporter's handoff code to confirm receipt.
+      // We only require that the transporter has actually generated a code to
+      // share; the stage advance + retailer ScanEvent happen in confirmHandoff.
       const lastTransporterScan = await prisma.scanEvent.findFirst({
         where: { childQRID, scannerRole: "transporter" },
         orderBy: { timestamp: "desc" },
         include: { handoffCode: true },
       });
 
-      if (!lastTransporterScan?.handoffCode?.isUsed) {
+      if (!lastTransporterScan?.handoffCode) {
         return res.status(403).json({
           error:
-            "Handoff not yet confirmed. The transporter must share the handoff code with you first.",
+            "Handoff code not generated yet. Ask the transporter to generate and share the code first.",
         });
       }
 
-      scannerRole = "retailer";
-      nextStage = "delivered";
-      isRetailerScan = true;
+      // Route the retailer to the code-entry screen without recording anything.
+      return res.status(200).json({
+        isFirstScan: false,
+        isRetailerScan: true,
+        needsConfirmation: true,
+        currentStage: "transit",
+        product: {
+          productName: childQR.parentQR.product.productName,
+          description: childQR.parentQR.product.description,
+          businessName: childQR.parentQR.product.sme.businessName,
+          rcNumber: childQR.parentQR.product.sme.rcNumber,
+          isVerified: childQR.parentQR.product.sme.isVerified,
+        },
+        itemNumber: childQR.itemNumber,
+      });
     } else {
       // already delivered — consumer/public view only, no stage change
       return res.status(200).json({
@@ -194,27 +209,80 @@ export const getScanHistory = async (req: Request, res: Response): Promise<any> 
 };
 
 export const confirmHandoff = async (req: Request, res: Response): Promise<any> => {
-  const { codeValue } = req.body;
+  const { codeValue, childQRID } = req.body;
 
-  if (!codeValue) {
-    return res.status(400).json({ error: "codeValue is required." });
+  if (!codeValue || !childQRID) {
+    return res
+      .status(400)
+      .json({ error: "codeValue and childQRID are required." });
   }
 
   try {
-    const handoffCode = await prisma.handoffCode.findFirst({
-      where: { codeValue: codeValue.toUpperCase().trim(), isUsed: false },
+    const childQR = await prisma.childQRCode.findUnique({
+      where: { childQRID },
     });
 
-    if (!handoffCode) {
-      return res.status(400).json({ error: "Invalid or already used handoff code." });
+    if (!childQR) {
+      return res.status(404).json({ error: "QR code not found." });
     }
 
-    await prisma.handoffCode.update({
-      where: { codeID: handoffCode.codeID },
-      data: { isUsed: true },
+    if (childQR.currentStage !== "transit") {
+      // Either nothing to confirm (pending) or already delivered.
+      return res.status(400).json({
+        error:
+          childQR.currentStage === "delivered"
+            ? "This item has already been confirmed as delivered."
+            : "This item is not awaiting a handoff confirmation.",
+      });
+    }
+
+    // The code is validated against THIS item's transporter handoff code only —
+    // never globally — so codes can collide across items without confusion.
+    const transporterScan = await prisma.scanEvent.findFirst({
+      where: { childQRID, scannerRole: "transporter" },
+      orderBy: { timestamp: "desc" },
+      include: { handoffCode: true },
     });
 
-    res.status(200).json({ message: "Handoff confirmed successfully." });
+    const handoffCode = transporterScan?.handoffCode;
+
+    if (!handoffCode) {
+      return res
+        .status(400)
+        .json({ error: "No handoff code has been generated for this item yet." });
+    }
+
+    if (handoffCode.isUsed) {
+      return res.status(400).json({ error: "This handoff code has already been used." });
+    }
+
+    if (handoffCode.codeValue !== String(codeValue).trim()) {
+      return res.status(400).json({ error: "Invalid handoff code." });
+    }
+
+    // Confirm receipt: mark the code used, record the retailer scan, and advance
+    // the unit to delivered — atomically, so the chain can never be left partial.
+    await prisma.$transaction([
+      prisma.handoffCode.update({
+        where: { codeID: handoffCode.codeID },
+        data: { isUsed: true },
+      }),
+      prisma.scanEvent.create({
+        data: {
+          childQRID,
+          scannerRole: "retailer",
+          ipLocation: (req.ip || "unknown").replace("::ffff:", ""),
+        },
+      }),
+      prisma.childQRCode.update({
+        where: { childQRID },
+        data: { currentStage: "delivered" },
+      }),
+    ]);
+
+    res
+      .status(200)
+      .json({ message: "Handoff confirmed successfully.", currentStage: "delivered" });
   } catch (error) {
     console.error("Confirm Handoff Error:", error);
     res.status(500).json({ error: "Internal server error confirming handoff." });
