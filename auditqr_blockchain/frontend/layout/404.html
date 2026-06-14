@@ -1,0 +1,96 @@
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Page Not Found | AuditQR</title>
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              bg: "#080708",
+              surface: "#111111",
+              green: "#D6FFB7",
+              blue: "#3185FC",
+              "blue-dark": "#1E4D99",
+              muted: "#77867F",
+              border: "rgba(119,134,127,0.15)",
+              "outline-variant": "#414754",
+            },
+            fontFamily: {
+              headline: ["Noto Serif", "serif"],
+              body: ["Space Grotesk", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col items-center justify-center bg-bg px-6">
+    <nav class="navbar fixed top-0 left-0 right-0">
+      <div class="navbar-content">
+        <a href="landing.html" class="navbar-logo">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 16 16"
+          >
+            <path d="M0 0h16v16H0z" fill="none" />
+            <g fill="#3185FC">
+              <path d="M2 2h2v2H2z" />
+              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+              <path
+                d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"
+              />
+              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+            </g>
+          </svg>
+          <span>AuditQR</span>
+        </a>
+      </div>
+    </nav>
+
+    <main class="text-center space-y-6 max-w-sm">
+      <span
+        class="material-symbols-outlined text-muted text-[72px]"
+        style="font-variation-settings: &quot;FILL&quot; 0"
+        >search_off</span
+      >
+      <div class="space-y-2">
+        <h1 class="font-headline text-[48px] font-medium text-white leading-none">404</h1>
+        <p class="text-white text-lg font-medium">Page not found</p>
+        <p class="text-muted text-sm leading-relaxed">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+      </div>
+      <div class="flex flex-col gap-3 pt-4">
+        <a
+          href="dashboard.html"
+          class="bg-blue hover:bg-blue-dark text-white font-body font-medium py-3 px-6 rounded-lg transition-all active:scale-[0.98] text-[14px]"
+        >
+          Go to Dashboard
+        </a>
+        <a
+          href="landing.html"
+          class="border border-muted/30 text-muted hover:text-white hover:border-muted font-body text-[14px] py-3 px-6 rounded-lg transition-all"
+        >
+          Back to Home
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,350 @@
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Register | AuditQR</title>
+    <meta
+      name="description"
+      content="Register your business to begin issuing authenticated blockchain QR codes."
+    />
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../config.js"></script>
+    <script src="./toast.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              bg: "#080708",
+              surface: "#111111",
+              "surface-2": "#1A1A1A",
+              "surface-elevated": "#272a31",
+              green: "#D6FFB7",
+              blue: "#3185FC",
+              "blue-dark": "#1E4D99",
+              muted: "#77867F",
+              danger: "#FF6B6B",
+              warning: "#FFAA00",
+              border: "rgba(119,134,127,0.15)",
+              "text-primary": "#E0E2EC",
+              "outline-variant": "#414754",
+            },
+            fontFamily: {
+              headline: ["Noto Serif", "serif"],
+              display: ["Noto Serif", "serif"],
+              body: ["Space Grotesk", "sans-serif"],
+              label: ["Space Grotesk", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-content">
+        <a href="landing.html" class="navbar-logo" id="nav-logo">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 16 16"
+          >
+            <path d="M0 0h16v16H0z" fill="none" />
+            <g fill="#3185FC">
+              <path d="M2 2h2v2H2z" />
+              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+              <path
+                d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"
+              />
+              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+            </g>
+          </svg>
+          <span>AuditQR</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="page-offset pb-20">
+      <div class="page-container-narrow">
+        <!-- Header -->
+        <header class="mb-10">
+          <div class="step-indicator">
+            <span class="step-indicator-label">Step 1 of 2</span>
+            <div class="step-dots">
+              <div class="step-dot active"></div>
+              <div class="step-dot"></div>
+            </div>
+          </div>
+          <h1 class="font-headline text-[36px] font-medium text-white leading-tight mb-3">
+            Register your business
+          </h1>
+          <p class="font-body text-[15px] text-muted leading-relaxed">
+            Enter your official business information to register. This will be verified
+            against the CAC database.
+          </p>
+        </header>
+
+        <!-- Error State -->
+        <div
+          class="hidden mb-8 bg-surface-2 border-l-2 border-danger p-5 rounded-r-lg"
+          id="verification-error"
+        >
+          <div class="flex gap-3">
+            <span class="material-symbols-outlined text-danger text-[20px]">error</span>
+            <div>
+              <p class="font-body text-[14px] text-white font-medium">
+                Verification Error
+              </p>
+              <p class="font-body text-[13px] text-muted mt-1">
+                We couldn't verify this business against the CAC database. Please ensure
+                your RC Number and Business Name match your official documents.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Business Details Card -->
+        <section
+          class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 md:p-8 mb-6"
+          style="border-top-color: #d6ffb7"
+          id="business-details-card"
+        >
+          <div class="flex items-center gap-2 mb-8">
+            <span class="material-symbols-outlined text-blue text-[18px]">domain</span>
+            <h2 class="font-body text-[17px] font-medium text-white">Business Details</h2>
+          </div>
+          <div class="space-y-6">
+            <div>
+              <label class="form-label" for="business-name">Business Name</label>
+              <input
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                type="text"
+                placeholder="e.g. Gbagada Logistics & Supply Ltd"
+                id="business-name"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="rc-number">RC Number</label>
+              <input
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white font-mono placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors"
+                type="text"
+                placeholder="e.g. RC-1293840"
+                id="rc-number"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="business-type">Business Type</label>
+              <select
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white appearance-none focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                id="business-type"
+              >
+                <option value="">Select business type</option>
+                <option>Private Limited Liability Company (LTD)</option>
+                <option>Public Limited Liability Company (PLC)</option>
+                <option>Business Name (Sole Proprietorship)</option>
+                <option>Business Name (Partnership)</option>
+                <option>Limited Liability Partnership (LLP)</option>
+                <option>Limited Partnership (LP)</option>
+                <option>Incorporated Trustees (NGO / Association)</option>
+                <option>Company Limited by Guarantee</option>
+                <option>Unlimited Liability Company</option>
+                <option>Foreign Company (Branch / Subsidiary)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="registered-address"
+                >Registered Address</label
+              >
+              <textarea
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 resize-none focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                rows="3"
+                placeholder="e.g. 12, Adeola Hopewell Street, Victoria Island"
+                id="registered-address"
+              ></textarea>
+            </div>
+            <div>
+              <label class="form-label" for="state-operation">State of Operation</label>
+              <select
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white appearance-none focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                id="state-operation"
+              >
+                <option value="">Select state</option>
+                <option>Abia State</option>
+                <option>Adamawa State</option>
+                <option>Akwa Ibom State</option>
+                <option>Anambra State</option>
+                <option>Bauchi State</option>
+                <option>Bayelsa State</option>
+                <option>Benue State</option>
+                <option>Borno State</option>
+                <option>Cross River State</option>
+                <option>Delta State</option>
+                <option>Ebonyi State</option>
+                <option>Edo State</option>
+                <option>Ekiti State</option>
+                <option>Enugu State</option>
+                <option>Abuja (FCT)</option>
+                <option>Gombe State</option>
+                <option>Imo State</option>
+                <option>Jigawa State</option>
+                <option>Kaduna State</option>
+                <option>Kano State</option>
+                <option>Katsina State</option>
+                <option>Kebbi State</option>
+                <option>Kogi State</option>
+                <option>Kwara State</option>
+                <option>Lagos State</option>
+                <option>Nasarawa State</option>
+                <option>Niger State</option>
+                <option>Ogun State</option>
+                <option>Ondo State</option>
+                <option>Osun State</option>
+                <option>Oyo State</option>
+                <option>Plateau State</option>
+                <option>Rivers State</option>
+                <option>Sokoto State</option>
+                <option>Taraba State</option>
+                <option>Yobe State</option>
+                <option>Zamfara State</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <div class="space-y-4 pt-4">
+          <button
+            class="w-full bg-blue hover:bg-blue-dark text-white py-[12px] rounded-lg font-body font-medium active:scale-[0.98] transition-all text-[14px]"
+            id="submit-verification-btn"
+            onclick="handleRegistration(event)"
+          >
+            Verify Business
+          </button>
+        </div>
+      </div>
+    </main>
+    <div class="glow-blue-center"></div>
+    <footer class="footer-compact">
+      <p>© 2026 AuditQR. Built for Nigerian SMEs</p>
+    </footer>
+
+    <script>
+      // Map each field id to the error element that should light up for it
+      const fieldErrorMap = {
+        rcNumber: "rc-number",
+        businessName: "business-name",
+        businessType: "business-type",
+        registeredAddress: "registered-address",
+      };
+
+      function clearFieldErrors() {
+        document.querySelectorAll(".field-error-msg").forEach((el) => el.remove());
+        document.querySelectorAll(".field-error-border").forEach((el) => {
+          el.classList.remove(
+            "field-error-border",
+            "border-danger",
+            "focus:border-danger",
+          );
+          el.classList.add("border-border");
+        });
+        document.getElementById("verification-error").classList.add("hidden");
+      }
+
+      function showFieldError(field, message) {
+        const inputId = fieldErrorMap[field];
+        const input = inputId ? document.getElementById(inputId) : null;
+
+        if (input) {
+          input.classList.remove("border-border");
+          input.classList.add("field-error-border", "border-danger");
+          const msg = document.createElement("p");
+          msg.className = "field-error-msg font-body text-[12px] text-danger mt-1.5";
+          msg.textContent = message;
+          input.closest("div").appendChild(msg);
+        } else {
+          // Fallback — show generic banner
+          const errorBox = document.getElementById("verification-error");
+          errorBox.querySelector("p:last-child").textContent = message;
+          errorBox.classList.remove("hidden");
+        }
+      }
+
+      async function handleRegistration(e) {
+        e.preventDefault();
+        clearFieldErrors();
+
+        const btn = document.getElementById("submit-verification-btn");
+        const businessName = document.getElementById("business-name").value.trim();
+        const rcNumber = document.getElementById("rc-number").value.trim();
+        const businessType = document.getElementById("business-type").value.trim();
+        const registeredAddress = document
+          .getElementById("registered-address")
+          .value.trim();
+
+        if (!businessName || !rcNumber) {
+          showFieldError(
+            !rcNumber ? "rcNumber" : "businessName",
+            "This field is required.",
+          );
+          return;
+        }
+
+        btn.textContent = "Verifying...";
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(API_BASE + "/api/sme/verify-cac", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              businessName,
+              rcNumber,
+              businessType,
+              registeredAddress,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.cacDetails) {
+            const cac = data.cacDetails;
+            localStorage.setItem("businessName", cac.businessName);
+            localStorage.setItem("rcNumber", cac.rcNumber);
+            localStorage.setItem("businessType", cac.businessType);
+            localStorage.setItem("registeredAddress", cac.registeredAddress);
+            localStorage.setItem("state", cac.state || "");
+            localStorage.setItem("natureOfBusiness", cac.natureOfBusiness || "");
+            localStorage.setItem("registrationDate", cac.registrationDate || "");
+            window.location.href = "sme_verified.html";
+          } else {
+            showFieldError(
+              data.field || null,
+              data.error || "Verification failed. Please check your details.",
+            );
+            btn.textContent = "Verify Business & Continue";
+            btn.disabled = false;
+          }
+        } catch (err) {
+          document.getElementById("verification-error").classList.remove("hidden");
+          btn.textContent = "Verify Business & Continue";
+          btn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>

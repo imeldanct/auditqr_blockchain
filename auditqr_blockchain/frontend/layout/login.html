@@ -1,0 +1,229 @@
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Login | AuditQR</title>
+    <meta
+      name="description"
+      content="Log in to your AuditQR business account to manage products and track supply chain activity."
+    />
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../config.js"></script>
+    <script src="./toast.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              bg: "#080708",
+              surface: "#111111",
+              "surface-2": "#1A1A1A",
+              "surface-elevated": "#272a31",
+              green: "#D6FFB7",
+              blue: "#3185FC",
+              "blue-dark": "#1E4D99",
+              muted: "#77867F",
+              danger: "#FF6B6B",
+              warning: "#FFAA00",
+              border: "rgba(119,134,127,0.15)",
+              "text-primary": "#E0E2EC",
+              "outline-variant": "#414754",
+            },
+            fontFamily: {
+              headline: ["Noto Serif", "serif"],
+              display: ["Noto Serif", "serif"],
+              body: ["Space Grotesk", "sans-serif"],
+              label: ["Space Grotesk", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-content">
+        <a href="landing.html" class="navbar-logo">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 16 16"
+          >
+            <path d="M0 0h16v16H0z" fill="none" />
+            <g fill="#3185FC">
+              <path d="M2 2h2v2H2z" />
+              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+              <path
+                d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"
+              />
+              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+            </g>
+          </svg>
+          <span>AuditQR</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 page-offset pb-20 flex items-center justify-center">
+      <div class="w-full max-w-md px-4">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+          <h1 class="font-headline text-[32px] font-medium text-white leading-tight mb-3">
+            Welcome back
+          </h1>
+          <p class="font-body text-[15px] text-muted leading-relaxed">
+            Sign in to manage your products and supply chain.
+          </p>
+        </header>
+
+        <!-- Login Card -->
+        <div
+          class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 md:p-8"
+          style="border-top-color: #3185fc"
+        >
+          <form id="login-form" class="space-y-5" novalidate>
+            <!-- Email -->
+            <div>
+              <label class="form-label" for="login-email">Email address</label>
+              <input
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                type="email"
+                id="login-email"
+                placeholder="admin@yourbusiness.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <!-- Password -->
+            <div>
+              <label class="form-label" for="login-password">Password</label>
+              <div class="relative">
+                <input
+                  class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 pr-11 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                  type="password"
+                  id="login-password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                  id="toggle-password"
+                  tabindex="-1"
+                >
+                  <span
+                    class="material-symbols-outlined text-[20px]"
+                    id="toggle-password-icon"
+                    >visibility</span
+                  >
+                </button>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              id="login-submit-btn"
+              class="w-full bg-blue hover:bg-blue-dark text-white font-body font-medium py-3.5 rounded-lg flex justify-center items-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+            >
+              <span id="login-btn-text">Sign in</span>
+              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Footer link -->
+        <p class="text-center text-[13px] text-muted mt-6">
+          Don't have an account?
+          <a href="register.html" class="text-blue hover:underline"
+            >Register your business</a
+          >
+        </p>
+      </div>
+    </main>
+
+    <div class="glow-blue-center"></div>
+
+    <script>
+      // Redirect if already logged in
+      if (localStorage.getItem("auditqr_token")) {
+        window.location.href = "dashboard.html";
+      }
+
+      // Toggle password visibility
+      document.getElementById("toggle-password").addEventListener("click", () => {
+        const input = document.getElementById("login-password");
+        const icon = document.getElementById("toggle-password-icon");
+        if (input.type === "password") {
+          input.type = "text";
+          icon.textContent = "visibility_off";
+        } else {
+          input.type = "password";
+          icon.textContent = "visibility";
+        }
+      });
+
+      // Login form submit
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("login-email").value.trim();
+          const password = document.getElementById("login-password").value;
+          const btn = document.getElementById("login-submit-btn");
+          const btnText = document.getElementById("login-btn-text");
+
+          if (!email || !password) {
+            showToast("Please enter your email and password.", "error");
+            return;
+          }
+
+          btn.disabled = true;
+          btnText.textContent = "Signing in\u2026";
+
+          try {
+            const res = await fetch(`${API_BASE}/api/sme/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+              localStorage.setItem("auditqr_token", data.token);
+              localStorage.setItem("auditqr_sme", JSON.stringify(data.sme));
+              window.location.href = "dashboard.html";
+            } else {
+              showToast(data.error || "Invalid email or password.", "error");
+              btn.disabled = false;
+              btnText.textContent = "Sign in";
+            }
+          } catch (err) {
+            showToast("Network error. Is the server running?", "error");
+            btn.disabled = false;
+            btnText.textContent = "Sign in";
+          }
+        });
+    </script>
+  </body>
+</html>

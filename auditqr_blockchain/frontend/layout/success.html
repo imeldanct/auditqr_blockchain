@@ -1,0 +1,258 @@
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Product Created | AuditQR</title>
+    <meta
+      name="description"
+      content="Your product has been successfully created and recorded on the blockchain."
+    />
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              bg: "#080708",
+              surface: "#111111",
+              "surface-2": "#1A1A1A",
+              "surface-elevated": "#272a31",
+              green: "#D6FFB7",
+              blue: "#3185FC",
+              "blue-dark": "#1E4D99",
+              muted: "#77867F",
+              danger: "#FF6B6B",
+              warning: "#FFAA00",
+              border: "rgba(119,134,127,0.15)",
+              "text-primary": "#E0E2EC",
+              "outline-variant": "#414754",
+            },
+            fontFamily: {
+              headline: ["Noto Serif", "serif"],
+              display: ["Noto Serif", "serif"],
+              body: ["Space Grotesk", "sans-serif"],
+              label: ["Space Grotesk", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="flex flex-col min-h-screen">
+    <!-- Navbar — Logo only (success state, no sidebar needed) -->
+    <nav class="navbar">
+      <div class="navbar-content">
+        <a href="landing.html" class="navbar-logo" id="nav-logo">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 16 16"
+          >
+            <path d="M0 0h16v16H0z" fill="none" />
+            <g fill="#3185FC">
+              <path d="M2 2h2v2H2z" />
+              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+              <path
+                d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"
+              />
+              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+            </g>
+          </svg>
+          <span>AuditQR</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main
+      class="flex-1 flex flex-col items-center justify-center page-offset px-6 pb-16 glow-green-top"
+    >
+      <!-- Success Header -->
+      <div class="text-center mb-10 max-w-lg" id="success-header">
+        <span
+          class="material-symbols-outlined text-green text-[56px] mb-6"
+          style="font-variation-settings: &quot;FILL&quot; 1"
+          >check_circle</span
+        >
+        <h1 class="font-headline text-[32px] text-white font-medium mb-4 leading-tight">
+          Product created successfully
+        </h1>
+        <p class="text-muted text-[14px] leading-relaxed">
+          <span class="text-white font-medium">Premium Honey</span> has been registered on
+          AuditQR. Your QR codes have been generated and the genesis event has been
+          permanently recorded.
+        </p>
+      </div>
+
+      <!-- Summary Row -->
+      <div
+        class="w-full max-w-[480px] grid grid-cols-3 mb-8 py-4 border-y border-border"
+        id="summary-row"
+      >
+        <div class="flex flex-col items-center px-4 border-r border-border">
+          <span class="text-[13px] text-white text-center" id="success-product-name"
+            >Premium Honey</span
+          >
+          <span class="text-[11px] text-muted text-center mt-1">Product name</span>
+        </div>
+        <div class="flex flex-col items-center px-4 border-r border-border">
+          <span class="text-[13px] text-green font-mono text-center" id="success-batch-id"
+            >—</span
+          >
+          <span class="text-[11px] text-muted text-center mt-1">Batch number</span>
+        </div>
+        <div class="flex flex-col items-center px-4">
+          <span class="text-[13px] text-white text-center" id="success-date">—</span>
+          <span class="text-[11px] text-muted text-center mt-1">Registered on</span>
+        </div>
+      </div>
+
+      <!-- Audit Trail Card -->
+      <div
+        class="w-full max-w-[480px] bg-surface border border-outline-variant border-t-2 rounded-xl p-6 mb-10"
+        style="border-top-color: #d6ffb7"
+        id="audit-trail-card"
+      >
+        <div class="text-[10px] font-medium text-muted uppercase tracking-widest mb-6">
+          Audit trail
+        </div>
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-center gap-3">
+            <span
+              class="material-symbols-outlined text-green text-[18px]"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >check_circle</span
+            >
+            <span class="text-[14px] text-white">Product details saved</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <span
+              class="material-symbols-outlined text-green text-[18px]"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >check_circle</span
+            >
+            <span class="text-[14px] text-white">1 Parent QR code generated</span>
+          </li>
+          <li class="flex items-center gap-3">
+            <span
+              class="material-symbols-outlined text-green text-[18px]"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >check_circle</span
+            >
+            <span class="text-[14px] text-white" id="success-qr-count"
+              >12 Child QR codes generated</span
+            >
+          </li>
+          <li class="flex items-center gap-3">
+            <span
+              class="material-symbols-outlined text-green text-[18px]"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >check_circle</span
+            >
+            <span class="text-[14px] text-white"
+              >Genesis event recorded on blockchain</span
+            >
+          </li>
+        </ul>
+        <div class="pt-6 border-t border-border flex flex-col gap-1">
+          <a
+            class="text-[13px] text-blue hover:underline inline-flex items-center gap-1"
+            href="#"
+            id="explorer-link"
+          >
+            View on blockchain explorer
+            <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+          </a>
+          <span class="text-[11px] text-muted"
+            >Opens the transaction record in a new tab</span
+          >
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="w-full max-w-[480px] flex flex-col gap-3" id="action-buttons">
+        <button
+          class="w-full bg-blue hover:bg-blue-dark text-white py-3 rounded-lg text-[14px] font-medium transition-all active:scale-[0.98]"
+          id="go-to-products-btn"
+          onclick="window.location.href='products_list.html'"
+        >
+          Go to My Products
+        </button>
+        <button
+          class="w-full border border-green/30 text-green py-3 rounded-lg text-[14px] font-medium transition-all hover:bg-green/5 active:scale-[0.98]"
+          id="create-another-btn"
+          onclick="window.location.href='create_product.html'"
+        >
+          Create another product
+        </button>
+        <button
+          class="w-full border border-border text-muted py-3 rounded-lg text-[14px] font-medium transition-all hover:text-white hover:border-muted active:scale-[0.98]"
+          id="go-to-dashboard-btn"
+          onclick="window.location.href='dashboard.html'"
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    </main>
+
+    <script src="../config.js"></script>
+    <script src="./toast.js"></script>
+    <script>
+      function toggleSidebar() {}
+      function closeSidebar() {}
+
+      // Populate from localStorage (set by confirm_product.html after QR generation)
+      document.addEventListener("DOMContentLoaded", () => {
+        const productName = localStorage.getItem("product_name");
+        const quantity = localStorage.getItem("product_quantity");
+        const parentQRID = localStorage.getItem("parent_qr_id");
+        const today = new Date().toLocaleDateString("en-NG", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+
+        if (productName) {
+          const inlineEl = document.getElementById("success-product-name-inline");
+          const nameEl = document.getElementById("success-product-name");
+          if (inlineEl) inlineEl.textContent = productName;
+          if (nameEl) nameEl.textContent = productName;
+        }
+        if (quantity) {
+          const countEl = document.getElementById("success-qr-count");
+          if (countEl) countEl.textContent = quantity + " Child QR codes generated";
+        }
+        const dateEl = document.getElementById("success-date");
+        if (dateEl) dateEl.textContent = today;
+
+        const batchEl = document.getElementById("success-batch-id");
+        if (batchEl && parentQRID)
+          batchEl.textContent = parentQRID.split("-")[0].toUpperCase();
+
+        // "View on blockchain explorer" link — placeholder since blockchain is pending
+        const explorerLink = document.getElementById("explorer-link");
+        if (explorerLink) {
+          explorerLink.href = "#";
+          explorerLink.onclick = (e) => {
+            e.preventDefault();
+            showToast("Blockchain explorer coming soon.", "error");
+          };
+        }
+      });
+    </script>
+  </body>
+</html>
