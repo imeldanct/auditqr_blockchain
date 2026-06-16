@@ -1,390 +1,455 @@
 <!doctype html>
-<html class="dark" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Scan a Product | AuditQR</title>
-    <meta
-      name="description"
-      content="Scan a product QR code to verify its authenticity and view its supply chain journey."
-    />
-    <link rel="stylesheet" href="../design-tokens.css" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Scan | AuditQR</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="../config.js"></script>
-    <script src="./toast.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              bg: "#080708",
-              surface: "#111111",
-              "surface-2": "#1A1A1A",
-              "surface-elevated": "#272a31",
-              green: "#D6FFB7",
-              blue: "#3185FC",
-              "blue-dark": "#1E4D99",
-              muted: "#77867F",
-              danger: "#FF6B6B",
-              border: "rgba(119,134,127,0.15)",
-              "text-primary": "#E0E2EC",
-              "outline-variant": "#414754",
-            },
-            fontFamily: {
-              headline: ["Noto Serif", "serif"],
-              body: ["Space Grotesk", "sans-serif"],
-              label: ["Space Grotesk", "sans-serif"],
-              mono: ["JetBrains Mono", "monospace"],
-            },
-          },
-        },
-      };
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
     <style>
-      /* Corner bracket viewfinder */
-      .viewfinder {
-        position: relative;
-        width: 260px;
-        height: 260px;
-      }
-      .viewfinder::before,
-      .viewfinder::after,
-      .vf-br::before,
-      .vf-br::after {
-        content: "";
-        position: absolute;
-        width: 36px;
-        height: 36px;
-        border-color: #d6ffb7;
-        border-style: solid;
-      }
-      .viewfinder::before {
-        top: 0;
-        left: 0;
-        border-width: 3px 0 0 3px;
-        border-radius: 2px 0 0 0;
-      }
-      .viewfinder::after {
-        top: 0;
-        right: 0;
-        border-width: 3px 3px 0 0;
-        border-radius: 0 2px 0 0;
-      }
-      .vf-br::before {
-        bottom: 0;
-        left: 0;
-        border-width: 0 0 3px 3px;
-        border-radius: 0 0 0 2px;
-      }
-      .vf-br::after {
-        bottom: 0;
-        right: 0;
-        border-width: 0 3px 3px 0;
-        border-radius: 0 0 2px 0;
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+      html, body {
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+        background: #000;
+        font-family: 'Space Grotesk', sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
 
-      /* Scanning laser line */
-      @keyframes scan-line {
-        0% {
-          top: 10%;
-          opacity: 1;
-        }
-        50% {
-          top: 85%;
-          opacity: 1;
-        }
-        100% {
-          top: 10%;
-          opacity: 1;
-        }
-      }
-      .scan-laser {
-        position: absolute;
-        left: 6px;
-        right: 6px;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #d6ffb7, transparent);
-        box-shadow: 0 0 8px rgba(214, 255, 183, 0.7);
-        animation: scan-line 2.4s ease-in-out infinite;
-      }
-
-      /* Status pulse dot */
-      @keyframes status-pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.3;
-        }
-      }
-      .status-dot {
-        animation: status-pulse 1.4s ease-in-out infinite;
-      }
-
-      /* Camera video fill */
+      /* Video fills screen — GPU-accelerated, no JS canvas drawing */
       #camera-feed {
-        position: absolute;
+        position: fixed;
         inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 4px;
+        z-index: 1;
+      }
+      /* Suppress any iOS media control overlays */
+      #camera-feed::-webkit-media-controls,
+      #camera-feed::-webkit-media-controls-enclosure,
+      #camera-feed::-webkit-media-controls-panel,
+      #camera-feed::-webkit-media-controls-play-button,
+      #camera-feed::-webkit-media-controls-start-playback-button {
+        display: none !important;
+        -webkit-appearance: none;
+      }
+
+      /* Invisible layer that blocks touches from reaching the video.
+         Prevents iOS from ever showing the play/pause overlay. */
+      #touch-guard {
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+      }
+
+      /* Camera fallback */
+      #camera-fallback {
+        display: none;
+        position: fixed;
+        inset: 0;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        color: #77867F;
+        font-size: 14px;
+        text-align: center;
+        padding: 32px;
+        z-index: 10;
+      }
+      #camera-fallback p { line-height: 1.6; }
+      #retry-btn {
+        margin-top: 4px;
+        padding: 10px 24px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+      }
+
+      /* Back button */
+      #back-btn {
+        position: fixed;
+        top: max(20px, env(safe-area-inset-top, 20px));
+        left: 20px;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.55);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #fff;
+        text-decoration: none;
+      }
+
+      /* Viewfinder — centered over camera */
+      #viewfinder-wrap {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: -40px;
+        pointer-events: none;
+        z-index: 5;
+        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      #viewfinder-wrap.detected {
+        transform: scale(0.62);
+      }
+
+      #viewfinder-svg path {
+        transition: stroke 0.25s ease;
+      }
+      #viewfinder-svg.detected path {
+        stroke: #D6FFB7;
+      }
+
+
+      /* Status pill */
+      #status-pill {
+        position: fixed;
+        bottom: 148px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        pointer-events: none;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        background: rgba(0,0,0,0.55);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #fff;
+        font-size: 13px;
+      }
+      @keyframes status-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.25; }
+      }
+      #status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #D6FFB7;
+        flex-shrink: 0;
+        animation: status-pulse 1.4s ease-in-out infinite;
+      }
+
+      /* Torch button */
+      #torch-btn {
+        position: fixed;
+        bottom: max(56px, calc(env(safe-area-inset-bottom, 0px) + 40px));
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: rgba(60,60,60,0.8);
+        border: 1px solid rgba(255,255,255,0.18);
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+      }
+      #torch-btn.lit {
+        background: rgba(214,255,183,0.25);
+        border-color: rgba(214,255,183,0.45);
+      }
+
+      /* Detection overlay */
+      #detect-overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.35s ease, visibility 0.35s;
+        background: rgba(0,0,0,0.35);
+      }
+      #detect-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+      #detect-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        background: #111111;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 28px;
+        padding: 40px 52px;
+        transform: scale(0.88);
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      #detect-overlay.visible #detect-card {
+        transform: scale(1);
+      }
+      #detect-logo {
+        width: 64px;
+        height: 64px;
+        background: rgba(49,133,252,0.1);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        margin-bottom: 4px;
+      }
+      #detect-name {
+        font-size: 20px;
+        font-weight: 600;
+        color: #fff;
+        letter-spacing: -0.02em;
+      }
+      #detect-sub {
+        font-size: 12px;
+        color: #77867F;
       }
     </style>
   </head>
-  <body class="min-h-screen flex flex-col">
-    <!-- Navbar -->
-    <nav class="navbar">
-      <div class="navbar-content">
-        <a href="landing.html" class="navbar-logo" id="nav-logo">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 16 16"
-          >
-            <path d="M0 0h16v16H0z" fill="none" />
+  <body>
+    <!-- Camera — visible, GPU-accelerated -->
+    <video id="camera-feed" autoplay playsinline muted disablepictureinpicture></video>
+
+    <!-- Blocks touches from reaching video so iOS never shows play/pause overlay -->
+    <div id="touch-guard"></div>
+
+    <!-- Camera fallback -->
+    <div id="camera-fallback">
+      <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="#77867F" opacity="0.5">
+        <path d="M0 0h24v24H0z" fill="none"/>
+        <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-2v8c0 1.103-.897 2-2 2H2c-1.103 0-2-.897-2-2V10c0-1.103.897-2 2-2h3V7c0-.551.449-1 1-1h12c.551 0 1 .449 1 1v1h3c1.103 0 2 .897 2 2z"/>
+      </svg>
+      <p>Camera unavailable<br/>or permission denied</p>
+      <button id="retry-btn" onclick="startCamera()">Retry</button>
+    </div>
+
+    <!-- Back button -->
+    <a href="landing.html" id="back-btn" aria-label="Back">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </a>
+
+    <!-- Viewfinder with iOS-style rounded corner brackets -->
+    <div id="viewfinder-wrap">
+      <div style="position:relative; width:260px; height:260px;">
+        <svg id="viewfinder-svg" width="260" height="260" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 8,70 L 8,22 Q 8,8 22,8 L 70,8"   stroke="white" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <path d="M 190,8 L 238,8 Q 252,8 252,22 L 252,70"  stroke="white" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <path d="M 8,190 L 8,238 Q 8,252 22,252 L 70,252"  stroke="white" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <path d="M 190,252 L 238,252 Q 252,252 252,238 L 252,190" stroke="white" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Status pill -->
+    <div id="status-pill">
+      <span id="status-dot"></span>
+      <span id="status-text">Waiting for QR code…</span>
+    </div>
+
+    <!-- Torch button -->
+    <button id="torch-btn" onclick="toggleTorch()" aria-label="Toggle torch">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+      </svg>
+    </button>
+
+    <!-- Detection overlay -->
+    <div id="detect-overlay">
+      <div id="detect-card">
+        <div id="detect-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16">
+            <path d="M0 0h16v16H0z" fill="none"/>
             <g fill="#3185FC">
-              <path d="M2 2h2v2H2z" />
-              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
-              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
-              <path
-                d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"
-              />
-              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+              <path d="M2 2h2v2H2z"/>
+              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z"/>
+              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z"/>
+              <path d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z"/>
+              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z"/>
             </g>
           </svg>
-          <span>AuditQR</span>
-        </a>
-        <div class="navbar-right">
-          <a href="landing.html" class="nav-back-link" id="back-btn">
-            <span class="material-symbols-outlined text-sm">arrow_back</span>
-            Back
-          </a>
         </div>
+        <div id="detect-name">AuditQR</div>
+        <div id="detect-sub">Verified — redirecting…</div>
       </div>
-    </nav>
-
-    <!-- Main -->
-    <main class="flex-1 flex flex-col items-center justify-center page-offset pb-16 px-6">
-      <div class="w-full max-w-[400px] flex flex-col items-center">
-        <!-- Heading -->
-        <div class="text-center mb-8">
-          <h1 class="font-headline text-[28px] font-medium text-white mb-2">
-            Scan a product
-          </h1>
-          <p class="font-body text-[14px] text-muted">
-            Point your camera at an AuditQR code to verify authenticity.
-          </p>
-        </div>
-
-        <!-- Camera viewfinder -->
-        <div class="relative mb-8" id="scanner-wrapper">
-          <!-- Camera video -->
-          <div
-            class="w-[280px] h-[280px] rounded-xl bg-surface-2 border border-outline-variant overflow-hidden relative"
-            id="video-container"
-          >
-            <video id="camera-feed" autoplay playsinline muted></video>
-            <!-- Fallback when no camera -->
-            <div
-              class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center px-6"
-              id="camera-fallback"
-            >
-              <span class="material-symbols-outlined text-muted text-5xl"
-                >videocam_off</span
-              >
-              <p class="font-body text-[13px] text-muted">
-                Camera not available<br />or permission denied
-              </p>
-            </div>
-          </div>
-          <!-- Viewfinder overlay -->
-          <div
-            class="absolute inset-0 flex items-center justify-center pointer-events-none"
-          >
-            <div class="viewfinder">
-              <div class="vf-br"></div>
-              <div class="scan-laser" id="scan-laser"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Status pill -->
-        <div
-          class="flex items-center gap-2 mb-8 px-4 py-2 rounded-full bg-surface border border-outline-variant"
-          id="status-pill"
-        >
-          <span class="status-dot w-2 h-2 rounded-full bg-green flex-shrink-0"></span>
-          <span class="font-body text-[13px] text-white" id="status-text"
-            >Waiting for QR code…</span
-          >
-        </div>
-
-        <!-- Permission denied message (hidden by default) -->
-        <div
-          class="hidden w-full bg-surface border border-outline-variant rounded-xl p-5 mb-6 text-center"
-          id="permission-denied-card"
-        >
-          <span class="material-symbols-outlined text-warning text-3xl mb-3"
-            >no_photography</span
-          >
-          <p class="font-body text-[14px] text-white font-medium mb-1">
-            Camera access denied
-          </p>
-          <p class="font-body text-[13px] text-muted leading-relaxed">
-            Allow camera access in your browser settings, then reload this page.
-          </p>
-          <button
-            class="mt-4 w-full border border-border text-white font-body text-[13px] py-2.5 rounded-lg hover:bg-surface-2 transition-all"
-            onclick="startCamera()"
-            id="retry-camera-btn"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer-compact">
-      <p>© 2026 AuditQR. Built for Nigerian SMEs</p>
-    </footer>
+    </div>
 
     <script>
-      const videoEl = document.getElementById("camera-feed");
-      const fallback = document.getElementById("camera-fallback");
-      const statusTxt = document.getElementById("status-text");
-      const deniedCard = document.getElementById("permission-denied-card");
-      let stream = null;
-      let scanning = false;
-      let scanCanvas, scanCtx;
+      var videoEl = document.getElementById('camera-feed');
+      var fallback = document.getElementById('camera-fallback');
+      var statusTxt = document.getElementById('status-text');
+      var stream = null;
+      var scanning = false;
+      var torchOn = false;
+      var scanCanvas = document.createElement('canvas');
+      var scanCtx = scanCanvas.getContext('2d');
+      var scanInterval = null;
 
       function extractChildQRID(raw) {
-        // Handle both full journey URLs and raw UUIDs/qrData strings
+        var trimmed = raw.trim();
         try {
-          const url = new URL(raw);
-          return url.searchParams.get("id") || null;
-        } catch {
-          // Not a URL — check if it looks like a UUID (raw childQRID)
-          if (/^[0-9a-f-]{36}$/i.test(raw.trim())) return raw.trim();
-          return null;
+          var url = new URL(trimmed);
+          var id = url.searchParams.get('id');
+          if (id) return id;
+        } catch (e) {}
+        var match = trimmed.match(/[?&]id=([a-f0-9-]{36})/i);
+        if (match) return match[1];
+        if (/^[a-f0-9-]{36}$/i.test(trimmed)) return trimmed;
+        return null;
+      }
+
+      function beep() {
+        try {
+          var ctx = new (window.AudioContext || window.webkitAudioContext)();
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = 880;
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.15);
+        } catch (e) {}
+      }
+
+      function resetScanUI() {
+        document.getElementById('detect-overlay').classList.remove('visible');
+        document.getElementById('viewfinder-svg').classList.remove('detected');
+        document.getElementById('viewfinder-wrap').classList.remove('detected');
+        scanning = true;
+      }
+
+      function onDetected() {
+        if (navigator.vibrate) navigator.vibrate(100);
+        beep();
+        document.getElementById('viewfinder-svg').classList.add('detected');
+        document.getElementById('viewfinder-wrap').classList.add('detected');
+        setTimeout(function () {
+          document.getElementById('detect-overlay').classList.add('visible');
+        }, 220);
+      }
+
+      function runScan() {
+        if (!scanning || !videoEl.videoWidth) return;
+        // Scan at reduced resolution for performance
+        var maxW = 640;
+        var scale = Math.min(1, maxW / videoEl.videoWidth);
+        scanCanvas.width = Math.round(videoEl.videoWidth * scale);
+        scanCanvas.height = Math.round(videoEl.videoHeight * scale);
+        scanCtx.drawImage(videoEl, 0, 0, scanCanvas.width, scanCanvas.height);
+        var imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+        var code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'attemptBoth',
+        });
+        if (code) {
+          var childQRID = extractChildQRID(code.data);
+          if (childQRID) {
+            scanning = false;
+            onDetected();
+            statusTxt.textContent = 'QR detected! Verifying…';
+            submitScan(childQRID);
+          }
         }
       }
 
       async function submitScan(childQRID) {
-        statusTxt.textContent = "Verifying product…";
         try {
-          const res = await fetch(API_BASE + "/api/scan", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ childQRID }),
+          var res = await fetch(API_BASE + '/api/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ childQRID: childQRID }),
           });
-
           if (!res.ok) {
-            const err = await res.json();
-            statusTxt.textContent = err.error || "QR code not found.";
-            scanning = false;
+            var err = await res.json();
+            statusTxt.textContent = err.error || 'QR code not found.';
+            resetScanUI();
             return;
           }
-
-          const data = await res.json();
-          localStorage.setItem("scan_id", data.scanId);
-          localStorage.setItem("scan_product", JSON.stringify(data.product));
-          localStorage.setItem("scan_item_number", data.itemNumber);
-          localStorage.setItem("scan_time", data.scanTime);
-          localStorage.setItem("scan_childQRID", childQRID);
-
-          statusTxt.textContent = "Product found! Redirecting…";
-          document.getElementById("scan-laser").style.background =
-            "linear-gradient(90deg, transparent, #3185FC, transparent)";
-
-          setTimeout(() => {
+          var data = await res.json();
+          localStorage.setItem('scan_id', data.scanId);
+          localStorage.setItem('scan_product', JSON.stringify(data.product));
+          localStorage.setItem('scan_item_number', data.itemNumber);
+          localStorage.setItem('scan_time', data.scanTime);
+          localStorage.setItem('scan_childQRID', childQRID);
+          setTimeout(function () {
             if (data.isFirstScan) {
-              window.location.href = "handoff.html";
+              window.location.href = 'handoff.html';
             } else if (data.isRetailerScan) {
-              window.location.href = "code.html";
+              window.location.href = 'code.html';
             } else {
-              window.location.href = "journey.html?id=" + encodeURIComponent(childQRID);
+              window.location.href = 'journey.html?id=' + encodeURIComponent(childQRID);
             }
-          }, 800);
+          }, 900);
         } catch (e) {
-          statusTxt.textContent = "Network error. Please try again.";
-          scanning = false;
+          statusTxt.textContent = 'Network error. Please try again.';
+          resetScanUI();
         }
       }
 
-      function scanFrame() {
-        if (!scanning || !videoEl.videoWidth) {
-          requestAnimationFrame(scanFrame);
-          return;
-        }
-        scanCanvas.width = videoEl.videoWidth;
-        scanCanvas.height = videoEl.videoHeight;
-        scanCtx.drawImage(videoEl, 0, 0);
-        const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert",
-        });
-        if (code) {
-          scanning = false;
-          statusTxt.textContent = "QR detected! Verifying…";
-          const childQRID = extractChildQRID(code.data);
-          if (childQRID) {
-            submitScan(childQRID);
-          } else {
-            showToast("Unrecognised QR code format. Try manual lookup.", "error");
-            statusTxt.textContent = "Unrecognised QR. Try manual lookup.";
-            scanning = true; // resume
-          }
-        } else {
-          requestAnimationFrame(scanFrame);
+      async function toggleTorch() {
+        if (!stream) return;
+        var track = stream.getVideoTracks()[0];
+        if (!track) return;
+        try {
+          torchOn = !torchOn;
+          await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+          document.getElementById('torch-btn').classList.toggle('lit', torchOn);
+        } catch (e) {
+          torchOn = false;
         }
       }
 
       async function startCamera() {
-        deniedCard.classList.add("hidden");
-        fallback.classList.remove("hidden");
+        fallback.style.display = 'none';
+        statusTxt.textContent = 'Starting camera…';
         try {
           stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
           });
           videoEl.srcObject = stream;
-          videoEl.style.display = "block";
-          fallback.classList.add("hidden");
-          statusTxt.textContent = "Waiting for QR code…";
-          scanCanvas = document.createElement("canvas");
-          scanCtx = scanCanvas.getContext("2d");
+          statusTxt.textContent = 'Waiting for QR code…';
           scanning = true;
-          requestAnimationFrame(scanFrame);
+          if (scanInterval) clearInterval(scanInterval);
+          scanInterval = setInterval(runScan, 200);
         } catch (err) {
-          fallback.classList.remove("hidden");
-          videoEl.style.display = "none";
-          if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-            deniedCard.classList.remove("hidden");
-            statusTxt.textContent = "Camera permission denied";
-          } else {
-            statusTxt.textContent = "Camera unavailable";
-          }
+          fallback.style.display = 'flex';
+          statusTxt.textContent = err.name === 'NotAllowedError' ? 'Camera permission denied' : 'Camera unavailable';
         }
       }
 
-      // Stop camera on page leave
-      window.addEventListener("pagehide", () => {
+      window.addEventListener('pagehide', function () {
         scanning = false;
-        if (stream) stream.getTracks().forEach((t) => t.stop());
+        clearInterval(scanInterval);
+        if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
       });
 
-      // Auto-start on load
       startCamera();
     </script>
   </body>
