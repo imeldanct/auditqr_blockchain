@@ -233,7 +233,7 @@ To go live, swap the JSON lookup inside `cacService.ts` for an HTTP call to a re
 
 ## Testing QR Scanning on Mobile (Outray)
 
-QR scanning must be tested on a real phone. Since the backend runs on `localhost:3000`, phones on a different network (or even the same one) can't reach it directly. Outray creates a temporary HTTPS tunnel to your local backend that any device can hit.
+QR scanning must be tested on a real phone. Since the backend runs on `localhost:3000`, phones on a different network (or even the same one) can't reach it directly. Outray creates a temporary HTTPS tunnel that exposes your local servers to the internet via a public URL any device can hit.
 
 ### How the QR codes work
 
@@ -241,19 +241,37 @@ Child QR codes encode a custom URI: `auditqr://verify?id=<childQRID>`. When a ph
 
 ### Setup
 
-**1. Expose the backend via Outray**
+**1. Install Outray and log in**
+
+```bash
+npm install -g outray
+npx outray login
+```
+
+Use `npx outray` instead of `outray` directly — Git Bash on Windows doesn't always add npm's global bin folder to its PATH, so the bare `outray` command may not be found. `npx` bypasses that.
+
+Logging in opens a browser tab. Authenticate there, then return to the terminal.
+
+**2. Start the backend**
 
 ```bash
 # In the backend directory
+cd backend
 npm run dev
-
-# In a separate terminal
-outray http 3000
 ```
 
-Outray will print a forwarding URL like `https://a1b2-xxx.outray.app`. Copy it.
+Confirm it's listening on port 3000 before moving on.
 
-**2. Update the frontend API base**
+**3. Expose the backend via a tunnel**
+
+```bash
+# In a new terminal
+npx outray http 3000
+```
+
+Outray prints a public URL like `https://a1b2-xxx.outray.app`. This punches through your local network and makes your Express backend reachable from any device. Copy the URL.
+
+**4. Update the frontend API base**
 
 In [frontend/config.js](../frontend/config.js), change:
 ```js
@@ -264,20 +282,42 @@ to:
 const API_BASE = "https://a1b2-xxx.outray.app";
 ```
 
-**3. Access the frontend from your phone**
+This is necessary because your phone can't reach `localhost:3000` — that only exists on your laptop. All frontend API calls now go through the Outray tunnel instead.
 
-Live Server serves the frontend at `http://localhost:5500`, but your phone needs to reach it. Two options:
+**5. Start Live Server in VS Code**
 
-- **Same WiFi (simplest):** Find your laptop's LAN IP (`ipconfig` → IPv4 address). Open `http://192.168.x.x:5500/layout/qr_scanner.html` on the phone. Both devices must be on the same network.
-- **Anywhere:** Run a second Outray tunnel: `outray http 5500`. Use that URL on the phone instead.
+Click **Go Live** in VS Code's bottom status bar. This serves the frontend on port 5500. Live Server must be running before the next step — the tunnel has nothing to connect to otherwise.
 
-**4. Scan**
+**6. Expose the frontend via a second tunnel**
 
-Open `qr_scanner.html` on the phone browser → allow camera → scan a printed or on-screen child QR code → the backend receives the scan via the Outray tunnel.
+```bash
+# In another new terminal
+npx outray http 5500
+```
 
-**5. Revert after testing**
+Outray prints a second public URL. Open that URL on your phone and append the path to the scanner page:
 
-Set `API_BASE` back to `"http://localhost:3000"` in `config.js` when done. The tunnel URL changes every session.
+```
+https://b3c4-xxx.outray.app/auditqr_blockchain/frontend/layout/qr_scanner.html
+```
+
+**7. Scan**
+
+On your phone: allow camera access → scan a printed or on-screen child QR code → the scan is submitted to the backend through the first tunnel.
+
+**8. Revert after testing**
+
+Set `API_BASE` back to `"http://localhost:3000"` in `config.js` when done. Both tunnel URLs change every session.
+
+### Why two tunnels?
+
+Two servers are running locally — the Express backend on port 3000 and Live Server on port 5500. Each needs its own tunnel. The backend tunnel URL goes into `config.js` so API calls reach Express. The frontend tunnel URL is what you open on your phone to load the HTML pages.
+
+```
+Phone browser
+  → frontend tunnel (5500) → Live Server → HTML/JS files
+  → JS calls API_BASE      → backend tunnel (3000) → Express → Supabase
+```
 
 ### Testing notes
 
