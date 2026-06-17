@@ -229,6 +229,72 @@ export const getItemStatus = async (req: any, res: any): Promise<any> => {
   }
 };
 
+export const updateProfile = async (req: any, res: any): Promise<any> => {
+  const { businessName, email } = req.body;
+
+  if (!businessName && !email) {
+    return res.status(400).json({ error: "Nothing to update." });
+  }
+
+  try {
+    if (email) {
+      const conflict = await prisma.sME.findFirst({
+        where: { email, NOT: { smeID: req.sme.smeId } },
+      });
+      if (conflict) {
+        return res.status(400).json({ error: "That email is already in use.", field: "email" });
+      }
+    }
+
+    const updated = await prisma.sME.update({
+      where: { smeID: req.sme.smeId },
+      data: {
+        ...(businessName && { businessName }),
+        ...(email && { email }),
+      },
+      select: { businessName: true, email: true, rcNumber: true },
+    });
+
+    res.status(200).json({ message: "Profile updated.", sme: updated });
+  } catch (error) {
+    console.error("Profile Update Error:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+export const updatePassword = async (req: any, res: any): Promise<any> => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: "Current and new password are required." });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: "New password must be at least 8 characters.", field: "newPassword" });
+  }
+
+  try {
+    const sme = await prisma.sME.findUnique({ where: { smeID: req.sme.smeId } });
+    if (!sme) return res.status(404).json({ error: "Account not found." });
+
+    const valid = await bcrypt.compare(currentPassword, sme.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: "Current password is incorrect.", field: "currentPassword" });
+    }
+
+    const hash = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
+    await prisma.sME.update({
+      where: { smeID: req.sme.smeId },
+      data: { passwordHash: hash },
+    });
+
+    res.status(200).json({ message: "Password updated successfully." });
+  } catch (error) {
+    console.error("Password Update Error:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
 export const getProfile = async (req: any, res: any): Promise<any> => {
   try {
     const sme = await prisma.sME.findUnique({

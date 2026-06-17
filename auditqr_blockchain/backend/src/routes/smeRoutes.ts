@@ -4,6 +4,8 @@ import {
   registerSME,
   loginSME,
   getProfile,
+  updateProfile,
+  updatePassword,
   getRecentActivity,
   getStats,
   getItemStatus,
@@ -16,6 +18,8 @@ router.post("/verify-cac", verifyCACEndpoint);
 router.post("/register", registerSME);
 router.post("/login", loginSME);
 router.get("/profile", authenticateSME, getProfile);
+router.patch("/profile", authenticateSME, updateProfile);
+router.patch("/password", authenticateSME, updatePassword);
 router.get("/stats", authenticateSME, getStats);
 router.get("/recent-activity", authenticateSME, getRecentActivity);
 router.get("/items", authenticateSME, getItemStatus);
