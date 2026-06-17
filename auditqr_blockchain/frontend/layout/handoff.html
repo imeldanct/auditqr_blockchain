@@ -72,7 +72,7 @@
               >—</span
             >
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-green/10 border border-green/30 text-green tracking-wider uppercase"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue/10 border border-blue/30 text-blue tracking-wider uppercase"
               >CAC Verified</span
             >
           </div>
@@ -128,10 +128,10 @@
         <section class="mb-10">
           <div
             class="bg-surface border border-outline-variant border-t-2 rounded-xl p-5 shadow-2xl"
-            style="border-top-color: #d6ffb7"
+            style="border-top-color: #3185FC"
           >
             <div class="flex items-center gap-2 mb-4">
-              <span class="material-symbols-outlined text-green text-[20px]"
+              <span class="material-symbols-outlined text-blue text-[20px]"
                 >verified_user</span
               >
               <h2
@@ -212,10 +212,10 @@
       if (bnEl2) bnEl2.textContent = bizName;
 
       if (product.isVerified === false) {
-        const badge = document.querySelector(".text-green.tracking-wider");
+        const badge = document.querySelector(".text-blue.tracking-wider");
         if (badge) {
           badge.textContent = "Unverified";
-          badge.classList.remove("text-green", "border-green/30", "bg-green/10");
+          badge.classList.remove("text-blue", "border-blue/30", "bg-blue/10");
           badge.classList.add("text-danger");
         }
       }
@@ -257,12 +257,12 @@
                 (e, i) => `
               <div class="flex gap-4 ${i < events.length - 1 ? "mb-4" : ""}">
                 <div class="flex flex-col items-center">
-                  <div class="w-[9px] h-[9px] rounded-full bg-green mt-1.5 shadow-[0_0_8px_rgba(214,255,183,0.5)]"></div>
+                  <div class="w-[9px] h-[9px] rounded-full bg-blue mt-1.5 shadow-[0_0_8px_rgba(214,255,183,0.5)]"></div>
                   ${i < events.length - 1 ? '<div class="timeline-line"></div>' : ""}
                 </div>
                 <div class="pb-2">
                   <p class="text-white font-medium text-[14px]">${roleLabel[e.scannerRole] || e.scannerRole}</p>
-                  <p class="text-green text-[12px] font-medium mt-0.5">${i === 0 ? "First scan (origin)" : "Handoff recorded"}</p>
+                  <p class="text-blue text-[12px] font-medium mt-0.5">${i === 0 ? "First scan (origin)" : "Handoff recorded"}</p>
                   <p class="text-muted text-[11px] mt-1">${fmt(e.timestamp)}</p>
                 </div>
               </div>`,
@@ -303,3 +303,4 @@
     </script>
   </body>
 </html>
+

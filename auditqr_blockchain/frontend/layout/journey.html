@@ -55,7 +55,7 @@
     <div class="flex flex-wrap items-center gap-3 pt-2">
       <div class="flex items-center gap-2">
         <span id="business-name" class="font-medium text-sm">—</span>
-        <span id="verified-badge" class="bg-green/10 border border-green/30 text-green text-[10px] font-body font-medium px-2 py-0.5 rounded-full uppercase tracking-wider hidden">CAC verified</span>
+        <span id="verified-badge" class="bg-blue/10 border border-blue/30 text-blue text-[10px] font-body font-medium px-2 py-0.5 rounded-full uppercase tracking-wider hidden">CAC verified</span>
       </div>
       <span class="text-muted text-sm">•</span>
       <span id="cac-number" class="text-muted text-sm font-mono text-[11px]">RC—</span>
@@ -63,9 +63,9 @@
   </section>
 
   <!-- Authenticity Verdict -->
-  <section id="verdict-card" class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 flex flex-col sm:flex-row items-start gap-3 sm:gap-5 shadow-sm" style="border-top-color: #D6FFB7;">
-    <div class="bg-green/10 p-3 rounded-lg">
-      <span class="material-symbols-outlined text-2xl text-green" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+  <section id="verdict-card" class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 flex flex-col sm:flex-row items-start gap-3 sm:gap-5 shadow-sm" style="border-top-color: #3185FC;">
+    <div class="bg-blue/10 p-3 rounded-lg">
+      <span class="material-symbols-outlined text-2xl text-blue" style="font-variation-settings: 'FILL' 1;">verified_user</span>
     </div>
     <div>
       <h2 class="text-white font-medium text-lg mb-1 font-headline">This product is authentic</h2>
@@ -145,16 +145,16 @@
     return `
       <div class="flex gap-6">
         <div class="relative z-10 flex items-center justify-center w-[22px] h-[22px]">
-          <div class="w-[9px] h-[9px] rounded-full bg-green"></div>
+          <div class="w-[9px] h-[9px] rounded-full bg-blue"></div>
         </div>
         <div class="space-y-1">
           <div class="flex items-center gap-2">
             <span class="text-white font-medium">${label}</span>
             ${event.ipLocation && event.ipLocation !== "unknown"
-              ? `<span class="text-green text-xs">(${event.ipLocation})</span>`
+              ? `<span class="text-blue text-xs">(${event.ipLocation})</span>`
               : ""}
           </div>
-          <div class="text-xs font-body text-green">${actionLabel}</div>
+          <div class="text-xs font-body text-blue">${actionLabel}</div>
           <div class="text-muted text-[11px]">${time}</div>
         </div>
       </div>`;
@@ -226,3 +226,4 @@
 </script>
 </body>
 </html>
+

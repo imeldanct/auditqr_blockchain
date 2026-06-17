@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AuditQR CSS CUSTOM PROPERTIES
  * Global design tokens as CSS variables
  * Import this in all HTML files for consistent theming
@@ -14,7 +14,7 @@ body {
   --color-primary-light: #4A9AFF;
   --color-primary-dark: #1E4D99;
   
-  --color-success: #D6FFB7;
+  --color-success: #3185FC;
   --color-success-light: #E8FFCC;
   --color-success-dark: #A8D47A;
   
@@ -315,8 +315,8 @@ body {
   gap: var(--space-sm);
   padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-full);
-  background-color: rgba(214, 255, 183, 0.15);
-  border: 1px solid rgba(214, 255, 183, 0.3);
+  background-color: rgba(49, 133, 252, 0.15);
+  border: 1px solid rgba(49, 133, 252, 0.3);
   color: var(--color-success);
   font-family: var(--font-label);
   font-size: var(--fs-label-small);
@@ -382,8 +382,8 @@ body {
 
 /* SUCCESS STATE */
 .success-state {
-  background-color: rgba(214, 255, 183, 0.1);
-  border: 1px solid rgba(214, 255, 183, 0.3);
+  background-color: rgba(49, 133, 252, 0.1);
+  border: 1px solid rgba(49, 133, 252, 0.3);
   color: var(--color-success);
   border-radius: var(--radius-sm);
   padding: var(--space-lg);
@@ -427,7 +427,7 @@ body {
 
 /* ============================================================
    SHARED LAYOUT COMPONENTS
-   All pages import this file — no more duplicating these blocks
+   All pages import this file â€” no more duplicating these blocks
    ============================================================ */
 
 /* BASE RESET */
@@ -661,7 +661,7 @@ body {
   padding-top: 96px; /* 64px navbar + 32px breathing room */
 }
 
-/* Full-width content container — flush with navbar edges */
+/* Full-width content container â€” flush with navbar edges */
 .page-container {
   max-width: 1200px;
   margin-left: auto;
@@ -724,7 +724,7 @@ body {
 
 .step-dot.completed {
   background: var(--color-success);
-  box-shadow: 0 0 8px rgba(214, 255, 183, 0.3);
+  box-shadow: 0 0 8px rgba(49, 133, 252, 0.3);
 }
 
 /* ---- FORM LABEL ---- */
@@ -789,7 +789,7 @@ body {
 }
 
 .glow-green-top {
-  background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(214, 255, 183, 0.09) 0%, transparent 70%);
+  background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(49, 133, 252, 0.09) 0%, transparent 70%);
 }
 
 .glow-blue-center {
@@ -843,11 +843,11 @@ body {
 }
 
 /* ---- GLOBAL BORDER RADIUS CONSISTENCY ----
-   All rectangular/square elements use --radius-sm (4px) — same as the navbar
+   All rectangular/square elements use --radius-sm (4px) â€” same as the navbar
    "Get Started" button. !important is required because Tailwind play CDN injects
    its stylesheet after this file loads, so it would otherwise win the cascade.
-   rounded-full is intentionally excluded — pills, badges, and circular elements
-   keep their circular shape. rounded-none is intentionally excluded — elements
+   rounded-full is intentionally excluded â€” pills, badges, and circular elements
+   keep their circular shape. rounded-none is intentionally excluded â€” elements
    explicitly opting out of radius keep zero radius. */
 .rounded,
 .rounded-sm,
@@ -891,10 +891,10 @@ body {
 
 /* ============================================================
    RESPONSIVE BREAKPOINTS
-   LG  — Small laptops  : 1024px – 1280px
-   MD  — Tablets        : 768px  – 1024px
-   SM  — Phone landscape: 576px  – 768px
-   XS  — Phone portrait : < 576px
+   LG  â€” Small laptops  : 1024px â€“ 1280px
+   MD  â€” Tablets        : 768px  â€“ 1024px
+   SM  â€” Phone landscape: 576px  â€“ 768px
+   XS  â€” Phone portrait : < 576px
    ============================================================ */
 
 /* ---- LG: Small laptops ---- */
@@ -936,7 +936,7 @@ body {
   /* Sidebar */
   .sidebar-menu            { width: min(280px, 88vw); right: min(-280px, -88vw); }
 
-  /* Tables — reduce cell padding on mobile */
+  /* Tables â€” reduce cell padding on mobile */
   .table-xs td,
   .table-xs th             { padding: 10px 8px !important; font-size: 12px !important; }
 
@@ -950,7 +950,7 @@ body {
   .footer-compact          { padding: 14px 12px; }
   .footer-compact p        { font-size: 10px; }
 
-  /* Buttons — full width on XS by default unless overridden */
+  /* Buttons â€” full width on XS by default unless overridden */
   .btn-full-xs             { width: 100%; }
 }
 
@@ -959,3 +959,4 @@ body {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+

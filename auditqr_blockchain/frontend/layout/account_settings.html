@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -200,11 +200,11 @@
     </main>
 
     <script>
-      // ── Auth guard ──────────────────────────────────────────────
+      // â”€â”€ Auth guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const token = localStorage.getItem("auditqr_token");
       if (!token) window.location.href = "login.html";
 
-      // ── Sidebar ─────────────────────────────────────────────────
+      // â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       function toggleSidebar() {
         document.getElementById("sidebarMenu").classList.toggle("open");
         document.getElementById("sidebarOverlay").classList.toggle("visible");
@@ -218,7 +218,7 @@
         window.location.href = "login.html";
       }
 
-      // ── Password visibility toggle ───────────────────────────────
+      // â”€â”€ Password visibility toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       function toggleVisibility(inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
@@ -231,7 +231,7 @@
         }
       }
 
-      // ── Load current profile ─────────────────────────────────────
+      // â”€â”€ Load current profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       async function loadProfile() {
         try {
           const res = await apiFetch("/api/sme/profile");
@@ -245,7 +245,7 @@
         }
       }
 
-      // ── Save profile ─────────────────────────────────────────────
+      // â”€â”€ Save profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       async function saveProfile() {
         const btn = document.getElementById("save-profile-btn");
         const businessName = document.getElementById("business-name").value.trim();
@@ -257,7 +257,7 @@
         }
 
         btn.disabled = true;
-        btn.textContent = "Saving…";
+        btn.textContent = "Savingâ€¦";
 
         try {
           const res = await apiFetch("/api/sme/profile", {
@@ -279,7 +279,7 @@
         }
       }
 
-      // ── Update password ──────────────────────────────────────────
+      // â”€â”€ Update password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       async function savePassword() {
         const btn = document.getElementById("save-password-btn");
         const currentPassword = document.getElementById("current-password").value;
@@ -300,7 +300,7 @@
         }
 
         btn.disabled = true;
-        btn.textContent = "Updating…";
+        btn.textContent = "Updatingâ€¦";
 
         try {
           const res = await apiFetch("/api/sme/password", {
@@ -329,3 +329,4 @@
     </script>
   </body>
 </html>
+
