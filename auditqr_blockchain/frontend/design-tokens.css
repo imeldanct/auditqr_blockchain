@@ -109,7 +109,7 @@
 /* PRIMARY BUTTON */
 .btn-primary {
   padding: var(--space-md) var(--space-lg);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background-color: var(--color-primary);
   color: white;
   font-family: var(--font-label);
@@ -143,7 +143,7 @@
 /* SECONDARY BUTTON */
 .btn-secondary {
   padding: var(--space-md) var(--space-lg);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background-color: transparent;
   color: var(--color-primary);
   border: 2px solid var(--color-primary);
@@ -173,7 +173,7 @@
 /* SUCCESS BUTTON */
 .btn-success {
   padding: var(--space-md) var(--space-lg);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background-color: var(--color-success);
   color: var(--color-surface);
   font-family: var(--font-label);
@@ -203,7 +203,7 @@
 /* DANGER BUTTON */
 .btn-danger {
   padding: var(--space-md) var(--space-lg);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background-color: var(--color-error);
   color: white;
   font-family: var(--font-label);
@@ -233,7 +233,7 @@
 /* GHOST BUTTON */
 .btn-ghost {
   padding: var(--space-md) var(--space-lg);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background-color: transparent;
   color: var(--color-text-primary);
   border: none;
@@ -264,7 +264,7 @@
 .input-base {
   width: 100%;
   padding: var(--space-md) var(--space-md);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background-color: var(--color-surface-2);
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
@@ -291,7 +291,7 @@
 
 /* CARD */
 .card {
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
   padding: var(--space-lg);
   background-color: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
@@ -381,7 +381,7 @@
   background-color: rgba(214, 255, 183, 0.1);
   border: 1px solid rgba(214, 255, 183, 0.3);
   color: var(--color-success);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
   padding: var(--space-lg);
 }
 
@@ -390,7 +390,7 @@
   background-color: rgba(255, 107, 107, 0.1);
   border: 1px solid rgba(255, 107, 107, 0.3);
   color: var(--color-error);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
   padding: var(--space-lg);
 }
 
@@ -399,7 +399,7 @@
   background-color: rgba(255, 170, 0, 0.1);
   border: 1px solid rgba(255, 170, 0, 0.3);
   color: var(--color-warning);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
   padding: var(--space-lg);
 }
 
@@ -602,7 +602,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   text-decoration: none;
   font-family: var(--font-body);
@@ -836,4 +836,122 @@ body {
 }
 .animate-toast-progress {
   animation: toast-progress linear forwards;
+}
+
+/* ---- GLOBAL BORDER RADIUS CONSISTENCY ----
+   All rectangular/square elements use --radius-sm (4px) — same as the navbar
+   "Get Started" button. !important is required because Tailwind play CDN injects
+   its stylesheet after this file loads, so it would otherwise win the cascade.
+   rounded-full is intentionally excluded — pills, badges, and circular elements
+   keep their circular shape. rounded-none is intentionally excluded — elements
+   explicitly opting out of radius keep zero radius. */
+.rounded,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Directional variants */
+.rounded-r-sm, .rounded-r-md, .rounded-r-lg, .rounded-r-xl, .rounded-r-2xl {
+  border-top-right-radius: var(--radius-sm) !important;
+  border-bottom-right-radius: var(--radius-sm) !important;
+}
+.rounded-l-sm, .rounded-l-md, .rounded-l-lg, .rounded-l-xl, .rounded-l-2xl {
+  border-top-left-radius: var(--radius-sm) !important;
+  border-bottom-left-radius: var(--radius-sm) !important;
+}
+.rounded-t-sm, .rounded-t-md, .rounded-t-lg, .rounded-t-xl, .rounded-t-2xl {
+  border-top-left-radius: var(--radius-sm) !important;
+  border-top-right-radius: var(--radius-sm) !important;
+}
+.rounded-b-sm, .rounded-b-md, .rounded-b-lg, .rounded-b-xl, .rounded-b-2xl {
+  border-bottom-left-radius: var(--radius-sm) !important;
+  border-bottom-right-radius: var(--radius-sm) !important;
+}
+.rounded-tl-sm, .rounded-tl-md, .rounded-tl-lg, .rounded-tl-xl, .rounded-tl-2xl {
+  border-top-left-radius: var(--radius-sm) !important;
+}
+.rounded-tr-sm, .rounded-tr-md, .rounded-tr-lg, .rounded-tr-xl, .rounded-tr-2xl {
+  border-top-right-radius: var(--radius-sm) !important;
+}
+.rounded-bl-sm, .rounded-bl-md, .rounded-bl-lg, .rounded-bl-xl, .rounded-bl-2xl {
+  border-bottom-left-radius: var(--radius-sm) !important;
+}
+.rounded-br-sm, .rounded-br-md, .rounded-br-lg, .rounded-br-xl, .rounded-br-2xl {
+  border-bottom-right-radius: var(--radius-sm) !important;
+}
+
+/* ============================================================
+   RESPONSIVE BREAKPOINTS
+   LG  — Small laptops  : 1024px – 1280px
+   MD  — Tablets        : 768px  – 1024px
+   SM  — Phone landscape: 576px  – 768px
+   XS  — Phone portrait : < 576px
+   ============================================================ */
+
+/* ---- LG: Small laptops ---- */
+@media (max-width: 1280px) {
+  .navbar-content { padding: 0 24px; }
+  .page-container  { padding-left: 24px; padding-right: 24px; }
+}
+
+/* ---- MD: Tablets ---- */
+@media (max-width: 1024px) {
+  .navbar-content          { padding: 0 20px; }
+  .page-container          { padding-left: 20px; padding-right: 20px; }
+  .page-container-narrow   { padding-left: 20px; padding-right: 20px; }
+  .page-container-xs       { padding-left: 16px; padding-right: 16px; }
+}
+
+/* ---- SM: Phone landscape ---- */
+@media (max-width: 768px) {
+  .navbar-content          { padding: 0 16px; }
+  .page-container          { padding-left: 16px; padding-right: 16px; }
+  .page-container-narrow   { padding-left: 16px; padding-right: 16px; }
+  .page-container-xs       { padding-left: 12px; padding-right: 12px; }
+  .footer-compact          { padding: 16px; }
+  .sidebar-menu            { width: min(300px, 85vw); right: min(-300px, -85vw); }
+}
+
+/* ---- XS: Phone portrait ---- */
+@media (max-width: 576px) {
+  /* Navbar */
+  .navbar-content          { padding: 0 12px; }
+  .navbar-logo             { font-size: 17px; }
+
+  /* Page layout */
+  .page-offset             { padding-top: 80px; }
+  .page-container          { padding-left: 12px; padding-right: 12px; }
+  .page-container-narrow   { padding-left: 12px; padding-right: 12px; }
+  .page-container-xs       { padding-left: 10px; padding-right: 10px; }
+
+  /* Sidebar */
+  .sidebar-menu            { width: min(280px, 88vw); right: min(-280px, -88vw); }
+
+  /* Tables — reduce cell padding on mobile */
+  .table-xs td,
+  .table-xs th             { padding: 10px 8px !important; font-size: 12px !important; }
+
+  /* Cards & panels */
+  .card                    { padding: var(--space-md); }
+  .success-state,
+  .error-state,
+  .warning-state           { padding: var(--space-md); }
+
+  /* Footer */
+  .footer-compact          { padding: 14px 12px; }
+  .footer-compact p        { font-size: 10px; }
+
+  /* Buttons — full width on XS by default unless overridden */
+  .btn-full-xs             { width: 100%; }
+}
+
+/* Utility: table horizontal scroll on mobile */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }

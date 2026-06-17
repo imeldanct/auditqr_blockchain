@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -9,79 +9,36 @@
       content="AuditQR provides blockchain-backed QR verification for Nigerian SMEs. Track your products from manufacturer to customer with immutable, human-verified records."
     />
     <link rel="stylesheet" href="../design-tokens.css" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="../tailwind.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-      rel="stylesheet"
-    />
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              bg: "#080708",
-              surface: "#111111",
-              "surface-2": "#1A1A1A",
-              "surface-elevated": "#272a31",
-              "surface-light": "#32353c",
-              green: "#D6FFB7",
-              blue: "#3185FC",
-              "blue-dark": "#1E4D99",
-              muted: "#77867F",
-              danger: "#FF6B6B",
-              warning: "#FFAA00",
-              border: "rgba(119,134,127,0.15)",
-              "border-light": "rgba(119,134,127,0.25)",
-              "text-primary": "#E0E2EC",
-              "text-secondary": "#C1C6D6",
-              "text-muted": "#77867F",
-              "outline-variant": "#414754",
-            },
-            fontFamily: {
-              "section-heading": ["Noto Serif"],
-              "card-title": ["Space Grotesk"],
-              "technical-data": ["JetBrains Mono"],
-              "hero-italic": ["Noto Serif"],
-              "metric-large": ["Space Grotesk"],
-              "label-caps": ["Space Grotesk"],
-              "hero-headline": ["Noto Serif"],
-              "chip-mono": ["JetBrains Mono"],
-              body: ["Space Grotesk"],
-              headline: ["Noto Serif"],
-              display: ["Noto Serif"],
-              label: ["Space Grotesk"],
-              mono: ["JetBrains Mono"],
-            },
-            fontSize: {
-              "section-heading": ["36px", { lineHeight: "1.2", fontWeight: "500" }],
-              "card-title": ["17px", { lineHeight: "1.4", fontWeight: "500" }],
-              "technical-data": ["11px", { lineHeight: "1.2", fontWeight: "400" }],
-              "hero-italic": ["60px", { lineHeight: "1.1", fontWeight: "500" }],
-              "metric-large": ["32px", { lineHeight: "1", fontWeight: "500" }],
-              "label-caps": ["11px", { letterSpacing: "0.1em", fontWeight: "500" }],
-              "hero-headline": [
-                "60px",
-                { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "500" },
-              ],
-              "chip-mono": ["10px", { lineHeight: "1", fontWeight: "500" }],
-              body: ["15px", { lineHeight: "1.7", fontWeight: "400" }],
-            },
-            borderRadius: {
-              DEFAULT: "0.25rem",
-              lg: "0.5rem",
-              xl: "0.75rem",
-              full: "9999px",
-            },
-          },
-        },
-      };
-    </script>
     <style>
+      /* XS — phone portrait */
+      @media (max-width: 576px) {
+        .text-hero-headline { font-size: 36px !important; line-height: 1.15 !important; }
+        .text-hero-italic   { font-size: 30px !important; }
+        .text-section-heading { font-size: 26px !important; }
+        .px-8  { padding-left: 16px !important; padding-right: 16px !important; }
+        .p-12  { padding: 24px !important; }
+        .pb-32 { padding-bottom: 48px !important; }
+        .py-32 { padding-top: 48px !important; padding-bottom: 48px !important; }
+        .mb-24 { margin-bottom: 32px !important; }
+        .text-\[48px\] { font-size: 28px !important; }
+        #hero-section { align-items: flex-start; padding-top: max(18vh, 90px); }
+      }
+      /* SM — phone landscape / small tablet */
+      @media (min-width: 577px) and (max-width: 768px) {
+        .text-hero-headline { font-size: 44px !important; }
+        .text-hero-italic   { font-size: 38px !important; }
+        .text-section-heading { font-size: 30px !important; }
+        .text-\[48px\] { font-size: 34px !important; }
+        #hero-section { align-items: flex-start; padding-top: max(14vh, 90px); }
+      }
+
       .radial-glow-top {
         background: radial-gradient(
           circle at 50% -20%,
@@ -186,7 +143,7 @@
               class="border border-border text-white px-8 py-4 font-medium hover:bg-white hover:text-bg transition-all rounded-none font-label-caps uppercase tracking-widest text-sm flex items-center justify-center gap-2 w-full sm:w-auto"
               id="hero-scan-btn"
             >
-              <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm6.5-6.5v3h-3v-3h3M19 5h-6v6h6V5zm-6 8h1.5v1.5H13V13zm1.5 1.5H16V16h-1.5v-1.5zM16 13h1.5v1.5H16V13zm-3 3h1.5v1.5H13V16zm1.5 1.5H16V19h-1.5v-1.5zM16 16h1.5v1.5H16V16zm1.5-1.5H19V16h-1.5v-1.5zm0 3H19V19h-1.5v-1.5zM22 7h-2V4h-3V2h5v5zm0 15v-5h-2v3h-3v2h5zM2 22h5v-2H4v-3H2v5zM2 2v5h2V4h3V2H2z"/></svg>
               Scan a product
             </a>
           </div>

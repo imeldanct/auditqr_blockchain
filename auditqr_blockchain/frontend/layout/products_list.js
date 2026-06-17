@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (products.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="7" class="px-6 py-4 text-center text-muted">No products found.</td></tr>';
+            '<tr><td colspan="6" class="px-6 py-4 text-center text-muted">No products found.</td></tr>';
           return;
         }
 
@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", function () {
             '<td class="px-6 py-4 font-mono text-muted text-[13px]">' +
             qrCell +
             "</td>" +
-            '<td class="px-6 py-4"><span class="px-2 py-1 rounded bg-green/10 text-green border border-green/20 text-[10px] uppercase font-bold tracking-widest inline-flex">Active</span></td>' +
             '<td class="px-6 py-4">' +
             '<button class="text-danger/60 hover:text-danger transition-colors p-1 rounded hover:bg-danger/10"' +
             ' title="Delete product" data-product-id="' +
