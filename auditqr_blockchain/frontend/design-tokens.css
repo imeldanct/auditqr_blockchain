@@ -884,3 +884,74 @@ body {
 .rounded-br-sm, .rounded-br-md, .rounded-br-lg, .rounded-br-xl, .rounded-br-2xl {
   border-bottom-right-radius: var(--radius-sm) !important;
 }
+
+/* ============================================================
+   RESPONSIVE BREAKPOINTS
+   LG  — Small laptops  : 1024px – 1280px
+   MD  — Tablets        : 768px  – 1024px
+   SM  — Phone landscape: 576px  – 768px
+   XS  — Phone portrait : < 576px
+   ============================================================ */
+
+/* ---- LG: Small laptops ---- */
+@media (max-width: 1280px) {
+  .navbar-content { padding: 0 24px; }
+  .page-container  { padding-left: 24px; padding-right: 24px; }
+}
+
+/* ---- MD: Tablets ---- */
+@media (max-width: 1024px) {
+  .navbar-content          { padding: 0 20px; }
+  .page-container          { padding-left: 20px; padding-right: 20px; }
+  .page-container-narrow   { padding-left: 20px; padding-right: 20px; }
+  .page-container-xs       { padding-left: 16px; padding-right: 16px; }
+}
+
+/* ---- SM: Phone landscape ---- */
+@media (max-width: 768px) {
+  .navbar-content          { padding: 0 16px; }
+  .page-container          { padding-left: 16px; padding-right: 16px; }
+  .page-container-narrow   { padding-left: 16px; padding-right: 16px; }
+  .page-container-xs       { padding-left: 12px; padding-right: 12px; }
+  .footer-compact          { padding: 16px; }
+  .sidebar-menu            { width: min(300px, 85vw); right: min(-300px, -85vw); }
+}
+
+/* ---- XS: Phone portrait ---- */
+@media (max-width: 576px) {
+  /* Navbar */
+  .navbar-content          { padding: 0 12px; }
+  .navbar-logo             { font-size: 17px; }
+
+  /* Page layout */
+  .page-offset             { padding-top: 80px; }
+  .page-container          { padding-left: 12px; padding-right: 12px; }
+  .page-container-narrow   { padding-left: 12px; padding-right: 12px; }
+  .page-container-xs       { padding-left: 10px; padding-right: 10px; }
+
+  /* Sidebar */
+  .sidebar-menu            { width: min(280px, 88vw); right: min(-280px, -88vw); }
+
+  /* Tables — reduce cell padding on mobile */
+  .table-xs td,
+  .table-xs th             { padding: 10px 8px !important; font-size: 12px !important; }
+
+  /* Cards & panels */
+  .card                    { padding: var(--space-md); }
+  .success-state,
+  .error-state,
+  .warning-state           { padding: var(--space-md); }
+
+  /* Footer */
+  .footer-compact          { padding: 14px 12px; }
+  .footer-compact p        { font-size: 10px; }
+
+  /* Buttons — full width on XS by default unless overridden */
+  .btn-full-xs             { width: 100%; }
+}
+
+/* Utility: table horizontal scroll on mobile */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
