@@ -17,28 +17,6 @@
       rel="stylesheet"
     />
     <style>
-      /* XS — phone portrait */
-      @media (max-width: 576px) {
-        .text-hero-headline { font-size: 36px !important; line-height: 1.15 !important; }
-        .text-hero-italic   { font-size: 30px !important; }
-        .text-section-heading { font-size: 26px !important; }
-        .px-8  { padding-left: 16px !important; padding-right: 16px !important; }
-        .p-12  { padding: 24px !important; }
-        .pb-32 { padding-bottom: 48px !important; }
-        .py-32 { padding-top: 48px !important; padding-bottom: 48px !important; }
-        .mb-24 { margin-bottom: 32px !important; }
-        .text-\[48px\] { font-size: 28px !important; }
-        #hero-section { align-items: flex-start; padding-top: max(18vh, 90px); }
-      }
-      /* SM — phone landscape / small tablet */
-      @media (min-width: 577px) and (max-width: 768px) {
-        .text-hero-headline { font-size: 44px !important; }
-        .text-hero-italic   { font-size: 38px !important; }
-        .text-section-heading { font-size: 30px !important; }
-        .text-\[48px\] { font-size: 34px !important; }
-        #hero-section { align-items: flex-start; padding-top: max(14vh, 90px); }
-      }
-
       .radial-glow-top {
         background: radial-gradient(
           circle at 50% -20%,
@@ -102,7 +80,7 @@
     <main>
       <!-- Hero Section -->
       <section
-        class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
+        class="relative min-h-screen flex items-start md:items-center justify-center overflow-hidden pt-[max(18vh,90px)] sm:pt-[max(14vh,90px)] md:pt-20"
         id="hero-section"
       >
         <div
@@ -116,13 +94,13 @@
         >
           <div class="absolute inset-0 hero-overlay"></div>
         </div>
-        <div class="relative z-10 max-w-[1200px] mx-auto px-8 text-center">
+        <div class="relative z-10 max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-8 text-center">
           <h1
-            class="font-hero-headline text-hero-headline text-white mb-2 max-w-4xl mx-auto"
+            class="font-hero-headline text-[36px] leading-[1.15] tracking-[-0.02em] font-medium sm:text-[44px] sm:leading-[1.1] md:text-[60px] text-white mb-2 max-w-4xl mx-auto"
           >
             Every product has a story.
           </h1>
-          <h2 class="font-hero-italic text-hero-italic text-green italic mb-8">
+          <h2 class="font-hero-italic text-[30px] leading-[1.1] font-medium sm:text-[38px] md:text-[60px] text-green italic mb-8">
             Make yours impossible to fake.
           </h2>
           <p class="font-body text-body text-muted max-w-2xl mx-auto mb-10 text-lg">
@@ -134,13 +112,13 @@
           >
             <a
               href="register.html"
-              class="bg-blue text-white px-8 py-4 font-medium hover:opacity-90 active:scale-95 transition-all rounded-none font-label-caps uppercase tracking-widest text-sm w-full sm:w-auto"
+              class="bg-blue text-white px-8 py-4 font-medium hover:opacity-90 active:scale-95 transition-all rounded-lg font-label-caps uppercase tracking-widest text-sm w-full sm:w-auto"
               id="hero-register-btn"
               >Register your business</a
             >
             <a
               href="qr_scanner.html"
-              class="border border-border text-white px-8 py-4 font-medium hover:bg-white hover:text-bg transition-all rounded-none font-label-caps uppercase tracking-widest text-sm flex items-center justify-center gap-2 w-full sm:w-auto"
+              class="border border-border text-white px-8 py-4 font-medium hover:bg-white hover:text-bg transition-all rounded-lg font-label-caps uppercase tracking-widest text-sm flex items-center justify-center gap-2 w-full sm:w-auto"
               id="hero-scan-btn"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm6.5-6.5v3h-3v-3h3M19 5h-6v6h6V5zm-6 8h1.5v1.5H13V13zm1.5 1.5H16V16h-1.5v-1.5zM16 13h1.5v1.5H16V13zm-3 3h1.5v1.5H13V16zm1.5 1.5H16V19h-1.5v-1.5zM16 16h1.5v1.5H16V16zm1.5-1.5H19V16h-1.5v-1.5zm0 3H19V19h-1.5v-1.5zM22 7h-2V4h-3V2h5v5zm0 15v-5h-2v3h-3v2h5zM2 22h5v-2H4v-3H2v5zM2 2v5h2V4h3V2H2z"/></svg>
@@ -152,15 +130,15 @@
 
       <!-- How it Works Section -->
       <section
-        class="bg-bg border-y border-border overflow-hidden pt-16 pb-32"
+        class="bg-bg overflow-hidden pt-16 pb-12 sm:pb-32"
         id="how-it-works"
       >
-        <div class="max-w-[1200px] mx-auto px-8">
-          <div class="mb-24 text-center">
+        <div class="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-8">
+          <div class="mb-8 sm:mb-24 text-center">
             <span class="font-label-caps text-label-caps text-blue uppercase mb-4 block"
               >Infrastructure</span
             >
-            <h2 class="font-section-heading text-section-heading text-white">
+            <h2 class="font-section-heading text-[26px] leading-[1.2] font-medium sm:text-[30px] md:text-[36px] text-white">
               The Verification Protocol
             </h2>
           </div>
@@ -169,7 +147,7 @@
             <div class="w-full">
               <div class="h-full">
                 <div
-                  class="bg-surface border p-12 relative group hover:border-green transition-colors h-full border-outline-variant"
+                  class="bg-surface border p-6 sm:p-12 relative group hover:border-green transition-colors h-full border-outline-variant"
                 >
                   <div class="font-technical-data text-technical-data text-muted mb-8">
                     01 / GENESIS
@@ -190,7 +168,7 @@
             <div class="w-full">
               <div class="h-full">
                 <div
-                  class="bg-surface border p-12 relative group hover:border-blue transition-colors h-full border-outline-variant"
+                  class="bg-surface border p-6 sm:p-12 relative group hover:border-blue transition-colors h-full border-outline-variant"
                 >
                   <div class="font-technical-data text-technical-data text-muted mb-8">
                     02 / HANDOFF
@@ -213,7 +191,7 @@
             <div class="w-full">
               <div class="h-full">
                 <div
-                  class="bg-surface border p-12 relative group hover:border-white transition-colors h-full border-outline-variant"
+                  class="bg-surface border p-6 sm:p-12 relative group hover:border-white transition-colors h-full border-outline-variant"
                 >
                   <div class="font-technical-data text-technical-data text-muted mb-8">
                     03 / AUDIT
@@ -236,22 +214,22 @@
       </section>
 
       <!-- Ecosystem Section -->
-      <section class="py-32 bg-bg overflow-hidden" id="ecosystem">
-        <div class="max-w-[1200px] mx-auto px-8 mb-16 text-center">
+      <section class="py-12 sm:py-32 bg-bg overflow-hidden" id="ecosystem">
+        <div class="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-8 mb-16 text-center">
           <span class="font-label-caps text-label-caps text-green uppercase mb-4 block"
             >Ecosystem</span
           >
-          <h2 class="font-section-heading text-section-heading text-white">
+          <h2 class="font-section-heading text-[26px] leading-[1.2] font-medium sm:text-[30px] md:text-[36px] text-white">
             Designed for the Nigerian Supply Chain.
           </h2>
         </div>
-        <div class="max-w-[1200px] mx-auto px-8">
+        <div class="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-8">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             <!-- Manufacturer Tile -->
             <div class="w-full">
               <div class="h-full">
                 <div
-                  class="bg-surface border p-12 relative group hover:border-blue transition-colors h-full border-outline-variant"
+                  class="bg-surface border p-6 sm:p-12 relative group hover:border-blue transition-colors h-full border-outline-variant"
                 >
                   <div class="font-technical-data text-technical-data text-muted mb-8">
                     PARTNER / PRODUCTION
@@ -271,7 +249,7 @@
             <div class="w-full">
               <div class="h-full">
                 <div
-                  class="bg-surface border p-12 relative group hover:border-green transition-colors h-full border-outline-variant"
+                  class="bg-surface border p-6 sm:p-12 relative group hover:border-green transition-colors h-full border-outline-variant"
                 >
                   <div class="font-technical-data text-technical-data text-muted mb-8">
                     PARTNER / LOGISTICS
@@ -291,7 +269,7 @@
             <div class="w-full">
               <div class="h-full">
                 <div
-                  class="bg-surface border p-12 relative group hover:border-green transition-colors h-full border-outline-variant"
+                  class="bg-surface border p-6 sm:p-12 relative group hover:border-green transition-colors h-full border-outline-variant"
                 >
                   <div class="font-technical-data text-technical-data text-muted mb-8">
                     PARTNER / COMMERCE
@@ -312,9 +290,9 @@
       </section>
 
       <!-- CTA Section -->
-      <section class="py-32 radial-glow-bottom" id="cta-section">
-        <div class="max-w-[1200px] mx-auto px-8 text-center">
-          <h2 class="font-section-heading text-[48px] text-white mb-6">
+      <section class="py-12 sm:py-32 radial-glow-bottom" id="cta-section">
+        <div class="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-8 text-center">
+          <h2 class="font-section-heading text-[28px] sm:text-[34px] md:text-[48px] text-white mb-6">
             Your products deserve a <span class="text-green italic">verified story</span>
           </h2>
           <p class="font-body text-body text-muted max-w-2xl mx-auto mb-12">
@@ -324,7 +302,7 @@
           <div class="flex justify-center gap-6 flex-row">
             <a
               href="register.html"
-              class="bg-blue text-white px-10 py-4 font-medium hover:opacity-90 active:scale-95 transition-all rounded-none font-label-caps uppercase tracking-widest"
+              class="bg-blue text-white px-10 py-4 font-medium hover:opacity-90 active:scale-95 transition-all rounded-lg font-label-caps uppercase tracking-widest"
               id="cta-get-started-btn"
             >
               Get Started

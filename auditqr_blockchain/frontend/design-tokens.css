@@ -4,6 +4,10 @@
  * Import this in all HTML files for consistent theming
  */
 
+body {
+  min-width: 320px;
+}
+
 :root {
   /* COLOR PALETTE */
   --color-primary: #3185FC;
@@ -895,24 +899,24 @@ body {
 
 /* ---- LG: Small laptops ---- */
 @media (max-width: 1280px) {
-  .navbar-content { padding: 0 24px; }
-  .page-container  { padding-left: 24px; padding-right: 24px; }
+  .navbar-content  { padding: 0 28px; }
+  .page-container  { padding-left: 28px; padding-right: 28px; }
 }
 
 /* ---- MD: Tablets ---- */
 @media (max-width: 1024px) {
-  .navbar-content          { padding: 0 20px; }
-  .page-container          { padding-left: 20px; padding-right: 20px; }
-  .page-container-narrow   { padding-left: 20px; padding-right: 20px; }
-  .page-container-xs       { padding-left: 16px; padding-right: 16px; }
+  .navbar-content          { padding: 0 24px; }
+  .page-container          { padding-left: 24px; padding-right: 24px; }
+  .page-container-narrow   { padding-left: 24px; padding-right: 24px; }
+  .page-container-xs       { padding-left: 20px; padding-right: 20px; }
 }
 
 /* ---- SM: Phone landscape ---- */
 @media (max-width: 768px) {
-  .navbar-content          { padding: 0 16px; }
-  .page-container          { padding-left: 16px; padding-right: 16px; }
-  .page-container-narrow   { padding-left: 16px; padding-right: 16px; }
-  .page-container-xs       { padding-left: 12px; padding-right: 12px; }
+  .navbar-content          { padding: 0 24px; }
+  .page-container          { padding-left: 24px; padding-right: 24px; }
+  .page-container-narrow   { padding-left: 24px; padding-right: 24px; }
+  .page-container-xs       { padding-left: 20px; padding-right: 20px; }
   .footer-compact          { padding: 16px; }
   .sidebar-menu            { width: min(300px, 85vw); right: min(-300px, -85vw); }
 }
@@ -920,14 +924,14 @@ body {
 /* ---- XS: Phone portrait ---- */
 @media (max-width: 576px) {
   /* Navbar */
-  .navbar-content          { padding: 0 12px; }
+  .navbar-content          { padding: 0 20px; }
   .navbar-logo             { font-size: 17px; }
 
   /* Page layout */
   .page-offset             { padding-top: 80px; }
-  .page-container          { padding-left: 12px; padding-right: 12px; }
-  .page-container-narrow   { padding-left: 12px; padding-right: 12px; }
-  .page-container-xs       { padding-left: 10px; padding-right: 10px; }
+  .page-container          { padding-left: 20px; padding-right: 20px; }
+  .page-container-narrow   { padding-left: 20px; padding-right: 20px; }
+  .page-container-xs       { padding-left: 16px; padding-right: 16px; }
 
   /* Sidebar */
   .sidebar-menu            { width: min(280px, 88vw); right: min(-280px, -88vw); }
