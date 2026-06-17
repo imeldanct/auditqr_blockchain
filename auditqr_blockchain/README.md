@@ -7,6 +7,10 @@
 - [Supply Chain Flow](#supply-chain-flow)
 - [Scan Stage Logic](#scan-stage-logic)
 - [Design Decisions](#design-decisions)
+  - [Why not participant accounts?](#why-not-participant-accounts)
+  - [Stage-based logic + handoff code gate](#chosen-approach-stage-based-logic--handoff-code-gate)
+  - [Tailwind CSS: CDN → CLI Build](#tailwind-css-cdn--cli-build)
+  - [Account Settings: Scope Decision](#account-settings-scope-decision)
 - [Blockchain Architecture (Solana)](#blockchain-architecture-solana)
 - [Architecture](#architecture)
 - [QR Code Structure](#qr-code-structure)
@@ -158,7 +162,7 @@ Two changes were applied across all pages:
 
 2. **Both requests merged into one** by combining all font families into a single Google Fonts URL.
 
-The remaining significant CDN load is Tailwind's play CDN, which recompiles the stylesheet at runtime in the browser on every page load. This is acceptable in development. Before production, run a Tailwind build (`npx tailwindcss -o style.css --minify`) and serve the compiled CSS file — this removes the runtime compilation cost entirely.
+The Tailwind CDN has since been replaced with a proper CLI build (see below) — the runtime recompilation cost no longer applies.
 
 ---
 
@@ -195,9 +199,56 @@ To go live, swap the JSON lookup inside `cacService.ts` for an HTTP call to a re
 
 ---
 
+### Tailwind CSS: CDN → CLI Build
+
+The frontend originally used **Tailwind Play CDN** — a single `<script>` tag that compiles Tailwind in the browser at runtime. This was fine for early prototyping.
+
+It has two real costs that became problems as the project grew:
+
+1. **Runtime overhead** — The CDN recompiles the entire stylesheet on every page load. On a slow mobile connection this adds visible delay.
+2. **Config duplication** — Because the CDN requires the theme config (custom colours, fonts, sizes) to be defined inline as a `tailwind.config` object, every HTML file had to carry its own copy of the full design token block. Any change had to be replicated across 20+ files.
+3. **No responsive prefixes in style blocks** — Media query overrides (e.g. making a heading smaller on mobile) had to live in `<style>` blocks rather than Tailwind's `sm:` / `md:` prefixes, because the CDN couldn't pick them up from outside the HTML attributes it scanned.
+
+**What changed:**
+
+| File | Role |
+|------|------|
+| `frontend/tailwind.config.js` | Single source of truth for all design tokens — colours, fonts, font sizes, border radii |
+| `frontend/tailwind.input.css` | Source file — just the three `@tailwind` directives |
+| `frontend/tailwind.css` | Compiled output. Never hand-edited. Committed before deploy. |
+| `frontend/package.json` | Defines `watch:css` and `build:css` scripts |
+
+**Development workflow:** run `npm run watch:css` inside `/frontend` alongside Live Server. The watcher rebuilds `tailwind.css` whenever any HTML file changes, keeping responsive prefixes (`sm:`, `md:`) and arbitrary values (`pt-[max(18vh,90px)]`) in sync.
+
+**Production:** run `npm run build:css` once before deploying. This produces a minified `tailwind.css` with only the classes actually used in the HTML — no unused rules shipped.
+
+The CDN `<script>` block and its inline config were removed from all 20 HTML pages. Every page now links `../tailwind.css` and `../design-tokens.css` in `<head>`.
+
+---
+
+### Account Settings: Scope Decision
+
+The SME dashboard sidebar includes an **Account Settings** page. The scope of what's editable was a deliberate decision.
+
+**What is editable:**
+- **Business display name** — pre-filled from the API on load; the SME can update it if their trading name changes
+- **Contact email** — pre-filled; used for login and notifications
+- **Password** — both the current password field and the new password field are left empty intentionally. The user must type their current password to prove identity before a change is accepted. This is standard security practice — never pre-fill passwords, never skip the current-password check
+
+**What is not editable:**
+- **RC number (CAC number)** — this is the verified identity anchor of the business record. It was confirmed against the CAC registry at registration and cannot be changed through the UI. Changing it would mean the account is no longer tied to the same legal entity.
+
+**Why no team/staff access:**
+Only SMEs have accounts in this system. Distributors and retailers scan QR codes without logging in — they are participants in the supply chain, not platform users. There is no multi-user access pattern to support in v1, so team management was ruled out entirely rather than built as a stub.
+
+**How updates work:**
+The settings page fetches the current SME profile from `GET /api/sme/profile` on load and pre-fills the name and email fields. On save, a `PATCH /api/sme/profile` call updates only the changed fields. Password changes go through `PATCH /api/sme/password`, which verifies the current password server-side before hashing and storing the new one. Supabase Auth handles the email/password layer; the SME table in Prisma holds the business profile.
+
+---
+
 ## Architecture
 
-- **Frontend**: Static HTML + Tailwind CSS + vanilla JS, served via Live Server
+- **Frontend**: Static HTML + Tailwind CSS (CLI build) + vanilla JS, served via Live Server
 - **Backend**: Node.js + TypeScript + Express + Prisma ORM
 - **Database**: PostgreSQL (Supabase)
 - **Blockchain**: Transaction hashes stored against scan events (`txHash` field on `ScanEvent`)
@@ -227,7 +278,8 @@ To go live, swap the JSON lookup inside `cacService.ts` for an HTTP call to a re
 | `qr_scanner.html`     | Landing page for website QR scanning                     |
 | `journey.html`        | Customer-facing product verification page                |
 | `handoff.html`        | Transporter handoff confirmation flow                    |
-| `scan_events.html`    | Full item tracking page for the SME                      |
+| `scan_events.html`       | Full item tracking page for the SME                      |
+| `account_settings.html`  | Change business name, email, and password                |
 
 ---
 
