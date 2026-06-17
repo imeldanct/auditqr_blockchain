@@ -2,7 +2,7 @@
  * AuditQR – shared frontend config
  * Single source of truth for the API base URL.
  */
-const API_BASE = "https://irresponsible-bathroom.outray.app";
+const API_BASE = "https://unemotional-length.outray.app";
 
 /**
  * Drop-in fetch wrapper.
