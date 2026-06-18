@@ -22,7 +22,7 @@ function completeStep(i) {
   el.classList.remove("progress-active", "opacity-40");
   var icon = el.querySelector("span:first-child");
   icon.textContent = "check_circle";
-  icon.className = "material-symbols-outlined text-green text-[20px]";
+  icon.className = "material-symbols-outlined text-blue text-[20px]";
   icon.style.fontVariationSettings = "'FILL' 1";
   var label = el.querySelector("span:last-child");
   label.className = "text-white text-[14px]";
@@ -95,6 +95,14 @@ async function runGeneration() {
     }, 2800);
   } catch (err) {
     console.error(err);
+    // Clean up the orphaned product so it doesn't show in the list
+    if (productId) {
+      fetch(API_BASE + "/api/products/" + productId, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token },
+      }).catch(function () {});
+      localStorage.removeItem("product_id");
+    }
     showGenerationError(err.message);
   }
 }

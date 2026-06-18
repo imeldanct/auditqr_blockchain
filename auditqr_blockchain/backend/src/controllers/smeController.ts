@@ -126,34 +126,23 @@ export const getRecentActivity = async (req: any, res: any): Promise<any> => {
     const limit = parseInt(req.query.limit as string) || 10;
     const scanEvents = await prisma.scanEvent.findMany({
       where: {
-        childQR: {
-          parentQR: {
-            product: { smeID: req.sme.smeId },
-          },
-        },
+        parentQR: { product: { smeID: req.sme.smeId } },
       },
       orderBy: { timestamp: "desc" },
       take: limit,
       include: {
-        childQR: {
-          include: {
-            parentQR: {
-              include: { product: true },
-            },
-          },
-        },
+        parentQR: { include: { product: true } },
         handoffCode: { select: { isUsed: true } },
       },
     });
 
     const events = scanEvents.map((e) => ({
       scanID: e.scanID,
-      productName: e.childQR.parentQR.product.productName,
-      productID: e.childQR.parentQR.product.productID,
-      childQRID: e.childQRID,
-      itemNumber: e.childQR.itemNumber,
+      productName: e.parentQR.product.productName,
+      productID: e.parentQR.product.productID,
+      parentQRID: e.parentQRID,
       scannerRole: e.scannerRole,
-      currentStage: e.childQR.currentStage,
+      currentStage: e.parentQR.currentStage,
       timestamp: e.timestamp,
       handoffUsed: e.handoffCode?.isUsed ?? null,
     }));
@@ -168,19 +157,15 @@ export const getRecentActivity = async (req: any, res: any): Promise<any> => {
 export const getStats = async (req: any, res: any): Promise<any> => {
   try {
     const smeID = req.sme.smeId;
-    const base = { parentQR: { product: { smeID } } };
+    const childBase = { parentQR: { product: { smeID } } };
 
     const [productCount, childQRCount, pendingCount, inTransitCount, deliveredCount] =
       await Promise.all([
         prisma.product.count({ where: { smeID } }),
-        prisma.childQRCode.count({ where: base }),
-        prisma.childQRCode.count({ where: { ...base, currentStage: "pending" } }),
-        prisma.childQRCode.count({
-          where: { ...base, currentStage: "transit" },
-        }),
-        prisma.childQRCode.count({
-          where: { ...base, currentStage: "delivered" },
-        }),
+        prisma.childQRCode.count({ where: childBase }),
+        prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "pending" } } }),
+        prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "transit" } } }),
+        prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "delivered" } } }),
       ]);
 
     res.status(200).json({
@@ -203,12 +188,14 @@ export const getItemStatus = async (req: any, res: any): Promise<any> => {
       orderBy: { createdAt: "desc" },
       include: {
         parentQR: {
-          include: { product: { select: { productName: true, productID: true } } },
-        },
-        scanEvents: {
-          orderBy: { timestamp: "desc" },
-          take: 1,
-          select: { timestamp: true },
+          include: {
+            product: { select: { productName: true, productID: true } },
+            scanEvents: {
+              orderBy: { timestamp: "desc" },
+              take: 1,
+              select: { timestamp: true },
+            },
+          },
         },
       },
     });
@@ -216,10 +203,10 @@ export const getItemStatus = async (req: any, res: any): Promise<any> => {
     const result = items.map((item) => ({
       childQRID: item.childQRID,
       itemNumber: item.itemNumber,
-      currentStage: item.currentStage,
+      currentStage: item.parentQR.currentStage,
       productName: item.parentQR.product.productName,
       productID: item.parentQR.product.productID,
-      lastScanAt: item.scanEvents[0]?.timestamp ?? null,
+      lastScanAt: item.parentQR.scanEvents[0]?.timestamp ?? null,
     }));
 
     res.status(200).json({ items: result });
@@ -317,10 +304,8 @@ export const getProfile = async (req: any, res: any): Promise<any> => {
     // Count scan events for all products of this SME
     const scanCount = await prisma.scanEvent.count({
       where: {
-        childQR: {
-          parentQR: {
-            product: { smeID: req.sme.smeId },
-          },
+        parentQR: {
+          product: { smeID: req.sme.smeId },
         },
       },
     });

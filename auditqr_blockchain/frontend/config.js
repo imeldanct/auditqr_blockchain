@@ -2,7 +2,8 @@
  * AuditQR – shared frontend config
  * Single source of truth for the API base URL.
  */
-const API_BASE = "https://unemotional-length.outray.app";
+// const API_BASE = "http://localhost:3000";
+const API_BASE = "https://tall-turtle.outray.app";
 
 /**
  * Drop-in fetch wrapper.

@@ -26,26 +26,29 @@ export const generateQRCodes = async (req: AuthRequest, res: Response): Promise<
         .json({ error: "Product not found or does not belong to you." });
     }
 
-    // Create Parent QR Code
-    const parentQR = await prisma.parentQRCode.create({
-      data: {
-        productID: productId,
-        qrData: `auditqr://product?id=${productId}`,
-      },
-    });
-
-    // Generate Child QR Codes with deterministic UUIDs
     const childRecords = Array.from({ length: quantity }, (_, i) => {
       const id = randomUUID();
       return {
         childQRID: id,
-        parentQRID: parentQR.parentQRID,
         itemNumber: i + 1,
         qrData: `auditqr://verify?id=${id}`,
       };
     });
 
-    await prisma.childQRCode.createMany({ data: childRecords });
+    const parentQR = await prisma.$transaction(async (tx) => {
+      const parentQRID = randomUUID();
+      const parent = await tx.parentQRCode.create({
+        data: {
+          parentQRID,
+          productID: productId,
+          qrData: `auditqr://product?id=${parentQRID}`,
+        },
+      });
+      await tx.childQRCode.createMany({
+        data: childRecords.map((r) => ({ ...r, parentQRID: parent.parentQRID })),
+      });
+      return parent;
+    });
 
     res.status(201).json({
       message: "QR codes generated successfully.",

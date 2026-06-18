@@ -14,6 +14,7 @@
 - [Blockchain Architecture (Solana)](#blockchain-architecture-solana)
 - [Architecture](#architecture)
 - [QR Code Structure](#qr-code-structure)
+  - [Why the scanner only accepts child QRs](#why-the-scanner-only-accepts-child-qrs)
 - [Key Pages](#key-pages)
 
 ---
@@ -43,30 +44,41 @@ Because SMEs operate in real business relationships (they know their transporter
 ```
 SME (Manufacturer)
       │
-      │ generates QR codes → prints & attaches to products
+      │ generates QR codes → genesis event recorded
+      │   ├── Parent QR (carton label, 1 per batch)  → affixed to the outer carton
+      │   └── Child QRs (item stickers, N per batch) → affixed to individual units
       │
 Transporter
-      │ scans QR → Scan 1 recorded → redirected to handoff confirmation page
+      │ scans Parent QR (carton label) → Scan 1 recorded → redirected to handoff page
+      │ generates a 4-digit handoff code to share with retailer
       │
 Retailer
-      │ scans QR → Scan 2 recorded → retailer confirmed as receiver
+      │ scans Parent QR → prompted for handoff code → enters code → Scan 2 recorded
+      │ batch stage advances to `delivered`
       │
 Customer
-        scans QR → Scan 3 → redirected to journey.html (read-only verification)
-                             NO data stored. Customer is not tracked.
+        scans Child QR (item sticker) → no API scan → redirected to journey.html
+                                         read-only verification, NO data stored.
 ```
 
-### Scan Role Determination
+### Two QR types, two different scan paths
 
-All three participants use the **same QR code** — any phone camera or QR scanning app works. The system determines the participant's role automatically based on the `currentStage` of that specific child QR code:
+| QR Type | Format | Who scans it | What happens |
+|---------|--------|-------------|--------------|
+| **Parent QR** (carton label) | `auditqr://product?id=<parentQRID>` | Transporter, then Retailer | Stage-based flow — recorded, advances `currentStage` on the batch |
+| **Child QR** (item sticker) | `auditqr://verify?id=<childQRID>` | Customer (consumer) | Immediate redirect to `journey.html` — read-only, nothing recorded |
 
-| Current Stage | Role        | Action                                                                                                                            |
-| ------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `pending`     | Transporter | `ScanEvent` created, stage → `transit`; the transporter then generates a handoff code to share                                     |
-| `transit`     | Retailer    | Routed to code entry. Entering the transporter's code (validated against _that specific unit_) records the retailer `ScanEvent` and advances stage → `delivered` |
-| `delivered`   | Customer    | Redirected to `journey.html` — no data stored                                                                                     |
+The `qr_scanner.html` page distinguishes these at scan time. A Parent QR triggers `POST /api/scan`. A Child QR routes directly to `journey.html?childId=<uuid>` with no API call — the journey page then calls `GET /api/scan/child/:childQRID` to resolve the batch and display the full journey.
 
-`qr_scanner.html` is an optional landing page on the website for anyone browsing — it is **not** the core scanning mechanism. The QR code URL itself carries the logic.
+### Scan Role Determination (Parent QR only)
+
+The system determines the participant's role automatically based on the `currentStage` of the **batch** (ParentQRCode):
+
+| Current Stage | Role        | Action |
+| ------------- | ----------- | ------ |
+| `pending`     | Transporter | `ScanEvent` created, stage → `transit`; transporter generates and shares handoff code |
+| `transit`     | Retailer    | Routed to code entry. Entering the transporter's code records the retailer `ScanEvent` and advances stage → `delivered` |
+| `delivered`   | Read-only   | Scan succeeds but no stage change — product already confirmed as received |
 
 ---
 
@@ -74,13 +86,21 @@ All three participants use the **same QR code** — any phone camera or QR scann
 
 ### What is stored
 
-- `ScanEvent`: childQR ID, scanner role (transporter/retailer), IP address, timestamp, optional blockchain tx hash
-- `HandoffCode`: a confirmation code generated at the transporter scan, required to be entered by the retailer — this is the multiparty confirmation step
+- `ScanEvent`: references `parentQRID`, scanner role (transporter/retailer), IP address, timestamp, optional blockchain tx hash
+- `HandoffCode`: a 4-digit confirmation code generated at the transporter scan, required to be entered by the retailer — this is the multiparty confirmation step
 
 ### What is NOT stored
 
 - Customer/consumer scans — no tracking, no identity, no record
 - Any personally identifying information about supply chain participants
+
+### Stage on the batch, not the unit
+
+Stage tracking (`currentStage: pending | transit | delivered`) lives on **`ParentQRCode`**, not on individual `ChildQRCode` records. This matches physical reality: the transporter picks up the whole carton, not individual items. Scan events reference `parentQRID` and reflect the state of the whole batch. Individual Child QRs are read-only windows into that same journey.
+
+### Genesis event
+
+Every product journey begins with the QR generation itself. The genesis event is not a `ScanEvent` — it is the `ParentQRCode.createdAt` timestamp, always shown as the first entry in `journey.html`. This gives customers visibility that the product was registered and verified before it even moved.
 
 ### Why the retailer scan is the terminal event
 
@@ -102,16 +122,17 @@ An earlier approach inferred the participant's role from the scan count (scan #1
 
 ### Chosen approach: Stage-based logic + handoff code gate
 
-The system uses `currentStage` on each child QR to determine role explicitly. The enum has three values: `pending`, `transit`, `delivered`.
+The system uses `currentStage` on the **batch** (`ParentQRCode`) to determine role explicitly. The enum has three values: `pending`, `transit`, `delivered`.
 
-The critical guard is: **a `transit` unit only advances to `delivered` when the retailer enters the transporter's handoff code.** The retailer's scan alone changes nothing — it simply routes them to the code-entry screen. Confirmation (`POST /api/handoff/confirm`) validates the entered code against the `HandoffCode` linked to _that specific unit's_ transporter `ScanEvent`, then atomically marks it used, records the retailer `ScanEvent`, and advances the stage. The code is never matched globally, so 4-digit codes may safely collide across different units.
+The critical guard is: **a `transit` batch only advances to `delivered` when the retailer enters the transporter's handoff code.** The retailer's scan alone changes nothing — it simply routes them to the code-entry screen. Confirmation (`POST /api/handoff/confirm`) validates the entered code against the `HandoffCode` linked to that batch's transporter `ScanEvent`, then atomically marks it used, records the retailer `ScanEvent`, and advances the stage. The code is never matched globally, so 4-digit codes may safely collide across different batches.
 
 This means:
 
 - The transporter cannot accidentally trigger the retailer stage (advancing requires the code, which only the retailer can enter)
-- A random person who scans early gets treated as a transporter — but cannot advance further without the code
+- A random person who scans a Parent QR early gets treated as a transporter — but cannot advance further without the code
 - Two parties must physically coordinate at each handoff — the code is the proof of that coordination
-- The unit is advanced and the retailer scan recorded in a single transaction, so the chain can never be left half-confirmed
+- The batch advances and the retailer scan is recorded in a single transaction, so the chain can never be left half-confirmed
+- Customer-facing Child QRs are always read-only; scanning a Child QR never changes any stage
 
 This gives 80% of the security benefit of participant accounts at a fraction of the scope cost. It fits the SME context where participants are known business contacts, not anonymous actors.
 
@@ -260,10 +281,14 @@ The settings page fetches the current SME profile from `GET /api/sme/profile` on
 
 ## QR Code Structure
 
-- **Parent QR**: Represents a batch (e.g. 100 units of Paracetamol)
-- **Child QR**: Represents a single unit/item within that batch
-- Each child QR tracks its own `currentStage`: `pending` → `transit` → `delivered`
-- The SME dashboard shows **Units** (total child QRs) per product, not batches
+- **Parent QR** (carton label): Represents a batch. Encodes `auditqr://product?id=<parentQRID>`. Affixed to the outer shipping carton. Scanned by **transporters and retailers** — this is what drives the stage-based tracking flow.
+- **Child QR** (item sticker): Represents a single unit within that batch. Encodes `auditqr://verify?id=<childQRID>`. Affixed to individual items. Scanned by **customers** — always redirects to the read-only journey page. No stage data is changed when a Child QR is scanned.
+- `currentStage` lives on `ParentQRCode` (the batch), not on individual units: `pending` → `transit` → `delivered`
+- The SME dashboard shows **Units** (total child QRs) per product, not batches; stage counts reflect how many units belong to a batch at each stage
+
+**Why Child QRs are read-only:** The Child QR is an item-level proof of authenticity for the customer. By the time a customer has the product in hand and scans their individual item, the supply chain handoffs have already been recorded via the Parent QR (carton) scans. The Child QR simply surfaces that history. Scanning a Child QR triggers no API write — it resolves through the parent to display the journey.
+
+**Why transporters and retailers scan the Parent QR, not each Child QR:** The transporter picks up and delivers the whole carton, not individual items. Stage tracking at the batch level reflects this physical reality — one scan confirms the entire shipment changed hands. If tracking were per-item (via Child QRs), the transporter would need to scan every single unit before it left the warehouse, which is impractical. The batch scan is one action that advances the entire consignment.
 
 ---
 

@@ -83,9 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error(err);
       showToast("Error: " + err.message, "error");
       btn.disabled = false;
-      btn.innerHTML =
-        '<span class="material-symbols-outlined text-[18px]">' +
-        "verified_user</span> Confirm &amp; generate QR codes";
+      btn.textContent = "Generate QR codes";
     }
   });
 });

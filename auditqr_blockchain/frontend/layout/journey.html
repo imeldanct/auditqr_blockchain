@@ -43,7 +43,7 @@
 </div>
 
 <!-- Main content (hidden until loaded) -->
-<main id="main-view" class="flex-grow page-offset pb-16 glow-green-top px-6 hidden">
+<main id="main-view" class="flex-grow page-offset pb-16 glow-blue-top px-6 hidden">
 <div class="page-container-narrow space-y-12">
 
   <!-- Product Header -->
@@ -123,10 +123,8 @@
 
 <script>
   const roleLabels = {
-    manufacturer: "Manufacturer / Origin",
-    distributor: "Distributor",
+    transporter: "Transporter",
     retailer: "Retailer",
-    consumer: "Consumer",
     unknown: "Unknown handler",
   };
 
@@ -137,11 +135,25 @@
     });
   }
 
-  function buildTimelineItem(event, index, total) {
+  function buildGenesisItem(genesisAt) {
+    return `
+      <div class="flex gap-6">
+        <div class="relative z-10 flex items-center justify-center w-[22px] h-[22px]">
+          <div class="w-[9px] h-[9px] rounded-full bg-blue"></div>
+        </div>
+        <div class="space-y-1">
+          <span class="text-white font-medium">Manufacturer</span>
+          <div class="text-xs font-body text-blue">QR codes generated — genesis event</div>
+          <div class="text-muted text-[11px]">${formatDate(genesisAt)}</div>
+        </div>
+      </div>`;
+  }
+
+  function buildScanItem(event) {
     const label = roleLabels[event.scannerRole] || event.scannerRole;
-    const isFirst = index === 0;
-    const time = formatDate(event.timestamp);
-    const actionLabel = isFirst ? "QR code scanned (origin)" : "Scanned / Handoff verified";
+    const actionLabel = event.scannerRole === "transporter"
+      ? "Picked up — first scan recorded"
+      : "Received — handoff confirmed";
     return `
       <div class="flex gap-6">
         <div class="relative z-10 flex items-center justify-center w-[22px] h-[22px]">
@@ -155,16 +167,17 @@
               : ""}
           </div>
           <div class="text-xs font-body text-blue">${actionLabel}</div>
-          <div class="text-muted text-[11px]">${time}</div>
+          <div class="text-muted text-[11px]">${formatDate(event.timestamp)}</div>
         </div>
       </div>`;
   }
 
   async function load() {
     const params = new URLSearchParams(window.location.search);
-    const childQRID = params.get("id");
+    const parentId = params.get("parentId");
+    const childId = params.get("childId");
 
-    if (!childQRID) {
+    if (!parentId && !childId) {
       document.getElementById("loading-view").classList.add("hidden");
       document.getElementById("error-view").classList.remove("hidden");
       document.getElementById("error-message").textContent = "No QR ID provided in the URL.";
@@ -172,21 +185,21 @@
     }
 
     try {
-      // Read-only verification view. The scan itself was already recorded by the
-      // scanner flow (qr_scanner.html) before routing here; this page must never
-      // POST /api/scan, or simply opening it (e.g. from the SME dashboard) would
-      // advance a pending unit's stage and record a bogus scan.
-      const res = await fetch(API_BASE + `/api/scan/history/${childQRID}`);
+      const url = childId
+        ? API_BASE + "/api/scan/child/" + encodeURIComponent(childId)
+        : API_BASE + "/api/scan/history/" + encodeURIComponent(parentId);
+
+      const res = await fetch(url);
       if (!res.ok) {
         throw new Error((await res.json()).error || "Not found");
       }
 
       const data = await res.json();
-      const { product, events, itemNumber } = data;
+      const { product, events, genesisAt, itemNumber, parentQRID } = data;
 
       // Fill header
       document.getElementById("product-name").textContent = product.productName;
-      document.getElementById("item-number").textContent = `Item #${itemNumber}`;
+      document.getElementById("item-number").textContent = itemNumber ? `Item #${itemNumber}` : `Batch`;
       document.getElementById("business-name").textContent = product.businessName;
       document.getElementById("cac-number").textContent = product.rcNumber;
       if (product.isVerified) {
@@ -195,21 +208,27 @@
 
       // Fill details
       document.getElementById("detail-name").textContent = product.productName;
-      document.getElementById("detail-id").textContent = childQRID;
+      document.getElementById("detail-id").textContent = childId || parentQRID || parentId;
       document.getElementById("detail-business").textContent = product.businessName;
       document.getElementById("detail-description").textContent = product.description || "No description provided.";
 
-      // Fill timeline
+      // Build timeline — genesis always first, then scan events
       const timeline = document.getElementById("timeline");
-      if (events.length === 0) {
-        timeline.innerHTML = `<p class="text-muted text-sm">No scan events recorded yet.</p>`;
-      } else {
-        timeline.innerHTML = events.map((e, i) => buildTimelineItem(e, i, events.length)).join("");
-        document.getElementById("journey-summary").textContent =
-          `${events.length} scan event${events.length !== 1 ? "s" : ""} recorded`;
-        const lastTime = formatDate(events[events.length - 1].timestamp);
-        document.getElementById("last-updated").textContent = `All events independently recorded · Last updated ${lastTime}`;
-      }
+      const allItems = [buildGenesisItem(genesisAt)];
+      events.forEach(function(e) { allItems.push(buildScanItem(e)); });
+      timeline.innerHTML = allItems.join("");
+
+      const totalEvents = events.length;
+      document.getElementById("journey-summary").textContent =
+        totalEvents === 0
+          ? "Genesis recorded — awaiting first scan"
+          : `${totalEvents + 1} journey event${totalEvents + 1 !== 1 ? "s" : ""} recorded`;
+
+      const lastTime = events.length
+        ? formatDate(events[events.length - 1].timestamp)
+        : formatDate(genesisAt);
+      document.getElementById("last-updated").textContent =
+        `All events independently recorded · Last updated ${lastTime}`;
 
       // Show page
       document.getElementById("loading-view").classList.add("hidden");

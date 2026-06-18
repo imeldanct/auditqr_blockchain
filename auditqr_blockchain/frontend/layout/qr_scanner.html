@@ -112,14 +112,38 @@
       }
 
       #viewfinder-svg path {
-        transition: stroke 0.25s ease;
+        transition: stroke 0.2s ease, filter 0.2s ease;
       }
       #viewfinder-svg.detected path {
         stroke: #3185FC;
+        filter: drop-shadow(0 0 6px #3185FC);
+      }
+      #viewfinder-svg.unknown path {
+        stroke: #F59E0B;
+        filter: drop-shadow(0 0 6px #F59E0B);
+      }
+
+      /* Scan line sweep */
+      #scan-line {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        height: 2px;
+        border-radius: 1px;
+        background: linear-gradient(90deg, transparent 0%, #3185FC 40%, #fff 50%, #3185FC 60%, transparent 100%);
+        opacity: 0.7;
+        animation: scan-sweep 2s ease-in-out infinite;
+        pointer-events: none;
+      }
+      @keyframes scan-sweep {
+        0%   { top: 16px; opacity: 0; }
+        5%   { opacity: 0.7; }
+        95%  { opacity: 0.7; }
+        100% { top: calc(100% - 16px); opacity: 0; }
       }
 
 
-      /* Status pill */
+      /* Status pill — hidden by default, shown only for active messages */
       #status-pill {
         position: fixed;
         bottom: 148px;
@@ -137,6 +161,11 @@
         border: 1px solid rgba(255,255,255,0.1);
         color: #fff;
         font-size: 13px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      #status-pill.visible {
+        opacity: 1;
       }
       @keyframes status-pulse {
         0%, 100% { opacity: 1; }
@@ -258,6 +287,7 @@
     <!-- Viewfinder with iOS-style rounded corner brackets -->
     <div id="viewfinder-wrap">
       <div style="position:relative; width:260px; height:260px;">
+        <div id="scan-line"></div>
         <svg id="viewfinder-svg" width="260" height="260" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M 8,70 L 8,22 Q 8,8 22,8 L 70,8"   stroke="white" stroke-width="4.5" stroke-linecap="round" fill="none"/>
           <path d="M 190,8 L 238,8 Q 252,8 252,22 L 252,70"  stroke="white" stroke-width="4.5" stroke-linecap="round" fill="none"/>
@@ -270,7 +300,7 @@
     <!-- Status pill -->
     <div id="status-pill">
       <span id="status-dot"></span>
-      <span id="status-text">Waiting for QR code…</span>
+      <span id="status-text"></span>
     </div>
 
     <!-- Torch button -->
@@ -304,7 +334,17 @@
       var videoEl = document.getElementById('camera-feed');
       var fallback = document.getElementById('camera-fallback');
       var statusTxt = document.getElementById('status-text');
+      var statusPill = document.getElementById('status-pill');
       var stream = null;
+
+      function showStatus(msg) {
+        statusTxt.textContent = msg;
+        statusPill.classList.add('visible');
+      }
+      function hideStatus() {
+        statusPill.classList.remove('visible');
+        statusTxt.textContent = '';
+      }
       var scanning = false;
       var torchOn = false;
       var scanCanvas = document.createElement('canvas');
@@ -312,17 +352,25 @@
       var scanInterval = null;
       var unknownQRTimer = null;
 
-      function extractChildQRID(raw) {
+      function extractID(raw) {
         var trimmed = raw.trim();
         try {
-          var url = new URL(trimmed);
-          var id = url.searchParams.get('id');
+          var id = new URL(trimmed).searchParams.get('id');
           if (id) return id;
         } catch (e) {}
         var match = trimmed.match(/[?&]id=([a-f0-9-]{36})/i);
         if (match) return match[1];
-        if (/^[a-f0-9-]{36}$/i.test(trimmed)) return trimmed;
         return null;
+      }
+
+      function extractParentQRID(raw) {
+        if (!/auditqr:\/\/product/i.test(raw.trim())) return null;
+        return extractID(raw);
+      }
+
+      function extractChildQRID(raw) {
+        if (!/auditqr:\/\/verify/i.test(raw.trim())) return null;
+        return extractID(raw);
       }
 
       function beep() {
@@ -370,55 +418,66 @@
           inversionAttempts: 'attemptBoth',
         });
         if (code) {
+          var parentQRID = extractParentQRID(code.data);
           var childQRID = extractChildQRID(code.data);
-          if (childQRID) {
+          if (parentQRID) {
             scanning = false;
             clearTimeout(unknownQRTimer);
             unknownQRTimer = null;
             onDetected();
-            statusTxt.textContent = 'QR detected! Verifying…';
-            submitScan(childQRID);
+            showStatus('QR detected! Verifying…');
+            submitScan(parentQRID);
+          } else if (childQRID) {
+            scanning = false;
+            clearTimeout(unknownQRTimer);
+            unknownQRTimer = null;
+            onDetected();
+            showStatus('Verified — redirecting…');
+            setTimeout(function () {
+              window.location.href = 'journey.html?childId=' + encodeURIComponent(childQRID);
+            }, 900);
           } else if (!unknownQRTimer) {
-            // QR detected but not issued by AuditQR
-            statusTxt.textContent = 'This QR code was not generated by AuditQR.';
+            var vfSvg = document.getElementById('viewfinder-svg');
+            vfSvg.classList.add('unknown');
+            showStatus('This QR code was not generated by AuditQR.');
             unknownQRTimer = setTimeout(function () {
-              statusTxt.textContent = 'Waiting for QR code…';
+              vfSvg.classList.remove('unknown');
+              hideStatus();
               unknownQRTimer = null;
             }, 2500);
           }
         }
       }
 
-      async function submitScan(childQRID) {
+      async function submitScan(parentQRID) {
         try {
           var res = await fetch(API_BASE + '/api/scan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ childQRID: childQRID }),
+            body: JSON.stringify({ parentQRID: parentQRID }),
           });
           if (!res.ok) {
             var err = await res.json();
-            statusTxt.textContent = err.error || 'QR code not found.';
+            showStatus(err.error || 'QR code not found.');
             resetScanUI();
             return;
           }
           var data = await res.json();
-          localStorage.setItem('scan_id', data.scanId);
+          localStorage.setItem('scan_id', data.scanId || '');
           localStorage.setItem('scan_product', JSON.stringify(data.product));
-          localStorage.setItem('scan_item_number', data.itemNumber);
-          localStorage.setItem('scan_time', data.scanTime);
-          localStorage.setItem('scan_childQRID', childQRID);
+          localStorage.setItem('scan_time', data.scanTime || new Date().toISOString());
+          localStorage.setItem('scan_parentQRID', parentQRID);
           setTimeout(function () {
             if (data.isFirstScan) {
               window.location.href = 'handoff.html';
             } else if (data.isRetailerScan) {
               window.location.href = 'code.html';
             } else {
-              window.location.href = 'journey.html?id=' + encodeURIComponent(childQRID);
+              window.location.href = 'journey.html?parentId=' + encodeURIComponent(parentQRID);
             }
           }, 900);
         } catch (e) {
-          statusTxt.textContent = 'Network error. Please try again.';
+          showStatus('Network error. Please try again.');
           resetScanUI();
         }
       }
@@ -438,19 +497,19 @@
 
       async function startCamera() {
         fallback.style.display = 'none';
-        statusTxt.textContent = 'Starting camera…';
+        hideStatus();
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
           });
           videoEl.srcObject = stream;
-          statusTxt.textContent = 'Waiting for QR code…';
+          hideStatus();
           scanning = true;
           if (scanInterval) clearInterval(scanInterval);
           scanInterval = setInterval(runScan, 200);
         } catch (err) {
           fallback.style.display = 'flex';
-          statusTxt.textContent = err.name === 'NotAllowedError' ? 'Camera permission denied' : 'Camera unavailable';
+          showStatus(err.name === 'NotAllowedError' ? 'Camera permission denied' : 'Camera unavailable');
         }
       }
 
