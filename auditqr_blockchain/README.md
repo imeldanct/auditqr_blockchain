@@ -281,10 +281,14 @@ The settings page fetches the current SME profile from `GET /api/sme/profile` on
 
 ## QR Code Structure
 
-- **Parent QR** (carton label): Represents a batch. Encodes `auditqr://product?id=<parentQRID>`. Affixed to the outer shipping carton. Scanned by **transporters and retailers** — this is what drives the stage-based tracking flow.
-- **Child QR** (item sticker): Represents a single unit within that batch. Encodes `auditqr://verify?id=<childQRID>`. Affixed to individual items. Scanned by **customers** — always redirects to the read-only journey page. No stage data is changed when a Child QR is scanned.
+**The Parent QR is the supply chain actor (changes product state), and the Child QR is the verification tool (read-only journey view for whoever holds the product).**
+
+- **Parent QR** (carton label): Represents a batch. Encodes a real URL — `<frontendBase>/layout/journey.html?parentId=<parentQRID>`. Affixed to the outer shipping carton. Scanned by **transporters and retailers** via the AuditQR scanner — this is what drives the stage-based tracking flow and advances `currentStage` on the batch.
+- **Child QR** (item sticker): Represents a single unit within that batch. Encodes a real URL — `<frontendBase>/layout/journey.html?childId=<childQRID>`. Affixed to individual items. Scanned by **customers** — any native camera or the AuditQR scanner opens the read-only journey page directly. No stage data is changed when a Child QR is scanned.
 - `currentStage` lives on `ParentQRCode` (the batch), not on individual units: `pending` → `transit` → `delivered`
 - The SME dashboard shows **Units** (total child QRs) per product, not batches; stage counts reflect how many units belong to a batch at each stage
+
+Both QR types encode real HTTPS URLs so that a native phone camera can open them without a dedicated app. The AuditQR scanner (`qr_scanner.html`) distinguishes the two at scan time by checking the URL query parameter: `parentId` triggers the supply chain scan flow (`POST /api/scan`); `childId` routes directly to `journey.html` with no API write.
 
 **Why Child QRs are read-only:** The Child QR is an item-level proof of authenticity for the customer. By the time a customer has the product in hand and scans their individual item, the supply chain handoffs have already been recorded via the Parent QR (carton) scans. The Child QR simply surfaces that history. Scanning a Child QR triggers no API write — it resolves through the parent to display the journey.
 
@@ -314,7 +318,7 @@ QR scanning must be tested on a real phone. Since the backend runs on `localhost
 
 ### How the QR codes work
 
-Child QR codes encode a custom URI: `auditqr://verify?id=<childQRID>`. When a phone camera scans this, nothing happens — it's not an HTTP URL. Scanning only works through the in-app `qr_scanner.html` page, which parses the `auditqr://` scheme and submits the scan to the backend API.
+Both Parent and Child QR codes encode real HTTPS URLs pointing to the frontend tunnel. A native phone camera can open them directly — Child QRs open `journey.html` immediately; Parent QRs also open `journey.html` but the AuditQR scanner (`qr_scanner.html`) intercepts the `parentId` parameter and runs the stage-based scan flow instead of just displaying the journey.
 
 ### Setup
 
@@ -348,18 +352,15 @@ npx outray http 3000
 
 Outray prints a public URL like `https://a1b2-xxx.outray.app`. This punches through your local network and makes your Express backend reachable from any device. Copy the URL.
 
-**4. Update the frontend API base**
+**4. Update the frontend config**
 
-In [frontend/config.js](../frontend/config.js), change:
+In [frontend/config.js](../frontend/config.js), update both URLs — they change every Outray session:
 ```js
-const API_BASE = "http://localhost:3000";
-```
-to:
-```js
-const API_BASE = "https://a1b2-xxx.outray.app";
+const API_BASE = "https://a1b2-xxx.outray.app";      // backend tunnel (port 3000)
+const FRONTEND_BASE = "https://b3c4-xxx.outray.app/auditqr_blockchain/frontend"; // frontend tunnel (port 5500)
 ```
 
-This is necessary because your phone can't reach `localhost:3000` — that only exists on your laptop. All frontend API calls now go through the Outray tunnel instead.
+`API_BASE` is used for all backend API calls. `FRONTEND_BASE` is embedded inside the QR codes themselves — it must be a URL reachable from the scanning device, so localhost won't work here.
 
 **5. Start Live Server in VS Code**
 
