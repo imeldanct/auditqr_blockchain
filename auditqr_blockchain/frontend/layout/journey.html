@@ -52,13 +52,12 @@
       <h1 id="product-name" class="text-[32px] sm:text-[38px] md:text-5xl font-headline font-medium text-white tracking-tight">—</h1>
       <p id="item-number" class="font-mono text-[11px] text-muted">Item —</p>
     </div>
-    <div class="flex flex-wrap items-center gap-3 pt-2">
+    <div class="space-y-1 pt-2">
+      <span id="business-name" class="font-medium text-sm block">—</span>
       <div class="flex items-center gap-2">
-        <span id="business-name" class="font-medium text-sm">—</span>
         <span id="verified-badge" class="bg-blue/10 border border-blue/30 text-blue text-[10px] font-body font-medium px-2 py-0.5 rounded-full uppercase tracking-wider hidden">CAC verified</span>
+        <span id="cac-number" class="text-muted text-sm font-mono text-[11px]">RC—</span>
       </div>
-      <span class="text-muted text-sm">•</span>
-      <span id="cac-number" class="text-muted text-sm font-mono text-[11px]">RC—</span>
     </div>
   </section>
 
@@ -98,7 +97,7 @@
         <div class="grid grid-cols-2 p-5"><span class="text-muted text-sm">Product name</span><span id="detail-name" class="text-white text-sm font-medium">—</span></div>
         <div class="grid grid-cols-2 p-5"><span class="text-muted text-sm">Item ID</span><span id="detail-id" class="text-white text-sm font-mono text-[11px]">—</span></div>
         <div class="grid grid-cols-2 p-5"><span class="text-muted text-sm">Registered by</span><span id="detail-business" class="text-white text-sm font-medium">—</span></div>
-        <div class="p-5"><div class="text-muted text-sm mb-2">Description</div><p id="detail-description" class="text-white text-sm leading-relaxed">—</p></div>
+        <div class="grid grid-cols-2 p-5"><span class="text-muted text-sm">Description</span><span id="detail-description" class="text-white text-sm font-medium">—</span></div>
       </div>
     </div>
   </section>
@@ -110,7 +109,7 @@
       <p class="text-muted text-sm">Secure your supply chain and build radical trust with your customers.</p>
     </div>
     <button class="bg-blue text-white font-body font-bold px-8 py-4 rounded-lg active:scale-95 transition-all w-full sm:w-auto hover:bg-blue-dark shadow-lg shadow-blue/20" id="cta-register-btn" onclick="window.location.href='landing.html'">
-      Register your business on AuditQR
+      Register on AuditQR
     </button>
   </section>
 

@@ -50,20 +50,18 @@ export const deleteProduct = async (req: AuthRequest, res: Response): Promise<an
         .json({ error: "Product not found or does not belong to you." });
     }
 
-    await prisma.$transaction(async (tx) => {
-      const parentQRs = await tx.parentQRCode.findMany({
-        where: { productID: productId },
-        select: { parentQRID: true },
-      });
-      const ids = parentQRs.map((p) => p.parentQRID);
-      if (ids.length) {
-        await tx.handoffCode.deleteMany({ where: { scanEvent: { parentQRID: { in: ids } } } });
-        await tx.scanEvent.deleteMany({ where: { parentQRID: { in: ids } } });
-        await tx.childQRCode.deleteMany({ where: { parentQRID: { in: ids } } });
-        await tx.parentQRCode.deleteMany({ where: { parentQRID: { in: ids } } });
-      }
-      await tx.product.delete({ where: { productID: productId } });
+    const parentQRs = await prisma.parentQRCode.findMany({
+      where: { productID: productId },
+      select: { parentQRID: true },
     });
+    const ids = parentQRs.map((p) => p.parentQRID);
+    if (ids.length) {
+      await prisma.handoffCode.deleteMany({ where: { scanEvent: { parentQRID: { in: ids } } } });
+      await prisma.scanEvent.deleteMany({ where: { parentQRID: { in: ids } } });
+      await prisma.childQRCode.deleteMany({ where: { parentQRID: { in: ids } } });
+      await prisma.parentQRCode.deleteMany({ where: { parentQRID: { in: ids } } });
+    }
+    await prisma.product.delete({ where: { productID: productId } });
 
     res.status(200).json({ message: "Product and all associated QR codes deleted." });
   } catch (error) {

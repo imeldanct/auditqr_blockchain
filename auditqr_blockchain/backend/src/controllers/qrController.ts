@@ -35,20 +35,19 @@ export const generateQRCodes = async (req: AuthRequest, res: Response): Promise<
       };
     });
 
-    const parentQR = await prisma.$transaction(async (tx) => {
-      const parentQRID = randomUUID();
-      const parent = await tx.parentQRCode.create({
-        data: {
-          parentQRID,
-          productID: productId,
-          qrData: `auditqr://product?id=${parentQRID}`,
-        },
-      });
-      await tx.childQRCode.createMany({
-        data: childRecords.map((r) => ({ ...r, parentQRID: parent.parentQRID })),
-      });
-      return parent;
+    const parentQRID = randomUUID();
+    const parentQR = await prisma.parentQRCode.create({
+      data: {
+        parentQRID,
+        productID: productId,
+        qrData: `auditqr://product?id=${parentQRID}`,
+      },
     });
+    if (childRecords.length > 0) {
+      await prisma.childQRCode.createMany({
+        data: childRecords.map((r) => ({ ...r, parentQRID })),
+      });
+    }
 
     res.status(201).json({
       message: "QR codes generated successfully.",

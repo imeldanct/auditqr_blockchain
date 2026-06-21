@@ -1,9 +1,16 @@
 /**
  * AuditQR – shared frontend config
- * Single source of truth for the API base URL.
+ * Update both URLs when Outray tunnels change between sessions.
  */
 // const API_BASE = "http://localhost:3000";
 const API_BASE = "https://tall-turtle.outray.app";
+
+// Frontend tunnel URL — used to embed real URLs inside QR codes.
+// Must be reachable from the scanning device (phone). Use the Outray tunnel, not localhost.
+// const FRONTEND_BASE = "https://introverted-copper.outray.app";
+const FRONTEND_BASE = "https://introverted-copper.outray.app/auditqr_blockchain/frontend";
+
+// const FRONTEND_BASE = "http://127.0.0.1:5500";
 
 /**
  * Drop-in fetch wrapper.

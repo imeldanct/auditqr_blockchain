@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var _childQRs = [];
   var _productName = "";
   var _parentDataURL = "";
+  var _parentQRText = "";
 
   // qrcodejs renders into a div; extract canvas data URL from it
   function makeQRDataURL(text, size, cb) {
@@ -62,8 +63,9 @@ document.addEventListener("DOMContentLoaded", function () {
       var badge = document.getElementById("child-count-badge");
       if (badge) badge.textContent = data.quantity + " Items";
 
-      // Parent QR
-      makeQRDataURL("auditqr://product?id=" + data.parentQRID, 180, function (url) {
+      // Parent QR — preview at 180px, download at 512px
+      _parentQRText = FRONTEND_BASE + "/layout/journey.html?parentId=" + data.parentQRID;
+      makeQRDataURL(_parentQRText, 180, function (url) {
         _parentDataURL = url;
         var img = document.getElementById("parent-qr-img");
         if (img && url) {
@@ -77,7 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!grid) return;
       grid.innerHTML = "";
       _childQRs.forEach(function (child) {
-        makeQRDataURL(child.qrData, 90, function (url) {
+        var childQRText = FRONTEND_BASE + "/layout/journey.html?childId=" + child.childQRID;
+        makeQRDataURL(childQRText, 90, function (url) {
           var wrapper = document.createElement("div");
           wrapper.className =
             "aspect-square bg-white rounded flex items-center justify-center p-1";
@@ -120,13 +123,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.getElementById("download-parent-btn").addEventListener("click", function (e) {
     e.preventDefault();
-    if (!_parentDataURL) {
+    if (!_parentQRText) {
       showToast("QR not ready yet.", "error");
       return;
     }
-    var blob = dataURLtoBlob(_parentDataURL);
-    var blobURL = URL.createObjectURL(blob);
-    triggerDownload(blobURL, "ParentQR_" + (_productName || "AuditQR") + ".png");
+    makeQRDataURL(_parentQRText, 512, function (highResUrl) {
+      if (!highResUrl) { showToast("Failed to generate QR.", "error"); return; }
+      var blob = dataURLtoBlob(highResUrl);
+      var blobURL = URL.createObjectURL(blob);
+      triggerDownload(blobURL, "ParentQR_" + (_productName || "AuditQR") + ".png");
+    });
   });
 
   document
@@ -148,7 +154,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Generate all QR images in parallel
         var promises = _childQRs.map(function (child, idx) {
           return new Promise(function (resolve) {
-            makeQRDataURL(child.qrData, 300, function (url) {
+            var childQRText = FRONTEND_BASE + "/layout/journey.html?childId=" + child.childQRID;
+            makeQRDataURL(childQRText, 300, function (url) {
               if (url) {
                 // strip data:image/png;base64, prefix
                 var base64 = url.split(",")[1];

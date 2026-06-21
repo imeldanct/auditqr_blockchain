@@ -37,15 +37,13 @@ export const recordScan = async (req: Request, res: Response): Promise<any> => {
     const stage = parentQR.currentStage;
 
     if (stage === "pending") {
-      const [scanEvent] = await prisma.$transaction([
-        prisma.scanEvent.create({
-          data: { parentQRID, scannerRole: "transporter", ipLocation: ip(req) },
-        }),
-        prisma.parentQRCode.update({
-          where: { parentQRID },
-          data: { currentStage: "transit" },
-        }),
-      ]);
+      const scanEvent = await prisma.scanEvent.create({
+        data: { parentQRID, scannerRole: "transporter", ipLocation: ip(req) },
+      });
+      await prisma.parentQRCode.update({
+        where: { parentQRID },
+        data: { currentStage: "transit" },
+      });
 
       return res.status(200).json({
         scanId: scanEvent.scanID,
@@ -164,19 +162,17 @@ export const confirmHandoff = async (req: Request, res: Response): Promise<any> 
       return res.status(400).json({ error: "Invalid handoff code." });
     }
 
-    await prisma.$transaction([
-      prisma.handoffCode.update({
-        where: { codeID: handoffCode.codeID },
-        data: { isUsed: true },
-      }),
-      prisma.scanEvent.create({
-        data: { parentQRID, scannerRole: "retailer", ipLocation: ip(req) },
-      }),
-      prisma.parentQRCode.update({
-        where: { parentQRID },
-        data: { currentStage: "delivered" },
-      }),
-    ]);
+    await prisma.handoffCode.update({
+      where: { codeID: handoffCode.codeID },
+      data: { isUsed: true },
+    });
+    await prisma.scanEvent.create({
+      data: { parentQRID, scannerRole: "retailer", ipLocation: ip(req) },
+    });
+    await prisma.parentQRCode.update({
+      where: { parentQRID },
+      data: { currentStage: "delivered" },
+    });
 
     res.status(200).json({ message: "Handoff confirmed successfully.", currentStage: "delivered" });
   } catch (error) {
