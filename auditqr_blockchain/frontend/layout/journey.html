@@ -47,12 +47,12 @@
 <div class="page-container-narrow space-y-12">
 
   <!-- Product Header -->
-  <section class="space-y-4">
-    <div class="space-y-1">
+  <section class="space-y-2">
+    <div class="space-y-0.5">
       <h1 id="product-name" class="text-[32px] sm:text-[38px] md:text-5xl font-headline font-medium text-white tracking-tight">—</h1>
-      <p id="item-number" class="font-mono text-[11px] text-muted">Item —</p>
+      <p id="item-number" class="font-mono text-[11px] text-muted hidden">Item —</p>
     </div>
-    <div class="space-y-1 pt-2">
+    <div class="space-y-1">
       <span id="business-name" class="font-medium text-sm block">—</span>
       <div class="flex items-center gap-2">
         <span id="verified-badge" class="bg-blue/10 border border-blue/30 text-blue text-[10px] font-body font-medium px-2 py-0.5 rounded-full uppercase tracking-wider hidden">CAC verified</span>
@@ -76,7 +76,6 @@
   <section class="space-y-6">
     <div class="space-y-1">
       <h2 class="font-headline text-3xl font-medium text-white">Product Journey</h2>
-      <p id="journey-summary" class="text-sm font-body font-medium text-blue">Loading…</p>
     </div>
     <div class="bg-surface border border-outline-variant rounded-xl p-4 sm:p-8 relative">
       <div class="absolute left-[23px] sm:left-[39px] top-[48px] bottom-[48px] w-px bg-muted/20"></div>
@@ -103,7 +102,7 @@
   </section>
 
   <!-- Footer CTA -->
-  <section class="text-center pt-8 pb-12 space-y-6 glow-blue-bottom" id="cta-section">
+  <section class="text-center pt-4 pb-12 space-y-6 glow-blue-bottom" id="cta-section">
     <div class="space-y-2">
       <p class="text-white text-lg font-medium">Are you a Nigerian SME?</p>
       <p class="text-muted text-sm">Secure your supply chain and build radical trust with your customers.</p>
@@ -142,7 +141,7 @@
         </div>
         <div class="space-y-1">
           <span class="text-white font-medium">Manufacturer</span>
-          <div class="text-xs font-body text-blue">QR codes generated — genesis event</div>
+          <div class="text-xs font-body text-blue">QR codes generated</div>
           <div class="text-muted text-[11px]">${formatDate(genesisAt)}</div>
         </div>
       </div>`;
@@ -198,7 +197,11 @@
 
       // Fill header
       document.getElementById("product-name").textContent = product.productName;
-      document.getElementById("item-number").textContent = itemNumber ? `Item #${itemNumber}` : `Batch`;
+      if (itemNumber) {
+        var itemEl = document.getElementById("item-number");
+        itemEl.textContent = `Item #${itemNumber}`;
+        itemEl.classList.remove("hidden");
+      }
       document.getElementById("business-name").textContent = product.businessName;
       document.getElementById("cac-number").textContent = product.rcNumber;
       if (product.isVerified) {
@@ -216,12 +219,6 @@
       const allItems = [buildGenesisItem(genesisAt)];
       events.forEach(function(e) { allItems.push(buildScanItem(e)); });
       timeline.innerHTML = allItems.join("");
-
-      const totalEvents = events.length;
-      document.getElementById("journey-summary").textContent =
-        totalEvents === 0
-          ? "Genesis recorded — awaiting first scan"
-          : `${totalEvents + 1} journey event${totalEvents + 1 !== 1 ? "s" : ""} recorded`;
 
       const lastTime = events.length
         ? formatDate(events[events.length - 1].timestamp)
