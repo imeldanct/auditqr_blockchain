@@ -181,6 +181,27 @@ export const confirmHandoff = async (req: Request, res: Response): Promise<any> 
   }
 };
 
+export const getStage = async (req: Request, res: Response): Promise<any> => {
+  const parentQRID = req.params.parentQRID as string;
+  try {
+    const parentQR = await prisma.parentQRCode.findUnique({
+      where: { parentQRID },
+      include: { product: { include: { sme: true } } },
+    });
+    if (!parentQR) {
+      return res.status(404).json({ error: "QR code not found." });
+    }
+    res.status(200).json({
+      currentStage: parentQR.currentStage,
+      product: productPayload(parentQR),
+      genesisAt: parentQR.createdAt,
+    });
+  } catch (error) {
+    console.error("Stage Check Error:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
 export const getScanHistory = async (req: Request, res: Response): Promise<any> => {
   const parentQRID = req.params.parentQRID as string;
 

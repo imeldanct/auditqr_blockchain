@@ -438,7 +438,7 @@
             clearTimeout(unknownQRTimer);
             unknownQRTimer = null;
             onDetected();
-            showStatus('QR detected! Verifying…');
+            showStatus('QR detected! Redirecting…');
             submitScan(parentQRID);
           } else if (childQRID) {
             scanning = false;
@@ -462,37 +462,10 @@
         }
       }
 
-      async function submitScan(parentQRID) {
-        try {
-          var res = await fetch(API_BASE + '/api/scan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parentQRID: parentQRID }),
-          });
-          if (!res.ok) {
-            var err = await res.json();
-            showStatus(err.error || 'QR code not found.');
-            resetScanUI();
-            return;
-          }
-          var data = await res.json();
-          localStorage.setItem('scan_id', data.scanId || '');
-          localStorage.setItem('scan_product', JSON.stringify(data.product));
-          localStorage.setItem('scan_time', data.scanTime || new Date().toISOString());
-          localStorage.setItem('scan_parentQRID', parentQRID);
-          setTimeout(function () {
-            if (data.isFirstScan) {
-              window.location.href = 'handoff.html';
-            } else if (data.isRetailerScan) {
-              window.location.href = 'code.html';
-            } else {
-              window.location.href = 'journey.html?parentId=' + encodeURIComponent(parentQRID);
-            }
-          }, 900);
-        } catch (e) {
-          showStatus('Network error. Please try again.');
-          resetScanUI();
-        }
+      function submitScan(parentQRID) {
+        setTimeout(function () {
+          window.location.href = 'handoff.html?parentId=' + encodeURIComponent(parentQRID);
+        }, 900);
       }
 
       async function toggleTorch() {

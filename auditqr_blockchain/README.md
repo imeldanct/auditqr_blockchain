@@ -70,17 +70,24 @@ Customer
 | **Parent QR** (carton label) | `<frontendBase>/layout/journey.html?parentId=<uuid>` | Transporter, then Retailer — any scanner | Stage-based flow — recorded in DB and blockchain, advances `currentStage` on the batch |
 | **Child QR** (item sticker) | `<frontendBase>/layout/journey.html?childId=<uuid>` | Customer — any scanner | Opens `journey.html` directly — read-only, nothing recorded |
 
-Both QR types encode real HTTPS URLs. Any phone camera can scan them without a dedicated app. For a Parent QR, the URL resolves to a routing layer that checks the current stage and directs the scanner to the right page. For a Child QR, the URL opens the journey page directly with no routing step.
+Both QR types encode real HTTPS URLs. Any phone camera can scan them without a dedicated app — no dedicated scanner app required.
+
+**Parent QR** encodes `<frontendBase>/layout/handoff.html?parentId=<uuid>`. When opened (by any camera), `handoff.html` checks the batch's current stage and routes accordingly:
+- `pending` → show transporter content (confirm pickup → generate handoff code)
+- `transit` → redirect to `code.html` (enter handoff code → confirm receipt)
+- `delivered` → redirect to `journey.html?parentId=<uuid>` (read-only audit trail)
+
+**Child QR** encodes `<frontendBase>/layout/journey.html?childId=<uuid>`. Opens the journey page directly with no routing step — always read-only.
 
 ### Scan Role Determination (Parent QR only)
 
 The system determines the participant's role automatically based on the `currentStage` of the **batch** (ParentQRCode):
 
-| Current Stage | Role        | Action |
-| ------------- | ----------- | ------ |
-| `pending`     | Transporter | `ScanEvent` saved to DB immediately at scan time; transporter lands on `handoff.html`, confirms pickup, blockchain write fires, then sees the 4-digit handoff code on `handoff_code.html` |
-| `transit`     | Retailer    | Routed to `code.html`; entering the transporter's code triggers `POST /api/handoff/confirm` which saves the retailer `ScanEvent` to DB, fires the blockchain write, and advances stage → `delivered` |
-| `delivered`   | Read-only   | No further stage change — journey page shown as a completed audit trail |
+| Current Stage | Role        | Landing page | Action |
+| ------------- | ----------- | ------------ | ------ |
+| `pending`     | Transporter | `handoff.html` | `ScanEvent` saved to DB at scan time; transporter confirms pickup → blockchain write fires → sees 4-digit handoff code on `handoff_code.html` to share with retailer |
+| `transit`     | Retailer    | `code.html` (redirected from `handoff.html`) | Retailer enters the transporter's code and confirms receipt → `POST /api/handoff/confirm` → retailer `ScanEvent` saved to DB + blockchain write → stage advances to `delivered` → `retailer_confirmed.html` |
+| `delivered`   | Anyone      | `journey.html?parentId=<uuid>` (redirected from `handoff.html`) | No further stage change — read-only audit trail shown |
 
 ### Two-step recording logic
 
@@ -284,8 +291,10 @@ The settings page fetches the current SME profile from `GET /api/sme/profile` on
 - **Database**: PostgreSQL (Supabase)
 - **Blockchain**: Transaction hashes stored against scan events (`txHash` field on `ScanEvent`)
 - **Auth**: JWT stored in `localStorage` as `auditqr_token`; `apiFetch()` helper attaches token to all API calls
-- **QR Library**: `qrcodejs` from cdnjs
+- **QR Generator**: `qrcodejs` from cdnjs — generates QR code images on the client
+- **QR Scanner**: `jsQR 1.4.0` from cdnjs — decodes QR codes from camera frames in `qr_scanner.html`
 - **ZIP Library**: `JSZip` from cdnjs — used for client-side ZIP generation on the QR download page
+- **Icon Font**: `material-symbols` npm package (self-hosted) — Material Symbols Outlined font served from `node_modules/material-symbols/` via `@font-face` in `design-tokens.css`; no CDN dependency at runtime
 
 ---
 
@@ -293,12 +302,12 @@ The settings page fetches the current SME profile from `GET /api/sme/profile` on
 
 **The Parent QR is the supply chain actor (changes product state), and the Child QR is the verification tool (read-only journey view for whoever holds the product).**
 
-- **Parent QR** (carton label): Represents a batch. Encodes a real URL — `<frontendBase>/layout/journey.html?parentId=<parentQRID>`. Affixed to the outer shipping carton. Scanned by **transporters and retailers** via the AuditQR scanner — this is what drives the stage-based tracking flow and advances `currentStage` on the batch.
+- **Parent QR** (carton label): Represents a batch. Encodes a real URL — `<frontendBase>/layout/handoff.html?parentId=<parentQRID>`. Affixed to the outer shipping carton. Scanned by **transporters and retailers** using any camera — `handoff.html` checks the current stage on load and routes to the correct page for that role.
 - **Child QR** (item sticker): Represents a single unit within that batch. Encodes a real URL — `<frontendBase>/layout/journey.html?childId=<childQRID>`. Affixed to individual items. Scanned by **customers** — any native camera or the AuditQR scanner opens the read-only journey page directly. No stage data is changed when a Child QR is scanned.
 - `currentStage` lives on `ParentQRCode` (the batch), not on individual units: `pending` → `transit` → `delivered`
 - The SME dashboard shows **Units** (total child QRs) per product, not batches; stage counts reflect how many units belong to a batch at each stage
 
-Both QR types encode real HTTPS URLs so that a native phone camera can open them without a dedicated app. The AuditQR scanner (`qr_scanner.html`) distinguishes the two at scan time by checking the URL query parameter: `parentId` triggers the supply chain scan flow (`POST /api/scan`); `childId` routes directly to `journey.html` with no API write.
+Both QR types encode real HTTPS URLs so that a native phone camera can open them without a dedicated app. The AuditQR scanner (`qr_scanner.html`) is limited to Child QRs only — scanning a `childId` opens `journey.html` with no API write. Parent QRs are meant for supply chain actors (transporters, retailers) who use any phone camera; the encoded `handoff.html?parentId=` URL opens directly and `handoff.html` handles all stage-based routing itself.
 
 **Why Child QRs are read-only:** The Child QR is an item-level proof of authenticity for the customer. By the time a customer has the product in hand and scans their individual item, the supply chain handoffs have already been recorded via the Parent QR (carton) scans. The Child QR simply surfaces that history. Scanning a Child QR triggers no API write — it resolves through the parent to display the journey.
 
@@ -310,15 +319,19 @@ Both QR types encode real HTTPS URLs so that a native phone camera can open them
 
 | Page                  | Purpose                                                  |
 | --------------------- | -------------------------------------------------------- |
-| `dashboard.html`      | SME overview — stats, recent scan activity, date filters |
-| `products_list.html`  | All products with unit counts                            |
-| `create_product.html` | Create a new product and generate QR batch               |
-| `qr_ready.html`       | Download generated QR codes                              |
-| `qr_scanner.html`     | Landing page for website QR scanning                     |
-| `journey.html`        | Customer-facing product verification page                |
-| `handoff.html`        | Transporter handoff confirmation flow                    |
-| `scan_events.html`       | Full item tracking page for the SME                      |
-| `account_settings.html`  | Change business name, email, and password                |
+| `landing.html`           | Public landing page — product scan button, feature overview  |
+| `dashboard.html`         | SME overview — stats, recent scan activity, date filters     |
+| `products_list.html`     | All products with unit counts                                |
+| `create_product.html`    | Create a new product and generate QR batch                   |
+| `qr_ready.html`          | Download generated QR codes                                  |
+| `qr_scanner.html`        | Website QR scanner — Child QRs only, opens journey.html      |
+| `journey.html`           | Customer-facing product verification page (read-only)        |
+| `handoff.html`           | Entry point for any Parent QR scan — checks stage and routes to transporter UI (pending), code.html (transit), or journey.html (delivered) |
+| `handoff_code.html`      | Transporter success page — displays 4-digit handoff code to pass to retailer |
+| `code.html`              | Retailer entry page — enter handoff code to confirm receipt  |
+| `retailer_confirmed.html`| Retailer success screen after confirmed delivery             |
+| `scan_events.html`       | Full item tracking page for the SME                          |
+| `account_settings.html`  | Change business name, email, and password                    |
 
 ---
 
@@ -328,7 +341,7 @@ QR scanning must be tested on a real phone. Since the backend runs on `localhost
 
 ### How the QR codes work
 
-Both Parent and Child QR codes encode real HTTPS URLs pointing to the frontend tunnel. A native phone camera can open them directly — Child QRs open `journey.html` immediately; Parent QRs also open `journey.html` but the AuditQR scanner (`qr_scanner.html`) intercepts the `parentId` parameter and runs the stage-based scan flow instead of just displaying the journey.
+Both Parent and Child QR codes encode real HTTPS URLs pointing to the frontend tunnel. A native phone camera can open them directly — Child QRs open `journey.html` immediately (read-only, no API write). Parent QRs open `handoff.html?parentId=` directly; `handoff.html` calls `GET /api/scan/stage/:parentQRID` on load and routes to the correct page based on the current stage. The AuditQR website scanner (`qr_scanner.html`) is restricted to Child QRs only.
 
 ### Setup
 

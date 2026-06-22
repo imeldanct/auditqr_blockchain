@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -48,7 +48,7 @@
     </nav>
 
     <main class="flex-1 page-offset pb-12">
-      <div class="page-container-xs space-y-8">
+      <div class="page-container-narrow space-y-8">
         <section class="pt-4">
           <span class="text-[11px] font-medium uppercase tracking-[0.1em] text-muted"
             >You are receiving</span
@@ -193,22 +193,32 @@
       const codeInputs = [1, 2, 3, 4].map((i) => document.getElementById("code-" + i));
       const confirmBtn = document.getElementById("confirm-receipt-btn");
 
-      // Populate from localStorage
-      const product = JSON.parse(localStorage.getItem("scan_product") || "{}");
-      const parentQRID = localStorage.getItem("scan_parentQRID");
+      const parentQRID = new URLSearchParams(window.location.search).get("parentId")
+        || localStorage.getItem("scan_parentQRID");
 
-      if (product.productName)
-        document.getElementById("code-product-name").textContent = product.productName;
-      if (product.businessName) {
-        document.getElementById("code-business-name").textContent = product.businessName;
-        document.getElementById("code-from-name").textContent = product.businessName;
+      async function init() {
+        if (!parentQRID) return;
+        try {
+          const res = await fetch(API_BASE + "/api/scan/stage/" + encodeURIComponent(parentQRID));
+          if (!res.ok) return;
+          const data = await res.json();
+          const product = data.product || {};
+
+          if (product.productName)
+            document.getElementById("code-product-name").textContent = product.productName;
+          if (product.businessName) {
+            document.getElementById("code-business-name").textContent = product.businessName;
+            document.getElementById("code-from-name").textContent = product.businessName;
+          }
+          const itemNumEl = document.getElementById("code-item-number");
+          if (itemNumEl) itemNumEl.textContent = "Batch · " + parentQRID.slice(0, 8);
+          if (product.isVerified)
+            document.getElementById("code-verified-badge").classList.remove("hidden");
+          if (product.description)
+            document.getElementById("code-description").textContent = product.description;
+        } catch (e) { /* non-fatal */ }
+        loadJourney();
       }
-      const itemNumEl = document.getElementById("code-item-number");
-      if (itemNumEl) itemNumEl.textContent = parentQRID ? "Batch · " + parentQRID.slice(0, 8) : "—";
-      if (product.isVerified)
-        document.getElementById("code-verified-badge").classList.remove("hidden");
-      if (product.description)
-        document.getElementById("code-description").textContent = product.description;
 
       // Load journey
       async function loadJourney() {
@@ -252,7 +262,7 @@
           /* non-fatal */
         }
       }
-      loadJourney();
+      init();
 
       function checkComplete() {
         const allFilled = codeInputs.every((inp) => inp.value.trim().length === 1);

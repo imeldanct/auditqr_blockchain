@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (badge) badge.textContent = data.quantity + " Items";
 
       // Parent QR — preview at 180px, download at 512px
-      _parentQRText = FRONTEND_BASE + "/layout/journey.html?parentId=" + data.parentQRID;
+      _parentQRText = FRONTEND_BASE + "/layout/handoff.html?parentId=" + data.parentQRID;
       makeQRDataURL(_parentQRText, 180, function (url) {
         _parentDataURL = url;
         var img = document.getElementById("parent-qr-img");

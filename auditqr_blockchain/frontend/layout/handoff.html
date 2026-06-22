@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -52,7 +52,7 @@
       <div class="page-container-narrow">
         <section class="mb-8 text-left">
           <p class="font-label text-[11px] uppercase tracking-widest text-muted mb-1">
-            You are receiving
+            You are picking up
           </p>
           <h1
             class="font-headline text-4xl font-medium text-white mb-2"
@@ -137,14 +137,13 @@
               <h2
                 class="font-label text-[11px] font-medium text-white uppercase tracking-widest"
               >
-                Confirm Receipt
+                Confirm Pickup
               </h2>
             </div>
             <p class="text-muted text-[13px] leading-relaxed mb-6">
-              By confirming receipt, you are verifying that you have physically received
-              this product from
-              <span class="text-white" id="handoff-business-name-2">—</span>. This
-              confirmation will be permanently recorded.
+              By confirming pickup, you are verifying that you have collected this product from
+              <span class="text-white" id="handoff-business-name-2">—</span> and are
+              taking responsibility for its delivery. This will be permanently recorded.
             </p>
             <form class="space-y-4">
               <button
@@ -152,7 +151,7 @@
                 type="button"
                 id="confirm-receipt-btn"
               >
-                Confirm receipt<span class="material-symbols-outlined text-[20px]"
+                Confirm pickup<span class="material-symbols-outlined text-[20px]"
                   >arrow_forward</span
                 >
               </button>
@@ -183,61 +182,81 @@
     <div class="glow-blue-center"></div>
 
     <script>
-      const product = JSON.parse(localStorage.getItem("scan_product") || "{}");
-      const scanId = localStorage.getItem("scan_id");
-      const parentQRID = localStorage.getItem("scan_parentQRID");
+      var _parentQRID = new URLSearchParams(window.location.search).get("parentId");
+      var _product = null;
 
-      // Populate header from localStorage
-      const nameEl = document.getElementById("handoff-product-name");
-      if (nameEl && product.productName) nameEl.textContent = product.productName;
-
-      const itemEl = document.getElementById("handoff-item-number");
-      if (itemEl) itemEl.textContent = parentQRID ? "Batch · " + parentQRID.slice(0, 8) : "—";
-
-      const dateEl2 = document.getElementById("handoff-date");
-      const scanTime = localStorage.getItem("scan_time");
-      if (dateEl2 && scanTime) {
-        dateEl2.textContent = new Date(scanTime).toLocaleDateString("en-NG", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
+      const fmt = (iso) =>
+        new Date(iso).toLocaleString("en-NG", {
+          day: "numeric", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit",
         });
-      }
 
-      const bizName = product.businessName || "—";
-      const bnEl = document.getElementById("handoff-business-name");
-      const bnEl2 = document.getElementById("handoff-business-name-2");
-      if (bnEl) bnEl.textContent = bizName;
-      if (bnEl2) bnEl2.textContent = bizName;
+      async function init() {
+        if (!_parentQRID) {
+          showToast("Invalid QR code link.", "error");
+          return;
+        }
+        try {
+          const res = await fetch(API_BASE + "/api/scan/stage/" + encodeURIComponent(_parentQRID));
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "QR code not found.");
 
-      if (product.isVerified === false) {
-        const badge = document.querySelector(".text-blue.tracking-wider");
-        if (badge) {
-          badge.textContent = "Unverified";
-          badge.classList.remove("text-blue", "border-blue/30", "bg-blue/10");
-          badge.classList.add("text-danger");
+          if (data.currentStage === "transit") {
+            window.location.replace("code.html?parentId=" + encodeURIComponent(_parentQRID));
+            return;
+          }
+          if (data.currentStage === "delivered") {
+            window.location.replace("journey.html?parentId=" + encodeURIComponent(_parentQRID));
+            return;
+          }
+
+          // pending — transporter UI
+          _product = data.product;
+
+          const nameEl = document.getElementById("handoff-product-name");
+          if (nameEl) nameEl.textContent = _product.productName || "—";
+
+          const itemEl = document.getElementById("handoff-item-number");
+          if (itemEl) itemEl.textContent = "Batch · " + _parentQRID.slice(0, 8);
+
+          const dateEl = document.getElementById("handoff-date");
+          if (dateEl) dateEl.textContent = new Date().toLocaleDateString("en-NG", {
+            day: "numeric", month: "short", year: "numeric",
+          });
+
+          const bizName = _product.businessName || "—";
+          const bnEl = document.getElementById("handoff-business-name");
+          const bnEl2 = document.getElementById("handoff-business-name-2");
+          if (bnEl) bnEl.textContent = bizName;
+          if (bnEl2) bnEl2.textContent = bizName;
+
+          if (_product.isVerified === false) {
+            const badge = document.querySelector(".text-blue.tracking-wider");
+            if (badge) {
+              badge.textContent = "Unverified";
+              badge.classList.remove("text-blue", "border-blue/30", "bg-blue/10");
+              badge.classList.add("text-danger");
+            }
+          }
+          if (_product.description) {
+            const desc = document.getElementById("product-description");
+            if (desc) desc.textContent = _product.description;
+          }
+
+          loadJourney();
+        } catch (err) {
+          showToast(err.message || "Could not load product.", "error");
         }
       }
-      if (product.description) {
-        const desc = document.getElementById("product-description");
-        if (desc) desc.textContent = product.description;
-      }
 
-      // Load journey from API
       async function loadJourney() {
-        if (!parentQRID) return;
         try {
-          const res = await fetch(API_BASE + "/api/scan/history/" + parentQRID);
+          const res = await fetch(API_BASE + "/api/scan/history/" + encodeURIComponent(_parentQRID));
           if (!res.ok) return;
           const data = await res.json();
           const events = data.events || [];
           const genesisAt = data.genesisAt;
           const roleLabel = { transporter: "Transporter", retailer: "Retailer", unknown: "Unknown" };
-          const fmt = (iso) =>
-            new Date(iso).toLocaleString("en-NG", {
-              day: "numeric", month: "short", year: "numeric",
-              hour: "2-digit", minute: "2-digit",
-            });
 
           const genesisRow = `
             <div class="flex gap-4">
@@ -247,7 +266,7 @@
               </div>
               <div class="pb-2">
                 <p class="text-white font-medium text-[14px]">Manufacturer</p>
-                <p class="text-blue text-[12px] font-medium mt-0.5">QR codes generated — genesis</p>
+                <p class="text-blue text-[12px] font-medium mt-0.5">QR codes generated</p>
                 <p class="text-muted text-[11px] mt-1">${fmt(genesisAt)}</p>
               </div>
             </div>`;
@@ -267,34 +286,46 @@
 
           const timeline = document.getElementById("journey-timeline");
           const summary = document.getElementById("journey-summary");
-          timeline.innerHTML = genesisRow + eventRows;
-          summary.textContent = (events.length + 1) + " journey event" + (events.length + 1 !== 1 ? "s" : "") + " recorded";
-        } catch (e) {
-          /* non-fatal */
-        }
+          if (timeline) timeline.innerHTML = genesisRow + eventRows;
+          if (summary) summary.textContent = (events.length + 1) + " journey event" + (events.length + 1 !== 1 ? "s" : "") + " recorded";
+        } catch (e) { /* non-fatal */ }
       }
-      loadJourney();
 
-      // Wire confirm button
-      document
-        .getElementById("confirm-receipt-btn")
-        .addEventListener("click", async () => {
-          if (!scanId) {
-            window.location.href = "handoff_code.html";
-            return;
+      document.getElementById("confirm-receipt-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("confirm-receipt-btn");
+        btn.disabled = true;
+        btn.textContent = "Recording…";
+        try {
+          // Step 1: Record scan event in DB
+          const scanRes = await fetch(API_BASE + "/api/scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ parentQRID: _parentQRID }),
+          });
+          if (!scanRes.ok) {
+            const err = await scanRes.json();
+            throw new Error(err.error || "Failed to record scan.");
           }
-          try {
-            const res = await fetch(`${API_BASE}/api/scan/${scanId}/handoff`, {
-              method: "POST",
-            });
-            if (!res.ok) throw new Error();
-            const data = await res.json();
-            localStorage.setItem("handoff_code", data.codeValue);
-            window.location.href = "handoff_code.html";
-          } catch (e) {
-            showToast("Error generating handoff code. Please try again.", "error");
-          }
-        });
+          const scanData = await scanRes.json();
+
+          // Step 2: Generate handoff code (blockchain write goes here when implemented)
+          const codeRes = await fetch(API_BASE + "/api/scan/" + scanData.scanId + "/handoff", {
+            method: "POST",
+          });
+          if (!codeRes.ok) throw new Error("Failed to generate handoff code.");
+          const codeData = await codeRes.json();
+
+          localStorage.setItem("handoff_code", codeData.codeValue);
+          localStorage.setItem("scan_product", JSON.stringify(_product));
+          window.location.href = "handoff_code.html";
+        } catch (e) {
+          showToast(e.message || "Error. Please try again.", "error");
+          btn.disabled = false;
+          btn.innerHTML = 'Confirm pickup <span class="material-symbols-outlined text-[20px]">arrow_forward</span>';
+        }
+      });
+
+      init();
     </script>
   </body>
 </html>
