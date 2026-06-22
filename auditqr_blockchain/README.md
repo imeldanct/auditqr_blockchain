@@ -49,26 +49,28 @@ SME (Manufacturer)
       │   └── Child QRs (item stickers, N per batch) → affixed to individual units
       │
 Transporter
-      │ scans Parent QR (carton label) → Scan 1 recorded → redirected to handoff page
-      │ generates a 4-digit handoff code to share with retailer
+      │ scans Parent QR with any camera → ScanEvent saved to DB → lands on handoff.html
+      │ confirms pickup → blockchain write → sees 4-digit handoff code on handoff_code.html
+      │ shares code with retailer
       │
 Retailer
-      │ scans Parent QR → prompted for handoff code → enters code → Scan 2 recorded
-      │ batch stage advances to `delivered`
+      │ scans Parent QR with any camera → lands on code.html
+      │ enters 4-digit code + confirms receipt → ScanEvent saved to DB + blockchain write
+      │ batch stage advances to `delivered` → retailer_confirmed.html
       │
 Customer
-        scans Child QR (item sticker) → no API scan → redirected to journey.html
-                                         read-only verification, NO data stored.
+        scans Child QR with any camera → journey.html (read-only)
+                                          no API write, no record stored, ever.
 ```
 
 ### Two QR types, two different scan paths
 
 | QR Type | Format | Who scans it | What happens |
 |---------|--------|-------------|--------------|
-| **Parent QR** (carton label) | `auditqr://product?id=<parentQRID>` | Transporter, then Retailer | Stage-based flow — recorded, advances `currentStage` on the batch |
-| **Child QR** (item sticker) | `auditqr://verify?id=<childQRID>` | Customer (consumer) | Immediate redirect to `journey.html` — read-only, nothing recorded |
+| **Parent QR** (carton label) | `<frontendBase>/layout/journey.html?parentId=<uuid>` | Transporter, then Retailer — any scanner | Stage-based flow — recorded in DB and blockchain, advances `currentStage` on the batch |
+| **Child QR** (item sticker) | `<frontendBase>/layout/journey.html?childId=<uuid>` | Customer — any scanner | Opens `journey.html` directly — read-only, nothing recorded |
 
-The `qr_scanner.html` page distinguishes these at scan time. A Parent QR triggers `POST /api/scan`. A Child QR routes directly to `journey.html?childId=<uuid>` with no API call — the journey page then calls `GET /api/scan/child/:childQRID` to resolve the batch and display the full journey.
+Both QR types encode real HTTPS URLs. Any phone camera can scan them without a dedicated app. For a Parent QR, the URL resolves to a routing layer that checks the current stage and directs the scanner to the right page. For a Child QR, the URL opens the journey page directly with no routing step.
 
 ### Scan Role Determination (Parent QR only)
 
@@ -76,9 +78,17 @@ The system determines the participant's role automatically based on the `current
 
 | Current Stage | Role        | Action |
 | ------------- | ----------- | ------ |
-| `pending`     | Transporter | `ScanEvent` created, stage → `transit`; transporter generates and shares handoff code |
-| `transit`     | Retailer    | Routed to code entry. Entering the transporter's code records the retailer `ScanEvent` and advances stage → `delivered` |
-| `delivered`   | Read-only   | Scan succeeds but no stage change — product already confirmed as received |
+| `pending`     | Transporter | `ScanEvent` saved to DB immediately at scan time; transporter lands on `handoff.html`, confirms pickup, blockchain write fires, then sees the 4-digit handoff code on `handoff_code.html` |
+| `transit`     | Retailer    | Routed to `code.html`; entering the transporter's code triggers `POST /api/handoff/confirm` which saves the retailer `ScanEvent` to DB, fires the blockchain write, and advances stage → `delivered` |
+| `delivered`   | Read-only   | No further stage change — journey page shown as a completed audit trail |
+
+### Two-step recording logic
+
+Every scan event is recorded in two places: the database and the blockchain. The timing differs deliberately:
+
+- **Database write — at scan time (transporter) or at code confirmation (retailer).** The DB record is fast and captures the event the moment it happens. For the transporter, this is when the QR is scanned. For the retailer, the DB record is only created once the handoff code is validated — because the code is the proof that the handover actually happened.
+
+- **Blockchain write — at confirmation for both roles.** The transporter's blockchain write fires when they tap confirm on `handoff.html`. The retailer's fires when they enter the code and tap confirm on `code.html`. The confirmation is a deliberate physical action — tapping that button is the participant saying "I acknowledge this." That consent is what the blockchain record represents, not just the presence of a scan.
 
 ---
 
