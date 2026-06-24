@@ -772,6 +772,16 @@ body {
   margin-top: 6px;
 }
 
+/* ---- NUMBER INPUT: remove WebKit/Firefox spin buttons ---- */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* ---- COMPACT FOOTER ---- */
 .footer-compact {
   background: var(--color-bg);

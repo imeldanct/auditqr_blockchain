@@ -115,6 +115,20 @@ Every scan event is recorded in two places: the database and the blockchain. The
 
 Stage tracking (`currentStage: pending | transit | delivered`) lives on **`ParentQRCode`**, not on individual `ChildQRCode` records. This matches physical reality: the transporter picks up the whole carton, not individual items. Scan events reference `parentQRID` and reflect the state of the whole batch. Individual Child QRs are read-only windows into that same journey.
 
+### Optional product fields
+
+The `Product` model includes three optional fields that SMEs can supply at creation time:
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `weight` | `Float?` | Unit weight in kg — displayed on handoff.html and code.html for supply chain participants |
+| `mfgDate` | `DateTime?` | Manufacture date — displayed alongside product info; expiry date must be after this date (validated on the frontend before submission) |
+| `expDate` | `DateTime?` | Expiry date — displayed alongside product info |
+
+All three are nullable. Products created without them still work normally; the fields simply don't render on the handoff/verification pages. The `productPayload` helper in `scanController.ts` always includes them in the scan response so the frontend can show or hide them based on null checks.
+
+---
+
 ### Genesis event
 
 Every product journey begins with the QR generation itself. The genesis event is not a `ScanEvent` — it is the `ParentQRCode.createdAt` timestamp, always shown as the first entry in `journey.html`. This gives customers visibility that the product was registered and verified before it even moved.
@@ -294,7 +308,7 @@ The settings page fetches the current SME profile from `GET /api/sme/profile` on
 - **QR Generator**: `qrcodejs` from cdnjs — generates QR code images on the client
 - **QR Scanner**: `jsQR 1.4.0` from cdnjs — decodes QR codes from camera frames in `qr_scanner.html`
 - **ZIP Library**: `JSZip` from cdnjs — used for client-side ZIP generation on the QR download page
-- **Icon Font**: `material-symbols` npm package (self-hosted) — Material Symbols Outlined font served from `node_modules/material-symbols/` via `@font-face` in `design-tokens.css`; no CDN dependency at runtime
+- **Icon Font**: `material-symbols` npm package (self-hosted) — the `.woff2` variable font file is copied from `node_modules/material-symbols/` into `frontend/fonts/material-symbols-outlined.woff2` and referenced via `@font-face` in `design-tokens.css`; no CDN dependency at runtime. The copy step is necessary because `node_modules/` is not served as a web path by Live Server or Outray tunnels
 
 ---
 
@@ -420,9 +434,23 @@ Phone browser
   → JS calls API_BASE      → backend tunnel (3000) → Express → Supabase
 ```
 
-### Testing notes
+### Known issues
 
-_This section will be updated as live mobile testing progresses with Outray._
+**Supabase port 6543 blocked on mobile hotspot (Nigeria)**
+
+Nigerian mobile carriers block port 6543, which is the default PgBouncer transaction pooler port in Supabase connection strings. The backend will start but every database query fails with a `P1001: Can't reach database server` error.
+
+Fix: in `.env`, change `DATABASE_URL` from port `6543` to port `5432` on the same host:
+
+```
+# Wrong (blocked on mobile hotspot)
+DATABASE_URL="postgresql://postgres.xxx:password@aws-1-eu-west-2.pooler.supabase.com:6543/postgres"
+
+# Correct (session pooler — same host, different port)
+DATABASE_URL="postgresql://postgres.xxx:password@aws-1-eu-west-2.pooler.supabase.com:5432/postgres"
+```
+
+Port 5432 uses the session pooler instead of the transaction pooler. Both are on the same Supabase pooler host — only the port differs. This fix is only needed when running over a mobile hotspot; a standard broadband connection works on either port.
 
 ---
 

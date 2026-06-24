@@ -93,18 +93,46 @@
 
         <!-- Business Profile -->
         <section class="bg-surface border border-outline-variant rounded-xl overflow-hidden">
-          <div class="p-6 border-b border-outline-variant flex items-center gap-2">
-            <span class="material-symbols-outlined text-blue text-[18px]">business</span>
-            <h2 class="font-body text-[15px] font-medium text-white">Business Profile</h2>
+          <div class="p-6 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue text-[18px]">business</span>
+              <h2 class="font-body text-[15px] font-medium text-white">Business Profile</h2>
+            </div>
+            <button
+              id="edit-profile-btn"
+              class="flex items-center gap-1 text-blue text-[13px] font-medium hover:opacity-80 transition-opacity"
+              onclick="startEditProfile()"
+            >
+              <span class="material-symbols-outlined text-[16px]">edit</span>
+              Edit
+            </button>
           </div>
-          <div class="p-6 space-y-5">
+
+          <!-- Read-only display -->
+          <div class="p-6 space-y-5" id="profile-display">
+            <div>
+              <p class="form-label">Business Name</p>
+              <p id="display-business-name" class="text-white text-[14px] py-1">—</p>
+            </div>
+            <div>
+              <p class="form-label">Contact Email</p>
+              <p id="display-email" class="text-white text-[14px] py-1">—</p>
+            </div>
+            <div>
+              <p class="form-label">RC Number</p>
+              <p id="display-rc-number" class="text-muted text-[13px] font-mono py-1">—</p>
+              <p class="text-[11px] text-muted mt-1">RC number is your verified CAC identity and cannot be changed.</p>
+            </div>
+          </div>
+
+          <!-- Edit mode (hidden by default) -->
+          <div class="p-6 space-y-5 hidden" id="profile-edit">
             <div>
               <label class="form-label" for="business-name">Business Name</label>
               <input
                 class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
                 type="text"
                 id="business-name"
-                placeholder="Loading…"
               />
             </div>
             <div>
@@ -113,7 +141,7 @@
                 class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
                 type="email"
                 id="email"
-                placeholder="Loading…"
+                autocomplete="off"
               />
             </div>
             <div>
@@ -124,19 +152,27 @@
               </div>
               <p class="text-[11px] text-muted mt-1.5">RC number is your verified CAC identity and cannot be changed.</p>
             </div>
-            <button
-              class="w-full bg-blue hover:bg-blue-dark text-white py-3 rounded-lg font-body font-medium text-[14px] active:scale-[0.98] transition-all"
-              id="save-profile-btn"
-              onclick="saveProfile()"
-            >
-              Save changes
-            </button>
+            <div class="flex gap-3 pt-1">
+              <button
+                class="flex-1 border border-border text-muted py-3 rounded-lg font-body font-medium text-[14px] hover:text-white hover:border-white/30 transition-all"
+                onclick="cancelEditProfile()"
+              >
+                Cancel
+              </button>
+              <button
+                class="flex-1 bg-blue hover:bg-blue-dark text-white py-3 rounded-lg font-body font-medium text-[14px] active:scale-[0.98] transition-all"
+                id="save-profile-btn"
+                onclick="saveProfile()"
+              >
+                Save changes
+              </button>
+            </div>
           </div>
         </section>
 
         <!-- Change Password -->
         <section class="bg-surface border border-outline-variant rounded-xl overflow-hidden">
-          <div class="p-6 border-b border-outline-variant flex items-center gap-2">
+          <div class="p-6 flex items-center gap-2">
             <span class="material-symbols-outlined text-blue text-[18px]">lock</span>
             <h2 class="font-body text-[15px] font-medium text-white">Change Password</h2>
           </div>
@@ -149,7 +185,9 @@
                   type="password"
                   id="current-password"
                   placeholder="Enter your current password"
-                  autocomplete="current-password"
+                  autocomplete="off"
+                  readonly
+                  onfocus="this.removeAttribute('readonly')"
                 />
                 <button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors" onclick="toggleVisibility('current-password', 'icon-current')">
                   <span class="material-symbols-outlined text-[20px]" id="icon-current">visibility</span>
@@ -164,7 +202,9 @@
                   type="password"
                   id="new-password"
                   placeholder="Min. 8 characters"
-                  autocomplete="new-password"
+                  autocomplete="off"
+                  readonly
+                  onfocus="this.removeAttribute('readonly')"
                 />
                 <button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors" onclick="toggleVisibility('new-password', 'icon-new')">
                   <span class="material-symbols-outlined text-[20px]" id="icon-new">visibility</span>
@@ -179,7 +219,9 @@
                   type="password"
                   id="confirm-password"
                   placeholder="Re-enter new password"
-                  autocomplete="new-password"
+                  autocomplete="off"
+                  readonly
+                  onfocus="this.removeAttribute('readonly')"
                 />
                 <button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors" onclick="toggleVisibility('confirm-password', 'icon-confirm')">
                   <span class="material-symbols-outlined text-[20px]" id="icon-confirm">visibility</span>
@@ -231,51 +273,76 @@
         }
       }
 
-      // â”€â”€ Load current profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Load current profile ─────────────────────────────────────────
+      var _originalName = “”;
+      var _originalEmail = “”;
+
       async function loadProfile() {
         try {
-          const res = await apiFetch("/api/sme/profile");
+          const res = await apiFetch(“/api/sme/profile”);
           if (!res.ok) throw new Error();
           const data = await res.json();
-          document.getElementById("business-name").value = data.businessName || "";
-          document.getElementById("email").value = data.email || "";
-          document.getElementById("rc-number").textContent = data.rcNumber || "—";
+          _originalName = data.businessName || “”;
+          _originalEmail = data.email || “”;
+          document.getElementById(“display-business-name”).textContent = _originalName || “—“;
+          document.getElementById(“display-email”).textContent = _originalEmail || “—“;
+          document.getElementById(“display-rc-number”).textContent = data.rcNumber || “—“;
+          document.getElementById(“rc-number”).textContent = data.rcNumber || “—“;
         } catch {
-          showToast("Could not load profile.", "error");
+          showToast(“Could not load profile.”, “error”);
         }
       }
 
-      // â”€â”€ Save profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      function startEditProfile() {
+        document.getElementById(“business-name”).value = _originalName;
+        document.getElementById(“email”).value = _originalEmail;
+        document.getElementById(“profile-display”).classList.add(“hidden”);
+        document.getElementById(“profile-edit”).classList.remove(“hidden”);
+        document.getElementById(“edit-profile-btn”).classList.add(“hidden”);
+      }
+
+      function cancelEditProfile() {
+        document.getElementById(“profile-display”).classList.remove(“hidden”);
+        document.getElementById(“profile-edit”).classList.add(“hidden”);
+        document.getElementById(“edit-profile-btn”).classList.remove(“hidden”);
+      }
+
+      // ── Save profile ─────────────────────────────────────────────────
       async function saveProfile() {
-        const btn = document.getElementById("save-profile-btn");
-        const businessName = document.getElementById("business-name").value.trim();
-        const email = document.getElementById("email").value.trim();
+        const btn = document.getElementById(“save-profile-btn”);
+        const businessName = document.getElementById(“business-name”).value.trim();
+        const email = document.getElementById(“email”).value.trim();
 
         if (!businessName || !email) {
-          showToast("Business name and email cannot be empty.", "error");
+          showToast(“Business name and email cannot be empty.”, “error”);
           return;
         }
 
         btn.disabled = true;
-        btn.textContent = "Savingâ€¦";
+        btn.textContent = “Saving…”;
 
         try {
-          const res = await apiFetch("/api/sme/profile", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+          const res = await apiFetch(“/api/sme/profile”, {
+            method: “PATCH”,
+            headers: { “Content-Type”: “application/json” },
             body: JSON.stringify({ businessName, email }),
           });
           const data = await res.json();
           if (res.ok) {
-            showToast("Profile updated.", "success");
+            _originalName = businessName;
+            _originalEmail = email;
+            document.getElementById(“display-business-name”).textContent = businessName;
+            document.getElementById(“display-email”).textContent = email;
+            cancelEditProfile();
+            showToast(“Profile updated.”, “success”);
           } else {
-            showToast(data.error || "Could not update profile.", "error");
+            showToast(data.error || “Could not update profile.”, “error”);
           }
         } catch {
-          showToast("Network error. Please try again.", "error");
+          showToast(“Network error. Please try again.”, “error”);
         } finally {
           btn.disabled = false;
-          btn.textContent = "Save changes";
+          btn.textContent = “Save changes”;
         }
       }
 
@@ -300,7 +367,7 @@
         }
 
         btn.disabled = true;
-        btn.textContent = "Updatingâ€¦";
+        btn.textContent = "Updating…";
 
         try {
           const res = await apiFetch("/api/sme/password", {
