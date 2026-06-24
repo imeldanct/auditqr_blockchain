@@ -8,11 +8,99 @@ function closeSidebar() {
 }
 
 var _deleteProductId = null;
+var _allProducts = [];
 
 function openDeleteModal(btn) {
   _deleteProductId = btn.dataset.productId;
   document.getElementById("delete-modal-name").textContent = btn.dataset.productName;
   document.getElementById("delete-modal").classList.remove("hidden");
+}
+
+function renderProducts(products) {
+  var tbody = document.getElementById("products-table-body");
+  var countEl = document.getElementById("products-count");
+
+  if (countEl) {
+    countEl.textContent =
+      "Showing " +
+      products.length +
+      " product" +
+      (products.length !== 1 ? "s" : "");
+  }
+
+  if (products.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="6" class="px-6 py-4 text-center text-muted">No products found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = "";
+  products.forEach(function (p) {
+    var tr = document.createElement("tr");
+    tr.className = "hover:bg-white/[0.02] transition-colors";
+    var qrCount = p.childQRCount || 0;
+    var qrCell =
+      qrCount > 0
+        ? qrCount + " unit" + (qrCount !== 1 ? "s" : "")
+        : '<span class="text-muted/50">—</span>';
+    tr.innerHTML =
+      '<td class="px-6 py-4 font-body text-white text-[14px] font-medium">' +
+      p.productName +
+      "</td>" +
+      '<td class="px-6 py-4 font-mono text-muted text-[11px]">' +
+      p.productID.split("-")[0] +
+      "</td>" +
+      '<td class="px-6 py-4 font-body text-muted text-[13px]">' +
+      new Date(p.createdAt).toLocaleDateString() +
+      "</td>" +
+      '<td class="px-6 py-4 font-body text-muted text-[13px]">' +
+      (p.description || "N/A") +
+      "</td>" +
+      '<td class="px-6 py-4 font-mono text-muted text-[13px]">' +
+      qrCell +
+      "</td>" +
+      '<td class="px-6 py-4">' +
+      '<button class="text-danger/60 hover:text-danger transition-colors p-1 rounded hover:bg-danger/10"' +
+      ' title="Delete product" data-product-id="' +
+      p.productID +
+      '" data-product-name="' +
+      p.productName +
+      '"' +
+      ' onclick="openDeleteModal(this)">' +
+      '<span class="material-symbols-outlined text-[18px]">delete</span>' +
+      "</button>" +
+      "</td>";
+    tbody.appendChild(tr);
+  });
+}
+
+function applyFilters() {
+  var query = (document.getElementById("search-input").value || "").toLowerCase().trim();
+  var dateFilter = document.getElementById("date-filter").value;
+
+  var now = new Date();
+  var cutoff = null;
+  if (dateFilter === "Last 7 days") {
+    cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  } else if (dateFilter === "Last 30 days") {
+    cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  } else if (dateFilter === "Last year") {
+    cutoff = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+  }
+
+  var filtered = _allProducts.filter(function (p) {
+    var matchesQuery =
+      !query ||
+      p.productName.toLowerCase().includes(query) ||
+      p.productID.toLowerCase().includes(query) ||
+      (p.description && p.description.toLowerCase().includes(query));
+
+    var matchesDate = !cutoff || new Date(p.createdAt) >= cutoff;
+
+    return matchesQuery && matchesDate;
+  });
+
+  renderProducts(filtered);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -40,65 +128,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       response.json().then(function (products) {
-        var tbody = document.getElementById("products-table-body");
-        var countEl = document.getElementById("products-count");
-        if (countEl) {
-          countEl.textContent =
-            "Showing " +
-            products.length +
-            " product" +
-            (products.length !== 1 ? "s" : "");
-        }
-
-        if (products.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="6" class="px-6 py-4 text-center text-muted">No products found.</td></tr>';
-          return;
-        }
-
-        products.forEach(function (p) {
-          var tr = document.createElement("tr");
-          tr.className = "hover:bg-white/[0.02] transition-colors";
-          var qrCount = p.childQRCount || 0;
-          var qrCell =
-            qrCount > 0
-              ? qrCount + " unit" + (qrCount !== 1 ? "s" : "")
-              : '<span class="text-muted/50">\u2014</span>';
-          tr.innerHTML =
-            '<td class="px-6 py-4 font-body text-white text-[14px] font-medium">' +
-            p.productName +
-            "</td>" +
-            '<td class="px-6 py-4 font-mono text-muted text-[11px]">' +
-            p.productID.split("-")[0] +
-            "</td>" +
-            '<td class="px-6 py-4 font-body text-muted text-[13px]">' +
-            new Date(p.createdAt).toLocaleDateString() +
-            "</td>" +
-            '<td class="px-6 py-4 font-body text-white text-[13px]">' +
-            (p.description || "N/A") +
-            "</td>" +
-            '<td class="px-6 py-4 font-mono text-muted text-[13px]">' +
-            qrCell +
-            "</td>" +
-            '<td class="px-6 py-4">' +
-            '<button class="text-danger/60 hover:text-danger transition-colors p-1 rounded hover:bg-danger/10"' +
-            ' title="Delete product" data-product-id="' +
-            p.productID +
-            '" data-product-name="' +
-            p.productName +
-            '"' +
-            ' onclick="openDeleteModal(this)">' +
-            '<span class="material-symbols-outlined text-[18px]">delete</span>' +
-            "</button>" +
-            "</td>";
-          tbody.appendChild(tr);
-        });
+        _allProducts = products;
+        renderProducts(_allProducts);
       });
     })
     .catch(function (error) {
       console.error(error);
       showToast("Failed to load products. Please refresh.", "error");
     });
+
+  document.getElementById("search-input").addEventListener("input", applyFilters);
+  document.getElementById("date-filter").addEventListener("change", applyFilters);
 
   document.getElementById("cancel-delete-btn").addEventListener("click", function () {
     document.getElementById("delete-modal").classList.add("hidden");
@@ -116,8 +156,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!res || !res.ok) throw new Error("Delete failed");
         document.getElementById("delete-modal").classList.add("hidden");
         showToast("Product deleted.", "success");
-        var row = document.querySelector('[data-product-id="' + _deleteProductId + '"]');
-        if (row) row.closest("tr").remove();
+        _allProducts = _allProducts.filter(function (p) {
+          return p.productID !== _deleteProductId;
+        });
+        applyFilters();
         _deleteProductId = null;
       })
       .catch(function (err) {

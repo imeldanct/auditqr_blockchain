@@ -43,14 +43,13 @@
 </div>
 
 <!-- Main content (hidden until loaded) -->
-<main id="main-view" class="flex-grow page-offset pb-16 glow-blue-top px-6 hidden">
-<div class="page-container-narrow space-y-12">
+<main id="main-view" class="flex-grow page-offset pb-16 glow-blue-top hidden">
+<div class="page-container-narrow space-y-8">
 
   <!-- Product Header -->
   <section class="space-y-2">
     <div class="space-y-0.5">
       <h1 id="product-name" class="text-[32px] sm:text-[38px] md:text-5xl font-headline font-medium text-white tracking-tight">—</h1>
-      <p id="item-number" class="font-mono text-[11px] text-muted hidden">Item —</p>
     </div>
     <div class="space-y-1">
       <span id="business-name" class="font-medium text-sm block">—</span>
@@ -77,9 +76,9 @@
     <div class="space-y-1">
       <h2 class="font-headline text-3xl font-medium text-white">Product Journey</h2>
     </div>
-    <div class="bg-surface border border-outline-variant rounded-xl p-4 sm:p-8 relative">
-      <div class="absolute left-[23px] sm:left-[39px] top-[48px] bottom-[48px] w-px bg-muted/20"></div>
-      <div id="timeline" class="space-y-10 relative">
+    <div class="bg-surface border border-outline-variant rounded-xl p-5 relative">
+      <div class="absolute left-[27px] top-[48px] bottom-[48px] w-px bg-muted/20"></div>
+      <div id="timeline" class="space-y-6 relative">
         <!-- Filled dynamically -->
       </div>
       <div class="mt-10 pt-6 border-t border-muted/10 text-center">
@@ -160,9 +159,6 @@
         <div class="space-y-1">
           <div class="flex items-center gap-2">
             <span class="text-white font-medium">${label}</span>
-            ${event.ipLocation && event.ipLocation !== "unknown"
-              ? `<span class="text-blue text-xs">(${event.ipLocation})</span>`
-              : ""}
           </div>
           <div class="text-xs font-body text-blue">${actionLabel}</div>
           <div class="text-muted text-[11px]">${formatDate(event.timestamp)}</div>
@@ -197,11 +193,6 @@
 
       // Fill header
       document.getElementById("product-name").textContent = product.productName;
-      if (itemNumber) {
-        var itemEl = document.getElementById("item-number");
-        itemEl.textContent = `Item #${itemNumber}`;
-        itemEl.classList.remove("hidden");
-      }
       document.getElementById("business-name").textContent = product.businessName;
       document.getElementById("cac-number").textContent = product.rcNumber;
       if (product.isVerified) {

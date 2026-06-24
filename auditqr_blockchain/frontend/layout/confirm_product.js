@@ -59,7 +59,10 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify({
           productName: productName,
           description: description,
-          category: category,
+          category: category || null,
+          weight: weight || null,
+          mfgDate: mfgDate || null,
+          expDate: expDate || null,
         }),
       });
       if (!res || !res.ok) throw new Error("Failed to create product");

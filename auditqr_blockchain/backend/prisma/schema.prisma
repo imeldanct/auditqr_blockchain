@@ -24,12 +24,15 @@ model SME {
 }
 
 model Product {
-  productID   String   @id @default(uuid())
+  productID   String    @id @default(uuid())
   smeID       String
   productName String
   description String
   category    String?
-  createdAt   DateTime @default(now())
+  weight      Float?
+  mfgDate     DateTime?
+  expDate     DateTime?
+  createdAt   DateTime  @default(now())
 
   sme         SME      @relation(fields: [smeID], references: [smeID])
   parentQRs   ParentQRCode[]

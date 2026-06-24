@@ -11,6 +11,10 @@ function productPayload(parentQR: any) {
   return {
     productName: parentQR.product.productName,
     description: parentQR.product.description,
+    category: parentQR.product.category,
+    weight: parentQR.product.weight,
+    mfgDate: parentQR.product.mfgDate,
+    expDate: parentQR.product.expDate,
     businessName: parentQR.product.sme.businessName,
     rcNumber: parentQR.product.sme.rcNumber,
     isVerified: parentQR.product.sme.isVerified,

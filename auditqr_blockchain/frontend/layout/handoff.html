@@ -51,30 +51,29 @@
     <main class="flex-1 page-offset pb-12">
       <div class="page-container-narrow">
         <section class="mb-8 text-left">
-          <p class="font-label text-[11px] uppercase tracking-widest text-muted mb-1">
+          <p class="font-label text-[11px] uppercase tracking-widest text-muted mb-2">
             You are picking up
           </p>
           <h1
-            class="font-headline text-4xl font-medium text-white mb-2"
+            class="font-headline text-4xl font-medium text-white mb-4"
             id="handoff-product-name"
           >
             —
           </h1>
-          <div class="flex flex-wrap items-center gap-3 mb-4">
-            <span class="font-mono text-[11px] text-muted" id="handoff-item-number"
-              >Item #—</span
-            >
-            <div class="w-1 h-1 rounded-full bg-muted/30"></div>
-            <span class="font-body text-[13px] text-muted" id="handoff-date">—</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="font-body text-[15px] text-white" id="handoff-business-name"
-              >—</span
-            >
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="font-body text-[14px] text-white" id="handoff-business-name">—</span>
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue/10 border border-blue/30 text-blue tracking-wider uppercase"
-              >CAC Verified</span
+              id="handoff-cac-badge"
+              class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue/10 border border-blue/30 text-blue tracking-wider uppercase"
             >
+              <span class="material-symbols-outlined text-[12px]" style="font-variation-settings:'FILL' 1">verified</span>
+              CAC Verified
+            </span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-mono text-[11px] text-muted" id="handoff-item-number">Batch · —</span>
+            <div class="w-1 h-1 rounded-full bg-muted/30"></div>
+            <span class="font-mono text-[11px] text-muted" id="handoff-date">—</span>
           </div>
         </section>
 
@@ -85,15 +84,26 @@
             >
               Product Information
             </h2>
-            <div class="space-y-3">
-              <div class="pt-2">
-                <span class="text-muted text-[13px] block mb-1">Description</span>
-                <p
-                  class="text-white text-[14px] leading-relaxed"
-                  id="product-description"
-                >
-                  —
-                </p>
+            <div class="space-y-4">
+              <div>
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Description</span>
+                <p class="text-white text-[14px] leading-relaxed" id="product-description">—</p>
+              </div>
+              <div id="product-category-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Category</span>
+                <p class="text-white text-[14px]" id="product-category">—</p>
+              </div>
+              <div id="product-weight-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Weight per unit</span>
+                <p class="text-white text-[14px]" id="product-weight">—</p>
+              </div>
+              <div id="product-mfg-date-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Mfg. date</span>
+                <p class="text-white text-[14px]" id="product-mfg-date">—</p>
+              </div>
+              <div id="product-exp-date-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Expiry date</span>
+                <p class="text-white text-[14px]" id="product-exp-date">—</p>
               </div>
             </div>
           </div>
@@ -102,14 +112,11 @@
         <section class="mb-6">
           <div class="bg-surface border border-outline-variant rounded-xl p-5">
             <div class="flex justify-between items-start mb-6">
-              <div>
-                <h2
-                  class="font-label text-[11px] font-medium text-muted uppercase tracking-widest"
-                >
-                  Journey So Far
-                </h2>
-                <p class="text-[11px] text-blue mt-1" id="journey-summary">Loading…</p>
-              </div>
+              <h2
+                class="font-label text-[11px] font-medium text-muted uppercase tracking-widest"
+              >
+                Product Journey
+              </h2>
               <span class="material-symbols-outlined text-muted/40">timeline</span>
             </div>
             <div class="relative pl-2" id="journey-timeline">
@@ -165,19 +172,12 @@
           </div>
         </section>
 
-        <footer class="pt-8 border-t border-border flex flex-col items-center gap-4">
-          <div class="flex items-center gap-2 opacity-40 grayscale">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span
-            ><span class="font-label text-[10px] tracking-widest uppercase"
-              >Secured by AuditQR</span
-            >
-          </div>
-          <p class="font-body text-[11px] text-muted text-center">
-            © 2026 AuditQR · Built for Nigerian SMEs
-          </p>
-        </footer>
       </div>
     </main>
+
+    <footer class="footer-compact">
+      <p>© 2026 AuditQR · Built for Nigerian SMEs</p>
+    </footer>
 
     <div class="glow-blue-center"></div>
 
@@ -230,17 +230,38 @@
           if (bnEl) bnEl.textContent = bizName;
           if (bnEl2) bnEl2.textContent = bizName;
 
-          if (_product.isVerified === false) {
-            const badge = document.querySelector(".text-blue.tracking-wider");
-            if (badge) {
+          const badge = document.getElementById("handoff-cac-badge");
+          if (badge) {
+            badge.classList.remove("hidden");
+            if (!_product.isVerified) {
               badge.textContent = "Unverified";
               badge.classList.remove("text-blue", "border-blue/30", "bg-blue/10");
-              badge.classList.add("text-danger");
+              badge.classList.add("text-danger", "border-danger/30", "bg-danger/10");
             }
           }
+
           if (_product.description) {
             const desc = document.getElementById("product-description");
             if (desc) desc.textContent = _product.description;
+          }
+          if (_product.category) {
+            document.getElementById("product-category").textContent = _product.category;
+            document.getElementById("product-category-row").classList.remove("hidden");
+          }
+          if (_product.weight != null) {
+            document.getElementById("product-weight").textContent = _product.weight + " kg";
+            document.getElementById("product-weight-row").classList.remove("hidden");
+          }
+          const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" }) : null;
+          const mfgFmt = fmtDate(_product.mfgDate);
+          const expFmt = fmtDate(_product.expDate);
+          if (mfgFmt) {
+            document.getElementById("product-mfg-date").textContent = mfgFmt;
+            document.getElementById("product-mfg-date-row").classList.remove("hidden");
+          }
+          if (expFmt) {
+            document.getElementById("product-exp-date").textContent = expFmt;
+            document.getElementById("product-exp-date-row").classList.remove("hidden");
           }
 
           loadJourney();
@@ -285,9 +306,7 @@
             </div>`).join("");
 
           const timeline = document.getElementById("journey-timeline");
-          const summary = document.getElementById("journey-summary");
           if (timeline) timeline.innerHTML = genesisRow + eventRows;
-          if (summary) summary.textContent = (events.length + 1) + " journey event" + (events.length + 1 !== 1 ? "s" : "") + " recorded";
         } catch (e) { /* non-fatal */ }
       }
 

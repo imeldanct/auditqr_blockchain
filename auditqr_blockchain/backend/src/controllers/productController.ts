@@ -9,10 +9,13 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const { productName, description, category } = req.body as {
+  const { productName, description, category, weight, mfgDate, expDate } = req.body as {
     productName: string;
     description: string;
     category?: string;
+    weight?: number | string;
+    mfgDate?: string;
+    expDate?: string;
   };
 
   try {
@@ -22,6 +25,9 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
         productName,
         description,
         category: category || null,
+        weight: weight != null && weight !== "" ? parseFloat(String(weight)) : null,
+        mfgDate: mfgDate ? new Date(mfgDate) : null,
+        expDate: expDate ? new Date(expDate) : null,
       },
     });
 
