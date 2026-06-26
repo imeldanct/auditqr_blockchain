@@ -110,6 +110,22 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  // ── Skeleton rows while products load ─────────────────────────────
+  (function () {
+    function skRow(widths) {
+      var html = "<tr>";
+      for (var i = 0; i < widths.length; i++) {
+        html += '<td class="px-6 py-4"><span class="skeleton block rounded" style="height:0.75rem;width:' + widths[i] + '"></span></td>';
+      }
+      return html + "</tr>";
+    }
+    var tb = document.getElementById("products-table-body");
+    if (tb) tb.innerHTML =
+      skRow(["65%", "45%", "55%", "75%", "30%", "15%"]) +
+      skRow(["50%", "38%", "60%", "85%", "25%", "15%"]) +
+      skRow(["70%", "42%", "50%", "65%", "35%", "15%"]);
+  })();
+
   Promise.all([apiFetch("/api/sme/profile"), apiFetch("/api/products")])
     .then(function (results) {
       var profileRes = results[0];

@@ -40,6 +40,29 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  // ── Skeleton state while data loads ──────────────────────────────
+  function skRow(cols, widths) {
+    var html = "<tr>";
+    for (var i = 0; i < cols; i++) {
+      html += '<td class="px-6 py-4"><span class="skeleton block rounded" style="height:0.75rem;width:' + (widths[i] || "50%") + '"></span></td>';
+    }
+    return html + "</tr>";
+  }
+  ["stat-pending", "stat-transit", "stat-delivered"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '<span class="skeleton block rounded" style="height:1.75rem;width:2.5rem"></span>';
+  });
+  var prodTbody = document.getElementById("products-table-body");
+  if (prodTbody) prodTbody.innerHTML =
+    skRow(5, ["65%", "45%", "55%", "75%", "30%"]) +
+    skRow(5, ["50%", "38%", "60%", "85%", "25%"]) +
+    skRow(5, ["70%", "42%", "50%", "65%", "35%"]);
+  var actTbody = document.getElementById("activity-tbody");
+  if (actTbody) actTbody.innerHTML =
+    skRow(4, ["60%", "35%", "55%", "65%"]) +
+    skRow(4, ["75%", "30%", "50%", "70%"]) +
+    skRow(4, ["55%", "40%", "60%", "60%"]);
+
   Promise.all([apiFetch("/api/sme/profile"), apiFetch("/api/products")])
     .then(function (results) {
       var profileRes = results[0];
@@ -63,8 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var recent = products.slice(0, 3);
             if (recent.length === 0) {
               tbody.innerHTML =
-                '<tr><td colspan="5" class="text-center text-muted text-sm py-8 px-4">' +
-                'No products yet. <a href="create_product.html" class="text-blue hover:underline">Create your first product.</a></td></tr>';
+                '<tr><td colspan="5" class="text-center text-muted text-sm py-8 px-4">No products yet.</td></tr>';
             } else {
               recent.forEach(function (p) {
                 var date = new Date(p.createdAt).toLocaleDateString("en-NG", {

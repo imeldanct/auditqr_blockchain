@@ -112,15 +112,15 @@
           <div class="p-6 space-y-5" id="profile-display">
             <div>
               <p class="form-label">Business Name</p>
-              <p id="display-business-name" class="text-white text-[14px] py-1">—</p>
+              <p id="display-business-name" class="text-white text-[14px] py-1"><span class="skeleton block rounded" style="height:1rem;width:14rem;margin-top:2px"></span></p>
             </div>
             <div>
               <p class="form-label">Contact Email</p>
-              <p id="display-email" class="text-white text-[14px] py-1">—</p>
+              <p id="display-email" class="text-white text-[14px] py-1"><span class="skeleton block rounded" style="height:1rem;width:11rem;margin-top:2px"></span></p>
             </div>
             <div>
               <p class="form-label">RC Number</p>
-              <p id="display-rc-number" class="text-muted text-[13px] font-mono py-1">—</p>
+              <p id="display-rc-number" class="text-muted text-[13px] font-mono py-1"><span class="skeleton block rounded" style="height:0.875rem;width:8rem;margin-top:2px"></span></p>
               <p class="text-[11px] text-muted mt-1">RC number is your verified CAC identity and cannot be changed.</p>
             </div>
           </div>
@@ -280,7 +280,7 @@
       async function loadProfile() {
         try {
           const res = await apiFetch(“/api/sme/profile”);
-          if (!res.ok) throw new Error();
+          if (!res || !res.ok) throw new Error(“HTTP “ + (res ? res.status : “null”));
           const data = await res.json();
           _originalName = data.businessName || “”;
           _originalEmail = data.email || “”;
@@ -288,7 +288,11 @@
           document.getElementById(“display-email”).textContent = _originalEmail || “—“;
           document.getElementById(“display-rc-number”).textContent = data.rcNumber || “—“;
           document.getElementById(“rc-number”).textContent = data.rcNumber || “—“;
-        } catch {
+        } catch (e) {
+          console.error(“loadProfile failed:”, e);
+          document.getElementById(“display-business-name”).textContent = “—“;
+          document.getElementById(“display-email”).textContent = “—“;
+          document.getElementById(“display-rc-number”).textContent = “—“;
           showToast(“Could not load profile.”, “error”);
         }
       }

@@ -294,7 +294,7 @@ The SME dashboard sidebar includes an **Account Settings** page. The scope of wh
 Only SMEs have accounts in this system. Distributors and retailers scan QR codes without logging in — they are participants in the supply chain, not platform users. There is no multi-user access pattern to support in v1, so team management was ruled out entirely rather than built as a stub.
 
 **How updates work:**
-The settings page fetches the current SME profile from `GET /api/sme/profile` on load and pre-fills the name and email fields. On save, a `PATCH /api/sme/profile` call updates only the changed fields. Password changes go through `PATCH /api/sme/password`, which verifies the current password server-side before hashing and storing the new one. Supabase Auth handles the email/password layer; the SME table in Prisma holds the business profile.
+The settings page fetches the current SME profile from `GET /api/sme/profile` on load. On load, the Business Name, Contact Email, and RC Number fields display a skeleton shimmer animation while the request is in flight. Once the response arrives the real values replace the skeleton. Password fields are intentionally left empty — the user must type their current password to prove identity before a change is accepted. On save, a `PATCH /api/sme/profile` call updates only the changed fields. Password changes go through `PATCH /api/sme/password`, which verifies the current password server-side before hashing and storing the new one.
 
 ---
 
@@ -309,6 +309,7 @@ The settings page fetches the current SME profile from `GET /api/sme/profile` on
 - **QR Scanner**: `jsQR 1.4.0` from cdnjs — decodes QR codes from camera frames in `qr_scanner.html`
 - **ZIP Library**: `JSZip` from cdnjs — used for client-side ZIP generation on the QR download page
 - **Icon Font**: `material-symbols` npm package (self-hosted) — the `.woff2` variable font file is copied from `node_modules/material-symbols/` into `frontend/fonts/material-symbols-outlined.woff2` and referenced via `@font-face` in `design-tokens.css`; no CDN dependency at runtime. The copy step is necessary because `node_modules/` is not served as a web path by Live Server or Outray tunnels
+- **Skeleton loading states**: all pages that fetch data on load (dashboard, products list, account settings) show a shimmer placeholder animation while the API request is in flight. The `.skeleton` utility class is defined in `design-tokens.css`. Stat cards, table rows, and profile fields all use it — setting `textContent` or `innerHTML` on the element automatically clears the skeleton and shows real data once it arrives
 
 ---
 

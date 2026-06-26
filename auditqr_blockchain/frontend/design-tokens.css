@@ -782,6 +782,24 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* ---- SKELETON LOADER ---- */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
 /* ---- COMPACT FOOTER ---- */
 .footer-compact {
   background: var(--color-bg);
