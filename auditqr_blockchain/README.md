@@ -330,6 +330,126 @@ Both QR types encode real HTTPS URLs so that a native phone camera can open them
 
 ---
 
+## Sprint Implementation Log
+
+Documents how each sprint was built and what files were touched. Sprint 5 includes a step-by-step guide for completion.
+
+---
+
+### Sprint 1 — SME Registration and Authentication
+
+**What was built:** Business registration form, CAC verification, JWT login and session management.
+
+**How it was achieved:**
+
+1. Created `backend/src/services/cacService.ts` — `lookupCAC()` function that checks an RC number against `src/data/cac-mock-db.json`. Returns a typed result with field-specific errors (e.g. `field: "businessName"`) so the UI highlights the exact wrong input.
+2. Created `backend/src/controllers/smeController.ts` — `verifyCac`, `register`, `login`, `getProfile`, `updateProfile`, `updatePassword` endpoints.
+3. Created `backend/src/routes/smeRoutes.ts` — wires routes to controller. Auth-protected routes go through `authMiddleware.ts`.
+4. Created `backend/src/middleware/authMiddleware.ts` — verifies the JWT from the `Authorization` header and attaches `req.smeId` to the request.
+5. JWT secret generated once via `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` and stored in `.env` as `JWT_SECRET`.
+6. Frontend pages built: `register.html` (CAC check → passes verified details to next page), `create_account.html` (completes registration), `login.html` (login → stores token in `localStorage` as `auditqr_token`).
+7. `frontend/config.js` created — exports `API_BASE`, `FRONTEND_BASE`, and `apiFetch()` (attaches JWT to every API call, redirects to login on 401).
+
+---
+
+### Sprint 2 — QR Code Generation
+
+**What was built:** Create product form, Parent and Child QR code generation, QR download page.
+
+**How it was achieved:**
+
+1. Created `backend/src/controllers/productController.ts` — `createProduct`, `getProducts`, `deleteProduct` endpoints. Product has optional fields: `weight`, `mfgDate`, `expDate`.
+2. Created `backend/src/controllers/qrController.ts` — `generateQR` endpoint. Takes a `quantity`, creates one `ParentQRCode` row and N `ChildQRCode` rows via `createMany`. Parent encodes `handoff.html?parentId=<uuid>`, each child encodes `journey.html?childId=<uuid>` — both as full HTTPS URLs using `FRONTEND_BASE` from `.env`.
+3. Frontend pages built: `create_product.html` (form with validation — expiry must be after manufacture date), `qr_ready.html` (shows parent QR + all child QRs, downloads child QRs as a single ZIP using JSZip).
+
+---
+
+### Sprint 3 — Handoff Protocol
+
+**What was built:** Camera-based QR scanner, handoff code generation, supply chain stage progression.
+
+**How it was achieved:**
+
+1. Extended `backend/src/controllers/scanController.ts`:
+   - `recordScan` — called when a Parent QR is scanned. If `currentStage` is `pending`, creates a `ScanEvent` with `scannerRole: "transporter"` and advances stage to `transit`. If `transit`, checks a handoff code exists and returns `needsConfirmation: true`.
+   - `generateHandoffCode` — creates a 4-digit `HandoffCode` record linked to the transporter's `ScanEvent`. Idempotent — returns existing code if already generated.
+   - `confirmHandoff` — validates the entered code against the stored `HandoffCode`, marks it used, creates a `ScanEvent` with `scannerRole: "retailer"`, advances stage to `delivered`. All three DB writes happen atomically in sequence.
+2. Frontend pages built: `handoff.html` (entry point for any Parent QR scan — routes by stage), `handoff_code.html` (displays 4-digit code to transporter), `code.html` (retailer enters code), `retailer_confirmed.html` (retailer success screen).
+3. `qr_scanner.html` built — uses `jsQR` to decode Child QR codes from camera frames and redirect to `journey.html`. Restricted to Child QRs only.
+
+---
+
+### Sprint 4 — Customer Journey Display
+
+**What was built:** Customer-facing product journey timeline, SME dashboard, full products list, account settings.
+
+**How it was achieved:**
+
+1. Extended `scanController.ts`:
+   - `getScanHistory` — returns all scan events for a Parent QR, ordered by timestamp, alongside product details.
+   - `getJourneyForChildQR` — looks up a Child QR, walks up to its Parent QR, and returns the same scan history. This is what the customer-facing journey page calls.
+2. Extended `smeController.ts`:
+   - `getStats` — returns pending, in-transit, and delivered counts for the SME's dashboard stat cards.
+   - `getItems` — returns all Child QR codes grouped by product, with current stage and last scan time, for the activity table.
+3. Frontend pages built:
+   - `journey.html` — customer-facing, read-only. Shows genesis event (QR creation), then each transporter/retailer scan event in a timeline. Opened by Child QR.
+   - `dashboard.html` — SME overview. Three stat cards (pending/transit/delivered), recent products table, recent activity table. All show skeleton shimmer while loading.
+   - `products_list.html` — full product list with live search and date filter. Delete product via modal.
+   - `account_settings.html` — business name and email editable (pre-filled from API on load with skeleton states). RC number read-only. Password change requires current password.
+   - `scan_events.html` — per-unit item tracking page for the SME.
+
+---
+
+### Sprint 5 — Blockchain Logging *(in progress)*
+
+**What needs to be built:** Write each scan event to Solana Devnet as a memo transaction. Store the transaction hash in the database. Display it on the journey page.
+
+**Step-by-step:**
+
+**Step 1 — Generate a Solana keypair**
+
+Run this in the `backend/` directory:
+```bash
+node -e "const {Keypair} = require('@solana/web3.js'); const kp = Keypair.generate(); console.log('SECRET:', Buffer.from(kp.secretKey).toString('base64')); console.log('ADDRESS:', kp.publicKey.toBase58());"
+```
+Copy both values.
+
+**Step 2 — Add the keypair to `.env`**
+```
+SOLANA_KEYPAIR="<the base64 secret from Step 1>"
+SOLANA_PUBLIC_KEY="<the address from Step 1>"
+```
+
+**Step 3 — Fund the wallet with devnet SOL**
+
+Go to `https://faucet.solana.com` in a browser, paste the `SOLANA_PUBLIC_KEY` address, and request 2 SOL on Devnet. Free, no real money. Required so the backend can pay for transaction fees.
+
+**Step 4 — Create `src/services/solanaService.ts`**
+
+This file connects to Solana Devnet, builds a memo transaction containing `AUDITQR|parentQRID|scannerRole|ipLocation|timestamp`, submits it, and returns the transaction signature (the hash). If it fails for any reason, it returns `null` so the scan still works.
+
+**Step 5 — Update `src/controllers/scanController.ts`**
+
+Import `writeScanToChain` from `solanaService.ts`. After each `prisma.scanEvent.create()` call in both `recordScan` (transporter) and `confirmHandoff` (retailer), fire the blockchain write in the background — do not await it. When it resolves, update the scan event record with the returned `txHash`. The scan endpoint responds to the user immediately without waiting for the blockchain.
+
+**Step 6 — Expose `txHash` in scan history responses**
+
+In both `getScanHistory` and `getJourneyForChildQR`, add `txHash: e.txHash ?? null` to the event map so the frontend receives it.
+
+**Step 7 — Update `journey.html`**
+
+For each scan event in the timeline, show the `txHash` as a clickable link:
+```
+https://explorer.solana.com/tx/<txHash>?cluster=devnet
+```
+If `txHash` is null, show `"Pending"` in muted text instead.
+
+**Step 8 — Test end to end**
+
+Restart the backend, perform a full flow (transporter scan → handoff code → retailer confirm), then open the customer journey page. Each scan event should show a Solana Explorer link within a few seconds of the scan.
+
+---
+
 ## Key Pages
 
 | Page                  | Purpose                                                  |
