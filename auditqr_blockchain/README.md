@@ -404,9 +404,22 @@ Documents how each sprint was built and what files were touched. Sprint 5 includ
 
 **What needs to be built:** Write each scan event to Solana Devnet as a memo transaction. Store the transaction hash in the database. Display it on the journey page.
 
+**Decision — Local test validator, not Devnet**
+
+Two options were considered for the blockchain environment:
+- **Solana Devnet** — public test network. Requires funding a wallet via a web faucet and an active internet connection for every transaction. 
+
+- **Local test validator** — runs on `localhost:8899`. No internet dependency, unlimited SOL, near-instant confirmations, works in any network condition.
+
+The local validator was chosen because reliability during development and demos matters more than public block explorer visibility at this stage. Switching to Devnet later is a one-line change in `solanaService.ts`.
+
 **Step-by-step:**
 
-**Step 1 — Generate a Solana keypair**
+**Step 1 — Install the Solana CLI**
+
+Follow the instructions at `https://solana.com/docs/intro/installation`. This is a one-time setup.
+
+**Step 2 — Generate a Solana keypair**
 
 Run this in the `backend/` directory:
 ```bash
@@ -414,39 +427,39 @@ node -e "const {Keypair} = require('@solana/web3.js'); const kp = Keypair.genera
 ```
 Copy both values.
 
-**Step 2 — Add the keypair to `.env`**
+**Step 3 — Add the keypair to `.env`**
 ```
-SOLANA_KEYPAIR="<the base64 secret from Step 1>"
-SOLANA_PUBLIC_KEY="<the address from Step 1>"
+SOLANA_KEYPAIR="<the base64 secret from Step 2>"
+SOLANA_PUBLIC_KEY="<the address from Step 2>"
 ```
 
-**Step 3 — Fund the wallet with devnet SOL**
+**Step 4 — Start the local validator**
 
-Go to `https://faucet.solana.com` in a browser, paste the `SOLANA_PUBLIC_KEY` address, and request 2 SOL on Devnet. Free, no real money. Required so the backend can pay for transaction fees.
+In a separate terminal (keep it running alongside the backend):
+```bash
+solana-test-validator
+```
+The validator runs on `http://localhost:8899` and automatically has SOL available — no faucet needed.
 
-**Step 4 — Create `src/services/solanaService.ts`**
+**Step 5 — Create `src/services/solanaService.ts`**
 
-This file connects to Solana Devnet, builds a memo transaction containing `AUDITQR|parentQRID|scannerRole|ipLocation|timestamp`, submits it, and returns the transaction signature (the hash). If it fails for any reason, it returns `null` so the scan still works.
+This file connects to `http://localhost:8899`, builds a memo transaction containing `AUDITQR|parentQRID|scannerRole|ipLocation|timestamp`, submits it, and returns the transaction signature (the hash). If it fails for any reason, it returns `null` so the scan still works.
 
-**Step 5 — Update `src/controllers/scanController.ts`**
+**Step 6 — Update `src/controllers/scanController.ts`**
 
 Import `writeScanToChain` from `solanaService.ts`. After each `prisma.scanEvent.create()` call in both `recordScan` (transporter) and `confirmHandoff` (retailer), fire the blockchain write in the background — do not await it. When it resolves, update the scan event record with the returned `txHash`. The scan endpoint responds to the user immediately without waiting for the blockchain.
 
-**Step 6 — Expose `txHash` in scan history responses**
+**Step 7 — Expose `txHash` in scan history responses**
 
 In both `getScanHistory` and `getJourneyForChildQR`, add `txHash: e.txHash ?? null` to the event map so the frontend receives it.
 
-**Step 7 — Update `journey.html`**
+**Step 8 — Update `journey.html`**
 
-For each scan event in the timeline, show the `txHash` as a clickable link:
-```
-https://explorer.solana.com/tx/<txHash>?cluster=devnet
-```
-If `txHash` is null, show `"Pending"` in muted text instead.
+For each scan event in the timeline, show the `txHash` as a clickable link to the local validator explorer, or just display the raw hash. If `txHash` is null (write still in progress), show `"Pending"` in muted text instead.
 
-**Step 8 — Test end to end**
+**Step 9 — Test end to end**
 
-Restart the backend, perform a full flow (transporter scan → handoff code → retailer confirm), then open the customer journey page. Each scan event should show a Solana Explorer link within a few seconds of the scan.
+With the validator running, restart the backend, perform a full flow (transporter scan → handoff code → retailer confirm), then open the customer journey page. Each scan event should show a transaction hash within a few seconds of the scan.
 
 ---
 
@@ -578,6 +591,19 @@ Port 5432 uses the session pooler instead of the transaction pooler. Both are on
 ## Blockchain Architecture (Solana)
 
 The target chain is **Solana** — chosen for low transaction fees and high throughput, which matters when writing a scan event per supply chain handoff.
+
+### Development Environment: Local Test Validator (not Devnet)
+
+During development, blockchain writes target a **local Solana test validator** (`solana-test-validator`) running on `http://localhost:8899` rather than the public Solana Devnet.
+
+**Why local over Devnet:**
+
+- **No internet dependency** — Devnet RPC endpoints are blocked on Nigerian mobile hotspot networks (same class of issue as the Supabase port 6543 problem). The local validator has no network dependency at all.
+- **Unlimited SOL** — Devnet requires requesting free SOL from a public faucet, which has rate limits and requires an internet connection. The local validator funds wallets instantly with no limits.
+- **Faster confirmation** — Devnet transactions confirm in 1–3 seconds over the internet. Local validator confirmations are near-instant.
+- **Demo reliability** — The system works regardless of network conditions during presentations or testing. Devnet introduces an external point of failure.
+
+The tradeoff is that transactions are not publicly visible on a block explorer during development. This is acceptable for testing. Before final submission, change the connection string in `solanaService.ts` from `http://localhost:8899` to `https://api.devnet.solana.com` to switch to the public Devnet in one line.
 
 ### Two Types of On-Chain Writes
 
