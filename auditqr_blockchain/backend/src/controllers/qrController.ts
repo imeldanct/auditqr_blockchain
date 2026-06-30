@@ -2,6 +2,7 @@ import { Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { randomUUID } from "crypto";
+import { writeGenesisToChain } from "../services/solanaService";
 
 const prisma = new PrismaClient();
 
@@ -48,6 +49,17 @@ export const generateQRCodes = async (req: AuthRequest, res: Response): Promise<
         data: childRecords.map((r) => ({ ...r, parentQRID })),
       });
     }
+
+    writeGenesisToChain(parentQRID)
+      .then((txHash) => {
+        if (txHash) {
+          return prisma.parentQRCode.update({
+            where: { parentQRID },
+            data: { genesisTxHash: txHash },
+          });
+        }
+      })
+      .catch((err) => console.error("Background genesis Solana update failed:", err));
 
     res.status(201).json({
       message: "QR codes generated successfully.",

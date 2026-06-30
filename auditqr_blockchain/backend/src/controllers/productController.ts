@@ -99,8 +99,9 @@ export const getProducts = async (req: AuthRequest, res: Response): Promise<any>
         (sum, parent) => sum + parent._count.childQRs,
         0,
       );
+      const parentQRID = p.parentQRs[0]?.parentQRID ?? null;
       const { parentQRs, ...rest } = p;
-      return { ...rest, childQRCount };
+      return { ...rest, childQRCount, parentQRID };
     });
 
     res.status(200).json(productsWithCount);

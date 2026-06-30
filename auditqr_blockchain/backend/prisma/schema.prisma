@@ -39,11 +39,12 @@ model Product {
 }
 
 model ParentQRCode {
-  parentQRID   String   @id @default(uuid())
-  productID    String
-  qrData       String
-  currentStage QRStage  @default(pending)
-  createdAt    DateTime @default(now())
+  parentQRID    String   @id @default(uuid())
+  productID     String
+  qrData        String
+  currentStage  QRStage  @default(pending)
+  genesisTxHash String?
+  createdAt     DateTime @default(now())
 
   product      Product      @relation(fields: [productID], references: [productID], onDelete: Cascade)
   childQRs     ChildQRCode[]

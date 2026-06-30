@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { writeScanToChain } from "../services/solanaService";
 
 const prisma = new PrismaClient();
 
@@ -48,6 +49,17 @@ export const recordScan = async (req: Request, res: Response): Promise<any> => {
         where: { parentQRID },
         data: { currentStage: "transit" },
       });
+
+      writeScanToChain(parentQRID, "transporter", ip(req))
+        .then((txHash) => {
+          if (txHash) {
+            return prisma.scanEvent.update({
+              where: { scanID: scanEvent.scanID },
+              data: { txHash },
+            });
+          }
+        })
+        .catch((err) => console.error("Background Solana update failed:", err));
 
       return res.status(200).json({
         scanId: scanEvent.scanID,
@@ -170,13 +182,24 @@ export const confirmHandoff = async (req: Request, res: Response): Promise<any> 
       where: { codeID: handoffCode.codeID },
       data: { isUsed: true },
     });
-    await prisma.scanEvent.create({
+    const retailerScan = await prisma.scanEvent.create({
       data: { parentQRID, scannerRole: "retailer", ipLocation: ip(req) },
     });
     await prisma.parentQRCode.update({
       where: { parentQRID },
       data: { currentStage: "delivered" },
     });
+
+    writeScanToChain(parentQRID, "retailer", ip(req))
+      .then((txHash) => {
+        if (txHash) {
+          return prisma.scanEvent.update({
+            where: { scanID: retailerScan.scanID },
+            data: { txHash },
+          });
+        }
+      })
+      .catch((err) => console.error("Background Solana update failed:", err));
 
     res.status(200).json({ message: "Handoff confirmed successfully.", currentStage: "delivered" });
   } catch (error) {
@@ -228,12 +251,14 @@ export const getScanHistory = async (req: Request, res: Response): Promise<any> 
       parentQRID,
       currentStage: parentQR.currentStage,
       genesisAt: parentQR.createdAt,
+      genesisTxHash: parentQR.genesisTxHash ?? null,
       product: productPayload(parentQR),
       events: scanEvents.map((e) => ({
         scanID: e.scanID,
         scannerRole: e.scannerRole,
         ipLocation: e.ipLocation,
         timestamp: e.timestamp,
+        txHash: e.txHash ?? null,
       })),
     });
   } catch (error) {
@@ -269,12 +294,14 @@ export const getJourneyForChildQR = async (req: Request, res: Response): Promise
       itemNumber: childQR.itemNumber,
       currentStage: parentQR.currentStage,
       genesisAt: parentQR.createdAt,
+      genesisTxHash: parentQR.genesisTxHash ?? null,
       product: productPayload(parentQR),
       events: scanEvents.map((e) => ({
         scanID: e.scanID,
         scannerRole: e.scannerRole,
         ipLocation: e.ipLocation,
         timestamp: e.timestamp,
+        txHash: e.txHash ?? null,
       })),
     });
   } catch (error) {
