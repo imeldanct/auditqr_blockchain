@@ -118,23 +118,9 @@
           </div>
         </div>
 
-        <div class="bg-surface-2 border border-border rounded-lg p-4 mb-4 text-left">
-          <p class="font-mono text-muted text-[11px] mb-1">Transaction hash</p>
-          <p class="font-mono text-white text-[12px] truncate" id="tx-hash">—</p>
-          <p class="font-mono text-muted text-[11px] mt-1" id="tx-network">
-            Solana (pending integration)
-          </p>
-          <a
-            id="explorer-link"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue text-[12px] hover:underline mt-2 inline-flex items-center gap-1"
-            >View on blockchain explorer<span
-              class="material-symbols-outlined text-[12px] leading-none"
-              >open_in_new</span
-            ></a
-          >
+        <div id="blockchain-row" class="flex items-center gap-1.5 mb-6">
+          <span class="material-symbols-outlined text-[13px] text-muted/50">schedule</span>
+          <span class="text-[12px] text-muted/50">Recording to chain…</span>
         </div>
 
         <button
@@ -148,12 +134,37 @@
     </main>
 
     <script>
-      const txHash = localStorage.getItem("confirm_tx_hash");
-      if (txHash) {
-        document.getElementById("tx-hash").textContent = txHash;
-        document.getElementById("explorer-link").href =
-          `https://explorer.solana.com/tx/${txHash}`;
+      var _retailerPollAttempts = 0;
+      var _confirmedParentQRID = localStorage.getItem("confirm_parentQRID");
+
+      function pollRetailerTx() {
+        if (!_confirmedParentQRID) return;
+        _retailerPollAttempts++;
+        fetch(API_BASE + "/api/scan/history/" + encodeURIComponent(_confirmedParentQRID))
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (data) {
+            if (!data) return;
+            var retailerEvent = (data.events || []).filter(function (e) {
+              return e.scannerRole === "retailer" && e.txHash;
+            }).pop();
+            var row = document.getElementById("blockchain-row");
+            if (retailerEvent && row) {
+              row.innerHTML =
+                '<a href="' + solanaExplorerTx(retailerEvent.txHash) + '" target="_blank" rel="noopener noreferrer"' +
+                ' class="text-blue text-[12px] hover:underline inline-flex items-center gap-1">' +
+                'View on blockchain explorer' +
+                '<span class="material-symbols-outlined text-[12px]">open_in_new</span></a>';
+              localStorage.removeItem("confirm_parentQRID");
+            } else if (_retailerPollAttempts < 10) {
+              setTimeout(pollRetailerTx, 3000);
+            }
+          })
+          .catch(function () {
+            if (_retailerPollAttempts < 10) setTimeout(pollRetailerTx, 5000);
+          });
       }
+
+      pollRetailerTx();
     </script>
   </body>
 </html>

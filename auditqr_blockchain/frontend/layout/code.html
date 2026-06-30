@@ -246,8 +246,26 @@
           hour: "2-digit", minute: "2-digit",
         });
 
+      function skeletonLine(w) {
+        return '<span class="skeleton block rounded" style="height:0.75rem;width:' + w + '"></span>';
+      }
+
       async function init() {
         if (!parentQRID) return;
+
+        // Skeleton states while product loads
+        document.getElementById("code-product-name").innerHTML =
+          '<span class="skeleton block rounded" style="height:2rem;width:55%"></span>';
+        document.getElementById("code-business-name").innerHTML = skeletonLine("40%");
+        document.getElementById("code-item-number").innerHTML = skeletonLine("30%");
+        document.getElementById("code-batch-date").innerHTML = skeletonLine("25%");
+        document.getElementById("code-description").innerHTML =
+          skeletonLine("80%") + '<span class="skeleton block rounded mt-2" style="height:0.75rem;width:60%"></span>';
+        document.getElementById("code-timeline").innerHTML =
+          '<div class="flex gap-4">' +
+          '<div class="skeleton rounded-full flex-shrink-0" style="width:9px;height:9px;margin-top:6px"></div>' +
+          '<div class="flex-1 space-y-2">' + skeletonLine("50%") + skeletonLine("35%") + '</div></div>';
+
         try {
           const res = await fetch(API_BASE + "/api/scan/stage/" + encodeURIComponent(parentQRID));
           if (!res.ok) return;
@@ -371,7 +389,7 @@
           });
           const data = await res.json();
           if (res.ok) {
-            if (data.txHash) localStorage.setItem("confirm_tx_hash", data.txHash);
+            localStorage.setItem("confirm_parentQRID", parentQRID);
             showToast("Handoff confirmed!", "success");
             setTimeout(() => {
               window.location.href = "retailer_confirmed.html";

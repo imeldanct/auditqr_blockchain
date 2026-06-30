@@ -40,6 +40,43 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  // Poll for genesis txHash until it appears (background Solana write).
+  // Gives up after ~30 seconds and shows a warning — silent failure means
+  // the SME would never know the blockchain write didn't happen.
+  var _genesisPollTimer = null;
+  var _genesisPollAttempts = 0;
+  var GENESIS_POLL_MAX = 10; // 10 × 3s = 30 seconds
+
+  function pollGenesisTx() {
+    _genesisPollAttempts++;
+    apiFetch("/api/scan/history/" + parentQRID)
+      .then(function (res) { return res && res.ok ? res.json() : null; })
+      .then(function (data) {
+        var el = document.getElementById("genesis-tx-display");
+        if (data && data.genesisTxHash && el) {
+          var h = data.genesisTxHash;
+          el.textContent = "Solana · " + h.slice(0, 16) + "…" + h.slice(-8);
+          el.classList.add("text-blue");
+          el.classList.remove("text-muted");
+        } else if (_genesisPollAttempts >= GENESIS_POLL_MAX) {
+          // Timed out — write probably failed
+          if (el) {
+            el.textContent = "Blockchain write failed";
+            el.classList.add("text-danger");
+            el.classList.remove("text-muted");
+          }
+          showToast("Blockchain record not written. Check that the Solana validator is running and funded, then restart the backend.", "error");
+        } else {
+          _genesisPollTimer = setTimeout(pollGenesisTx, 3000);
+        }
+      })
+      .catch(function () {
+        if (_genesisPollAttempts < GENESIS_POLL_MAX) {
+          _genesisPollTimer = setTimeout(pollGenesisTx, 5000);
+        }
+      });
+  }
+
   apiFetch("/api/qr/" + parentQRID)
     .then(function (res) {
       if (!res || !res.ok) {
@@ -50,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .then(function (data) {
       if (!data) return;
+      pollGenesisTx();
       _productName = data.productName;
       _childQRs = data.childQRs || [];
       localStorage.removeItem("product_quantity");

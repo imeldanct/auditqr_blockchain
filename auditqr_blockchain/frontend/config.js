@@ -3,12 +3,27 @@
  * Update both URLs when Outray tunnels change between sessions.
  */
 // const API_BASE = "http://localhost:3000";
-const API_BASE = "https://tall-turtle.outray.app";
+const API_BASE = "https://cautious-port.outray.app";
+
+// Solana cluster for explorer links.
+// local:   "custom"  → uses customUrl below
+// devnet:  "devnet"
+// mainnet: "mainnet-beta"
+const SOLANA_CLUSTER = "custom";
+const SOLANA_LOCAL_URL = "http%3A%2F%2Flocalhost%3A8899"; // URL-encoded localhost:8899
+
+function solanaExplorerTx(txHash) {
+  if (!txHash) return "#";
+  if (SOLANA_CLUSTER === "custom") {
+    return "https://explorer.solana.com/tx/" + txHash + "?cluster=custom&customUrl=" + SOLANA_LOCAL_URL;
+  }
+  return "https://explorer.solana.com/tx/" + txHash + "?cluster=" + SOLANA_CLUSTER;
+}
 
 // Frontend tunnel URL — used to embed real URLs inside QR codes.
 // Must be reachable from the scanning device (phone). Use the Outray tunnel, not localhost.
 // const FRONTEND_BASE = "https://introverted-copper.outray.app";
-const FRONTEND_BASE = "https://introverted-copper.outray.app/auditqr_blockchain/frontend";
+const FRONTEND_BASE = "https://ambitious-orchard.outray.app/auditqr_blockchain/frontend";
 
 // const FRONTEND_BASE = "http://127.0.0.1:5500";
 

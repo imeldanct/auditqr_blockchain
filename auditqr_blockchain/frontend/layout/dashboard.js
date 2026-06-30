@@ -15,7 +15,7 @@ function logout() {
 var statusMap = {
   pending:   { label: "Pending",    badge: "text-muted bg-muted/10 border-muted/30", accentColor: "rgba(119,134,127,0.35)", dotColor: "#77867F" },
   transit:   { label: "In Transit", badge: "text-blue bg-blue/10 border-blue/30",    accentColor: "#3185FC",                dotColor: "#3185FC" },
-  delivered: { label: "Delivered",  badge: "text-green bg-green/10 border-green/30", accentColor: "#D6FFB7",                dotColor: "#D6FFB7" },
+  delivered: { label: "Delivered",  badge: "text-blue bg-blue/10 border-blue/30",   accentColor: "#3185FC",                dotColor: "#3185FC" },
 };
 
 function loadStats() {

@@ -309,7 +309,7 @@ The settings page fetches the current SME profile from `GET /api/sme/profile` on
 - **QR Scanner**: `jsQR 1.4.0` from cdnjs — decodes QR codes from camera frames in `qr_scanner.html`
 - **ZIP Library**: `JSZip` from cdnjs — used for client-side ZIP generation on the QR download page
 - **Icon Font**: `material-symbols` npm package (self-hosted) — the `.woff2` variable font file is copied from `node_modules/material-symbols/` into `frontend/fonts/material-symbols-outlined.woff2` and referenced via `@font-face` in `design-tokens.css`; no CDN dependency at runtime. The copy step is necessary because `node_modules/` is not served as a web path by Live Server or Outray tunnels
-- **Skeleton loading states**: all pages that fetch data on load (dashboard, products list, account settings) show a shimmer placeholder animation while the API request is in flight. The `.skeleton` utility class is defined in `design-tokens.css`. Stat cards, table rows, and profile fields all use it — setting `textContent` or `innerHTML` on the element automatically clears the skeleton and shows real data once it arrives
+- **Skeleton loading states**: all pages that fetch data on load show a shimmer placeholder animation while the API request is in flight. The `.skeleton` utility class is defined in `design-tokens.css`. Setting `textContent` or `innerHTML` on the element automatically clears the skeleton and shows real data once it arrives. This was extended to `handoff.html` (transporter page) and `code.html` (retailer code-entry page) after the initial "—" dash placeholder was identified as poor UX — a blank dash gives no visual feedback that content is actually loading, whereas a skeleton shimmer communicates that the page is working
 
 ---
 
@@ -400,66 +400,85 @@ Documents how each sprint was built and what files were touched. Sprint 5 includ
 
 ---
 
-### Sprint 5 — Blockchain Logging *(in progress)*
+### Sprint 5 — Blockchain Logging
 
-**What needs to be built:** Write each scan event to Solana Devnet as a memo transaction. Store the transaction hash in the database. Display it on the journey page.
+**What was built:** Three events in a product's lifecycle are permanently recorded as memo transactions on a local Solana validator — QR code generation (genesis), transporter pickup, and retailer handoff confirmation. Transaction hashes are stored in the database and surfaced as "View on blockchain explorer" links on the customer-facing journey page, giving every product an immutable, three-point audit trail from creation to delivery.
 
 **Decision — Local test validator, not Devnet**
 
-Two options were considered for the blockchain environment:
-- **Solana Devnet** — public test network. Requires funding a wallet via a web faucet and an active internet connection for every transaction. 
+Two options were considered:
 
-- **Local test validator** — runs on `localhost:8899`. No internet dependency, unlimited SOL, near-instant confirmations, works in any network condition.
+- **Solana Devnet** — public test network requiring a funded wallet and active internet per transaction. Rejected because the RPC returned connection errors during development, and Nigerian mobile hotspot networks block the Devnet RPC endpoint (same network-level blocking as the Supabase port 6543 issue).
+- **Local test validator** (`solana-test-validator`) — runs on `localhost:8899`, no internet dependency, unlimited SOL, near-instant confirmations.
 
-The local validator was chosen because reliability during development and demos matters more than public block explorer visibility at this stage. Switching to Devnet later is a one-line change in `solanaService.ts`.
+The local validator was chosen for reliability. Switching to Devnet later is a one-line change in `solanaService.ts` (change the `Connection` URL) and a one-word change in `config.js` (change `SOLANA_CLUSTER`).
 
-**Step-by-step:**
+**How it was achieved:**
 
-**Step 1 — Install the Solana CLI**
+1. **Solana CLI installed** via Ubuntu (WSL). The CLI runs inside WSL; because WSL2 exposes its ports to Windows via `localhost`, the Windows backend can reach the validator at `http://localhost:8899`.
 
-Follow the instructions at `https://solana.com/docs/intro/installation`. This is a one-time setup.
+2. **Keypair generated** using `@solana/web3.js` — no CLI needed:
+   ```bash
+   node -e "const {Keypair} = require('@solana/web3.js'); const kp = Keypair.generate(); console.log('SECRET:', Buffer.from(kp.secretKey).toString('base64')); console.log('ADDRESS:', kp.publicKey.toBase58());"
+   ```
+   The secret key (64 bytes, base64-encoded) and public key (wallet address) were added to `.env` as `SOLANA_KEYPAIR` and `SOLANA_PUBLIC_KEY`.
 
-**Step 2 — Generate a Solana keypair**
+3. **`src/services/solanaService.ts` created** — two exported functions:
+   - `writeGenesisToChain(parentQRID)` — writes `AUDITQR|parentQRID|genesis|timestamp` to the SPL Memo program. Called after every QR batch is created.
+   - `writeScanToChain(parentQRID, role, ip)` — writes `AUDITQR|parentQRID|role|ip|timestamp`. Called after transporter and retailer scan events.
+   Both return the transaction signature on success, `null` on failure — a Solana outage never blocks a scan or QR generation.
 
-Run this in the `backend/` directory:
+4. **`qrController.ts` updated** — after `prisma.parentQRCode.create()`, `writeGenesisToChain()` is fired in the background without `await`. When it resolves, `prisma.parentQRCode.update()` saves the `genesisTxHash`. The QR generation endpoint responds immediately.
+
+5. **`scanController.ts` updated** — after each `prisma.scanEvent.create()` in `recordScan` (transporter) and `confirmHandoff` (retailer), `writeScanToChain()` is fired in the background without `await`. When it resolves, `prisma.scanEvent.update()` saves the `txHash`. The scan endpoint responds immediately — blockchain write never adds latency.
+
+6. **Schema migration** — `genesisTxHash String?` added to `ParentQRCode`. Migration applied via `npx prisma migrate deploy` (not `migrate dev`, to avoid triggering a database reset prompt on a live database with existing records).
+
+7. **API responses updated** — both `getScanHistory` and `getJourneyForChildQR` now include `genesisTxHash: parentQR.genesisTxHash ?? null` alongside each scan event's `txHash: e.txHash ?? null`.
+
+8. **`journey.html` updated** — the genesis entry and each scan event entry show a "View on blockchain explorer" link if a `txHash` exists, or a muted "Recording to chain…" if still in flight. Both use `solanaExplorerTx()` from `config.js` (see below) so the link always points to the correct cluster.
+
+9. **`qr_ready.html` updated** — after QR codes are generated, the page polls `GET /api/scan/history/:parentQRID` every 3 seconds until `genesisTxHash` appears, then displays it in green. This gives the manufacturer immediate feedback that their batch has been recorded on-chain.
+
+**Decision — Cluster-aware explorer links via `config.js`**
+
+Every "View on blockchain explorer" link in the frontend uses the transaction hash directly in the URL. The correct URL format differs per environment:
+
+- **Local validator:** `https://explorer.solana.com/tx/{hash}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`
+- **Devnet:** `https://explorer.solana.com/tx/{hash}?cluster=devnet`
+- **Mainnet:** `https://explorer.solana.com/tx/{hash}`
+
+Rather than hardcode one URL format in every file that links to the explorer, a `solanaExplorerTx(txHash)` helper function was added to `frontend/config.js`. It reads a `SOLANA_CLUSTER` constant (also in `config.js`) and constructs the correct URL.
+
+This means moving from local to Devnet is a single line change in `config.js`:
+```js
+const SOLANA_CLUSTER = "devnet"; // was "custom"
+```
+
+Every explorer link across `journey.html`, `products_list.js`, and any future page automatically inherits the new cluster without touching those files. Hardcoding the URL in each file would require finding and updating every occurrence each time the environment changes.
+
+**Decision — `confirm_parentQRID` in localStorage**
+
+The retailer confirmation page (`retailer_confirmed.html`) needs to show a "View on blockchain explorer" link for the retailer's scan event. The problem: that txHash is written to the database *after* the confirmation response returns, in the background. By the time the page loads, the txHash does not exist yet.
+
+The page needs to poll `GET /api/scan/history/:parentQRID` until the txHash appears — but it has no way to know which `parentQRID` to poll for, because `retailer_confirmed.html` is a static success screen with no URL parameters.
+
+The fix: in `code.html`, immediately before navigating to `retailer_confirmed.html`, save the `parentQRID` to `localStorage` under the key `confirm_parentQRID`. On `retailer_confirmed.html`, read that key and start polling. Once the retailer txHash is found, the "View on blockchain explorer" link replaces the "Recording to chain…" placeholder and the key is removed from `localStorage`.
+
+This is the same pattern used for the genesis txHash on `qr_ready.html` — poll until the background write resolves, then update the UI. The alternative (waiting for the blockchain write before responding) would add 1–3 seconds of latency to every retailer confirmation and block the page from loading. That is not acceptable.
+
+**To run the validator (every session):**
+
+Open Ubuntu terminal, **from the home directory**:
 ```bash
-node -e "const {Keypair} = require('@solana/web3.js'); const kp = Keypair.generate(); console.log('SECRET:', Buffer.from(kp.secretKey).toString('base64')); console.log('ADDRESS:', kp.publicKey.toBase58());"
-```
-Copy both values.
-
-**Step 3 — Add the keypair to `.env`**
-```
-SOLANA_KEYPAIR="<the base64 secret from Step 2>"
-SOLANA_PUBLIC_KEY="<the address from Step 2>"
-```
-
-**Step 4 — Start the local validator**
-
-In a separate terminal (keep it running alongside the backend):
-```bash
+cd ~
 solana-test-validator
 ```
-The validator runs on `http://localhost:8899` and automatically has SOL available — no faucet needed.
-
-**Step 5 — Create `src/services/solanaService.ts`**
-
-This file connects to `http://localhost:8899`, builds a memo transaction containing `AUDITQR|parentQRID|scannerRole|ipLocation|timestamp`, submits it, and returns the transaction signature (the hash). If it fails for any reason, it returns `null` so the scan still works.
-
-**Step 6 — Update `src/controllers/scanController.ts`**
-
-Import `writeScanToChain` from `solanaService.ts`. After each `prisma.scanEvent.create()` call in both `recordScan` (transporter) and `confirmHandoff` (retailer), fire the blockchain write in the background — do not await it. When it resolves, update the scan event record with the returned `txHash`. The scan endpoint responds to the user immediately without waiting for the blockchain.
-
-**Step 7 — Expose `txHash` in scan history responses**
-
-In both `getScanHistory` and `getJourneyForChildQR`, add `txHash: e.txHash ?? null` to the event map so the frontend receives it.
-
-**Step 8 — Update `journey.html`**
-
-For each scan event in the timeline, show the `txHash` as a clickable link to the local validator explorer, or just display the raw hash. If `txHash` is null (write still in progress), show `"Pending"` in muted text instead.
-
-**Step 9 — Test end to end**
-
-With the validator running, restart the backend, perform a full flow (transporter scan → handoff code → retailer confirm), then open the customer journey page. Each scan event should show a transaction hash within a few seconds of the scan.
+In a second Ubuntu terminal, fund the wallet once per fresh validator instance:
+```bash
+solana airdrop 10 6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5 --url localhost
+```
+Then start the backend as normal. The validator must stay running alongside the backend.
 
 ---
 
@@ -585,6 +604,23 @@ DATABASE_URL="postgresql://postgres.xxx:password@aws-1-eu-west-2.pooler.supabase
 ```
 
 Port 5432 uses the session pooler instead of the transaction pooler. Both are on the same Supabase pooler host — only the port differs. This fix is only needed when running over a mobile hotspot; a standard broadband connection works on either port.
+
+**Live Server reloading constantly when Solana validator is running**
+
+Running `solana-test-validator` from inside the project directory creates a `test-ledger/` folder at that location. The validator writes to this folder continuously as it processes slots. Live Server watches the entire project directory for file changes, so every validator write triggers a page reload — making the frontend unusable while the validator is running.
+
+Fix: always start `solana-test-validator` from the Ubuntu home directory, not from within the project:
+
+```bash
+cd ~
+solana-test-validator
+```
+
+This places `test-ledger/` in the home directory where Live Server cannot see it. If `test-ledger/` was already created inside the project directory, delete it:
+
+```bash
+rm -rf /mnt/c/Users/user/Documents/Dev-ing/qr-code-blockchain/test-ledger
+```
 
 ---
 

@@ -26,9 +26,9 @@ var statusMap = {
   },
   delivered: {
     label: "Delivered",
-    badge: "text-green bg-green/10 border-green/30",
-    accentColor: "#D6FFB7",
-    dotColor: "#D6FFB7",
+    badge: "text-blue bg-blue/10 border-blue/30",
+    accentColor: "#3185FC",
+    dotColor: "#3185FC",
   },
 };
 
@@ -103,11 +103,15 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  function showError(msg) {
+    var tbody = document.getElementById("scan-events-tbody");
+    tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-muted text-sm">' + msg + '</td></tr>';
+  }
+
   apiFetch("/api/sme/items")
     .then(function (res) {
       if (!res || !res.ok) {
-        document.getElementById("scan-events-empty").textContent =
-          "Could not load items.";
+        showError("Could not load items. Please refresh.");
         return;
       }
       res.json().then(function (body) {
@@ -153,7 +157,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     })
     .catch(function () {
-      document.getElementById("scan-events-empty").textContent =
-        "Could not load items.";
+      showError("Could not load items. Please refresh.");
     });
 });

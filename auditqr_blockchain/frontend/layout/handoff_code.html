@@ -110,26 +110,6 @@
           </div>
         </section>
 
-        <!-- Blockchain Reference -->
-        <div class="bg-surface-2 border border-border rounded-lg p-4 mb-8">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="material-symbols-outlined text-muted text-[16px]">link</span>
-            <span class="font-body text-[11px] text-muted uppercase tracking-wider"
-              >Transaction Record</span
-            >
-          </div>
-          <p class="font-mono text-[11px] text-muted" id="hc-tx-hash">
-            Pending Solana integration
-          </p>
-          <a
-            href="#"
-            id="hc-explorer-link"
-            class="text-blue text-[12px] hover:underline mt-1 inline-flex items-center gap-1 hidden"
-            >View on Solana explorer
-            <span class="material-symbols-outlined text-[12px]">open_in_new</span></a
-          >
-        </div>
-
         <!-- Done — end of transporter handoff flow -->
         <button
           class="w-full bg-blue hover:bg-blue-dark text-white font-body font-medium py-4 rounded-lg flex justify-center items-center gap-2 transition-all active:scale-[0.98]"
@@ -158,16 +138,6 @@
         if (nameSubEl) nameSubEl.textContent = product.productName;
       }
 
-      const txHash = localStorage.getItem("scan_tx_hash");
-      if (txHash) {
-        const hashEl = document.getElementById("hc-tx-hash");
-        if (hashEl) hashEl.textContent = txHash;
-        const linkEl = document.getElementById("hc-explorer-link");
-        if (linkEl) {
-          linkEl.href = "https://explorer.solana.com/tx/" + txHash;
-          linkEl.classList.remove("hidden");
-        }
-      }
     </script>
   </body>
 </html>

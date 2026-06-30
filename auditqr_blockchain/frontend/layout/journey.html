@@ -132,7 +132,19 @@
     });
   }
 
-  function buildGenesisItem(genesisAt) {
+  function buildGenesisItem(genesisAt, genesisTxHash) {
+    const txRow = genesisTxHash
+      ? `<div class="flex items-center gap-1.5 mt-1">
+           <a href="${solanaExplorerTx(genesisTxHash)}" target="_blank" rel="noopener noreferrer"
+              class="text-blue text-[11px] hover:underline inline-flex items-center gap-1">
+             View on blockchain explorer
+             <span class="material-symbols-outlined text-[11px]">open_in_new</span>
+           </a>
+         </div>`
+      : `<div class="flex items-center gap-1.5 mt-1">
+           <span class="material-symbols-outlined text-[12px] text-muted/50">schedule</span>
+           <span class="font-mono text-[10px] text-muted/50">Recording to chain…</span>
+         </div>`;
     return `
       <div class="flex gap-6">
         <div class="relative z-10 flex items-center justify-center w-[22px] h-[22px]">
@@ -142,6 +154,7 @@
           <span class="text-white font-medium">Manufacturer</span>
           <div class="text-xs font-body text-blue">QR codes generated</div>
           <div class="text-muted text-[11px]">${formatDate(genesisAt)}</div>
+          ${txRow}
         </div>
       </div>`;
   }
@@ -149,8 +162,20 @@
   function buildScanItem(event) {
     const label = roleLabels[event.scannerRole] || event.scannerRole;
     const actionLabel = event.scannerRole === "transporter"
-      ? "Picked up — first scan recorded"
-      : "Received — handoff confirmed";
+      ? "Picked up"
+      : "Received";
+    const txRow = event.txHash
+      ? `<div class="flex items-center gap-1.5 mt-1">
+           <a href="${solanaExplorerTx(event.txHash)}" target="_blank" rel="noopener noreferrer"
+              class="text-blue text-[11px] hover:underline inline-flex items-center gap-1">
+             View on blockchain explorer
+             <span class="material-symbols-outlined text-[11px]">open_in_new</span>
+           </a>
+         </div>`
+      : `<div class="flex items-center gap-1.5 mt-1">
+           <span class="material-symbols-outlined text-[12px] text-muted/50">schedule</span>
+           <span class="font-mono text-[10px] text-muted/50">Recording to chain…</span>
+         </div>`;
     return `
       <div class="flex gap-6">
         <div class="relative z-10 flex items-center justify-center w-[22px] h-[22px]">
@@ -162,6 +187,7 @@
           </div>
           <div class="text-xs font-body text-blue">${actionLabel}</div>
           <div class="text-muted text-[11px]">${formatDate(event.timestamp)}</div>
+          ${txRow}
         </div>
       </div>`;
   }
@@ -189,7 +215,7 @@
       }
 
       const data = await res.json();
-      const { product, events, genesisAt, itemNumber, parentQRID } = data;
+      const { product, events, genesisAt, genesisTxHash, itemNumber, parentQRID } = data;
 
       // Fill header
       document.getElementById("product-name").textContent = product.productName;
@@ -207,7 +233,7 @@
 
       // Build timeline — genesis always first, then scan events
       const timeline = document.getElementById("timeline");
-      const allItems = [buildGenesisItem(genesisAt)];
+      const allItems = [buildGenesisItem(genesisAt, genesisTxHash ?? null)];
       events.forEach(function(e) { allItems.push(buildScanItem(e)); });
       timeline.innerHTML = allItems.join("");
 

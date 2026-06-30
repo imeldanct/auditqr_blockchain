@@ -191,11 +191,29 @@
           hour: "2-digit", minute: "2-digit",
         });
 
+      function skeletonLine(w) {
+        return '<span class="skeleton block rounded" style="height:0.75rem;width:' + w + '"></span>';
+      }
+
       async function init() {
         if (!_parentQRID) {
           showToast("Invalid QR code link.", "error");
           return;
         }
+
+        // Skeleton states while product loads
+        document.getElementById("handoff-product-name").innerHTML =
+          '<span class="skeleton block rounded" style="height:2rem;width:55%"></span>';
+        document.getElementById("handoff-business-name").innerHTML = skeletonLine("40%");
+        document.getElementById("handoff-item-number").innerHTML = skeletonLine("30%");
+        document.getElementById("handoff-date").innerHTML = skeletonLine("25%");
+        document.getElementById("product-description").innerHTML =
+          skeletonLine("80%") + '<span class="skeleton block rounded mt-2" style="height:0.75rem;width:60%"></span>';
+        document.getElementById("journey-timeline").innerHTML =
+          '<div class="flex gap-4">' +
+          '<div class="skeleton rounded-full flex-shrink-0" style="width:9px;height:9px;margin-top:6px"></div>' +
+          '<div class="flex-1 space-y-2">' + skeletonLine("50%") + skeletonLine("35%") + '</div></div>';
+
         try {
           const res = await fetch(API_BASE + "/api/scan/stage/" + encodeURIComponent(_parentQRID));
           const data = await res.json();

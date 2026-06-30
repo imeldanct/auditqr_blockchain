@@ -16,6 +16,75 @@ function openDeleteModal(btn) {
   document.getElementById("delete-modal").classList.remove("hidden");
 }
 
+function closeRowMenu() {
+  var m = document.getElementById("row-menu");
+  if (m) m.remove();
+}
+
+function openRowMenu(btn) {
+  closeRowMenu();
+  var productId = btn.dataset.productId;
+  var productName = btn.dataset.productName;
+  var parentQRID = btn.dataset.parentQrid;
+  var rect = btn.getBoundingClientRect();
+
+  var menu = document.createElement("div");
+  menu.id = "row-menu";
+  menu.style.cssText =
+    "position:fixed;" +
+    "top:" + (rect.bottom + 4) + "px;" +
+    "right:" + (window.innerWidth - rect.right) + "px;" +
+    "width:220px;z-index:9999;";
+  menu.className = "bg-surface border border-outline-variant/40 rounded-lg shadow-2xl overflow-hidden";
+  menu.innerHTML =
+    '<button class="w-full text-left px-4 py-3 text-[13px] text-blue hover:bg-blue/5 transition-colors flex items-center justify-between"' +
+    ' onclick="closeRowMenu(); viewBlockchainRecords(\'' + (parentQRID || "") + '\', \'' + productName.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + '\')">' +
+    '<span>View on blockchain explorer</span>' +
+    '<span class="material-symbols-outlined text-[14px]">open_in_new</span></button>' +
+    '<div class="border-t border-outline-variant/20"></div>' +
+    '<button class="w-full text-left px-4 py-3 text-[13px] text-danger/70 hover:bg-danger/5 hover:text-danger transition-colors flex items-center gap-2"' +
+    ' onclick="closeRowMenu(); _deleteProductId=\'' + productId + '\'; document.getElementById(\'delete-modal-name\').textContent=\'' + productName.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + '\'; document.getElementById(\'delete-modal\').classList.remove(\'hidden\')">' +
+    '<span class="material-symbols-outlined text-[16px]">delete</span><span>Delete</span></button>';
+
+  document.body.appendChild(menu);
+
+  setTimeout(function () {
+    document.addEventListener("click", closeRowMenu, { once: true });
+  }, 0);
+}
+
+function viewBlockchainRecords(parentQRID, productName) {
+  if (!parentQRID) {
+    showToast("No QR batch found for this product.", "error");
+    return;
+  }
+
+  apiFetch("/api/scan/history/" + parentQRID)
+    .then(function (res) {
+      if (!res || !res.ok) {
+        showToast("Could not load blockchain records.", "error");
+        return;
+      }
+      res.json().then(function (data) {
+        var hashes = [];
+        if (data.genesisTxHash) hashes.push(data.genesisTxHash);
+        (data.events || []).forEach(function (e) { if (e.txHash) hashes.push(e.txHash); });
+
+        if (hashes.length === 0) {
+          showToast("No blockchain records for " + productName + ". The Solana validator may not have been running when this product was created.", "error");
+          return;
+        }
+
+        hashes.forEach(function (hash) {
+          window.open(solanaExplorerTx(hash), "_blank", "noopener,noreferrer");
+        });
+      });
+    })
+    .catch(function () {
+      showToast("Could not load blockchain records.", "error");
+    });
+}
+
 function renderProducts(products) {
   var tbody = document.getElementById("products-table-body");
   var countEl = document.getElementById("products-count");
@@ -59,15 +128,13 @@ function renderProducts(products) {
       '<td class="px-6 py-4 font-mono text-muted text-[13px]">' +
       qrCell +
       "</td>" +
-      '<td class="px-6 py-4">' +
-      '<button class="text-danger/60 hover:text-danger transition-colors p-1 rounded hover:bg-danger/10"' +
-      ' title="Delete product" data-product-id="' +
-      p.productID +
-      '" data-product-name="' +
-      p.productName +
-      '"' +
-      ' onclick="openDeleteModal(this)">' +
-      '<span class="material-symbols-outlined text-[18px]">delete</span>' +
+      '<td class="px-6 py-4 text-right">' +
+      '<button class="text-muted/60 hover:text-white transition-colors p-1 rounded hover:bg-white/5"' +
+      ' title="Options" data-product-id="' + p.productID + '"' +
+      ' data-product-name="' + (p.productName || "").replace(/"/g, "&quot;") + '"' +
+      ' data-parent-qrid="' + (p.parentQRID || "") + '"' +
+      ' onclick="event.stopPropagation(); openRowMenu(this)">' +
+      '<span class="material-symbols-outlined text-[20px]">more_vert</span>' +
       "</button>" +
       "</td>";
     tbody.appendChild(tr);
