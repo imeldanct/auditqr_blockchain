@@ -50,7 +50,7 @@ export const recordScan = async (req: Request, res: Response): Promise<any> => {
         data: { currentStage: "transit" },
       });
 
-      writeScanToChain(parentQRID, "transporter", ip(req))
+      writeScanToChain(parentQRID, parentQR.product.productName, "transporter", ip(req))
         .then((txHash) => {
           if (txHash) {
             return prisma.scanEvent.update({
@@ -144,7 +144,10 @@ export const confirmHandoff = async (req: Request, res: Response): Promise<any> 
   }
 
   try {
-    const parentQR = await prisma.parentQRCode.findUnique({ where: { parentQRID } });
+    const parentQR = await prisma.parentQRCode.findUnique({
+      where: { parentQRID },
+      include: { product: true },
+    });
 
     if (!parentQR) {
       return res.status(404).json({ error: "QR code not found." });
@@ -190,7 +193,7 @@ export const confirmHandoff = async (req: Request, res: Response): Promise<any> 
       data: { currentStage: "delivered" },
     });
 
-    writeScanToChain(parentQRID, "retailer", ip(req))
+    writeScanToChain(parentQRID, parentQR.product.productName, "retailer", ip(req))
       .then((txHash) => {
         if (txHash) {
           return prisma.scanEvent.update({

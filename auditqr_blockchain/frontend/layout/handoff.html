@@ -354,6 +354,7 @@
 
           localStorage.setItem("handoff_code", codeData.codeValue);
           localStorage.setItem("scan_product", JSON.stringify(_product));
+          localStorage.setItem("handoff_parentQRID", _parentQRID);
           window.location.href = "handoff_code.html";
         } catch (e) {
           showToast(e.message || "Error. Please try again.", "error");

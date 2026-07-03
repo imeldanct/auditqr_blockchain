@@ -6,6 +6,7 @@
     <title>Handoff Confirmed | AuditQR</title>
     <link rel="stylesheet" href="../design-tokens.css" />
     <link rel="stylesheet" href="../tailwind.css" />
+    <script src="../config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -110,6 +111,11 @@
           </div>
         </section>
 
+        <div id="transporter-blockchain-row" class="flex items-center gap-1.5 mb-6">
+          <span class="material-symbols-outlined text-[13px] text-muted/50">schedule</span>
+          <span class="text-[12px] text-muted/50">Recording to chain…</span>
+        </div>
+
         <!-- Done — end of transporter handoff flow -->
         <button
           class="w-full bg-blue hover:bg-blue-dark text-white font-body font-medium py-4 rounded-lg flex justify-center items-center gap-2 transition-all active:scale-[0.98]"
@@ -138,6 +144,37 @@
         if (nameSubEl) nameSubEl.textContent = product.productName;
       }
 
+      var _transporterPollAttempts = 0;
+      var _handoffParentQRID = localStorage.getItem("handoff_parentQRID");
+
+      function pollTransporterTx() {
+        if (!_handoffParentQRID) return;
+        _transporterPollAttempts++;
+        fetch(API_BASE + "/api/scan/history/" + encodeURIComponent(_handoffParentQRID))
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (data) {
+            if (!data) return;
+            var transporterEvent = (data.events || []).filter(function (e) {
+              return e.scannerRole === "transporter" && e.txHash;
+            }).pop();
+            var row = document.getElementById("transporter-blockchain-row");
+            if (transporterEvent && row) {
+              row.innerHTML =
+                '<a href="' + solanaExplorerTx(transporterEvent.txHash) + '" target="_blank" rel="noopener noreferrer"' +
+                ' class="text-blue text-[12px] hover:underline inline-flex items-center gap-1">' +
+                'View on blockchain explorer' +
+                '<span class="material-symbols-outlined text-[12px]">open_in_new</span></a>';
+              localStorage.removeItem("handoff_parentQRID");
+            } else if (_transporterPollAttempts < 10) {
+              setTimeout(pollTransporterTx, 3000);
+            }
+          })
+          .catch(function () {
+            if (_transporterPollAttempts < 10) setTimeout(pollTransporterTx, 5000);
+          });
+      }
+
+      pollTransporterTx();
     </script>
   </body>
 </html>

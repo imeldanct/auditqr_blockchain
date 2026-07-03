@@ -55,8 +55,11 @@ document.addEventListener("DOMContentLoaded", function () {
         var el = document.getElementById("genesis-tx-display");
         if (data && data.genesisTxHash && el) {
           var h = data.genesisTxHash;
-          el.textContent = "Solana · " + h.slice(0, 16) + "…" + h.slice(-8);
-          el.classList.add("text-blue");
+          el.innerHTML =
+            '<a href="' + solanaExplorerTx(h) + '" target="_blank" rel="noopener noreferrer"' +
+            ' class="text-blue text-[11px] hover:underline inline-flex items-center gap-1">' +
+            'View on blockchain explorer' +
+            '<span class="material-symbols-outlined text-[11px]">open_in_new</span></a>';
           el.classList.remove("text-muted");
         } else if (_genesisPollAttempts >= GENESIS_POLL_MAX) {
           // Timed out — write probably failed

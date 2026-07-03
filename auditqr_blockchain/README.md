@@ -424,8 +424,8 @@ The local validator was chosen for reliability. Switching to Devnet later is a o
    The secret key (64 bytes, base64-encoded) and public key (wallet address) were added to `.env` as `SOLANA_KEYPAIR` and `SOLANA_PUBLIC_KEY`.
 
 3. **`src/services/solanaService.ts` created** — two exported functions:
-   - `writeGenesisToChain(parentQRID)` — writes `AUDITQR|parentQRID|genesis|timestamp` to the SPL Memo program. Called after every QR batch is created.
-   - `writeScanToChain(parentQRID, role, ip)` — writes `AUDITQR|parentQRID|role|ip|timestamp`. Called after transporter and retailer scan events.
+   - `writeGenesisToChain(parentQRID)` — writes `AuditQR|parentQRID|genesis|timestamp` to the SPL Memo program. Called after every QR batch is created.
+   - `writeScanToChain(parentQRID, role, ip)` — writes `AuditQR|parentQRID|role|ip|timestamp`. Called after transporter and retailer scan events.
    Both return the transaction signature on success, `null` on failure — a Solana outage never blocks a scan or QR generation.
 
 4. **`qrController.ts` updated** — after `prisma.parentQRCode.create()`, `writeGenesisToChain()` is fired in the background without `await`. When it resolves, `prisma.parentQRCode.update()` saves the `genesisTxHash`. The QR generation endpoint responds immediately.
@@ -674,13 +674,81 @@ The `txHash` from this write is stored on the `ScanEvent` record (field already 
 
 The `parentQRID` reference ties every scan back to the original batch registration — giving a complete, independently verifiable chain of custody.
 
+### How the Three Transactions Are Linked
+
+Each event — genesis, transporter, retailer — is a **separate, independent Solana transaction** with its own hash. They are not chained to each other at the blockchain level. What links them is the **memo data embedded inside each transaction**:
+
+```
+AuditQR|<parentQRID>|QR Generation|<timestamp>
+AuditQR|<parentQRID>|Transporter Scan|<ip>|<timestamp>
+AuditQR|<parentQRID>|Retailer Scan|<ip>|<timestamp>
+```
+
+Every transaction carries the same `parentQRID`. To independently verify a product's full journey **without trusting the AuditQR database at all**, someone would:
+
+1. Open any of the three transaction links on the Solana Explorer
+2. Read the memo field — the `parentQRID` is embedded in plain text
+3. Search the blockchain for other memo transactions containing that same `parentQRID`
+
+The AuditQR database makes this convenient by storing all three hashes together and presenting them as a timeline — but the proof exists independently on-chain. The database is a reading aid, not the source of truth.
+
+### Memo Data: Field-by-Field
+
+The data logged to the blockchain is a plain pipe-delimited string written via the **SPL Memo Program** — a standard Solana program that attaches arbitrary text to a transaction. This is what you see in the **Logs panel** on the Solana Explorer when you open any AuditQR transaction:
+
+**Genesis (written when QR codes are generated):**
+
+```
+AuditQR|7134f545-b3da-4806-9a44-4941fd8fbc23|Garri|QR Generation|2026-07-03T11:51:06.846Z
+```
+
+**Transporter (written when the transporter confirms pickup):**
+
+```
+AuditQR|7134f545-b3da-4806-9a44-4941fd8fbc23|Garri|Transporter Scan|Lagos, NG|2026-07-03T12:10:44.221Z
+```
+
+**Retailer (written when the retailer confirms receipt):**
+
+```
+AuditQR|7134f545-b3da-4806-9a44-4941fd8fbc23|Garri|Retailer Scan|Lagos, NG|2026-07-03T13:04:17.509Z
+```
+
+| Position | Field | Example | What it means |
+| -------- | ----- | ------- | ------------- |
+| 1 | Identifier | `AUDITQR` | Marks this as an AuditQR transaction. Allows anyone to identify AuditQR records on the blockchain without querying the database |
+| 2 | `parentQRID` | `7134f545-b3da-...` | UUID of the batch. The shared key that links all three transactions — the same value appears in every memo for that product |
+| 3 | Product name | `Garri` | Human-readable product name. Makes the transaction self-explanatory on the explorer without cross-referencing the database |
+| 4 | Event type | `QR Generation` / `Transporter Scan` / `Retailer Scan` | Which stage of the supply chain this transaction represents |
+| 5 | Location | `Lagos, NG` | IP-resolved location of the scan. Genesis transactions skip this field — location is only meaningful for physical handoffs |
+| 6 | Timestamp | `2026-07-03T11:51:06.846Z` | UTC ISO timestamp of when the event occurred |
+
+The Solana Explorer shows this in two places:
+
+- **Data (UTF-8)** column in the Programs section — the raw memo string (may word-wrap across lines)
+- **Logs panel** on the right — the same string with the label `Memo (len N):` followed by the full value in quotes, untruncated
+
+#### Decision — Product name included in memo
+
+The original memo format used internal role identifiers (`genesis`, `transporter`, `retailer`). These are meaningless to anyone reading the transaction on the explorer without access to the AuditQR database. The product name was added so that every transaction is self-describing: a person opening the explorer link sees immediately what product it refers to, what happened, where, and when — no database lookup required.
+
+#### The backend wallet is permanent
+
+The fee payer shown in the Accounts section of every transaction is `6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5` — the AuditQR backend wallet. This address is mathematically derived from the `SOLANA_KEYPAIR` value in `.env`. It does not change between sessions, restarts, or validator resets. It only changes if a new keypair is generated and `.env` is updated. This means the fee payer wallet is a stable identifier: anyone can look up this address on the Solana Explorer and see every transaction AuditQR has ever written — all genesis, transporter, and retailer events across all products.
+
+#### How to find all AuditQR transactions on the explorer
+
+The Solana Explorer search bar does not support searching by memo text. To find all AuditQR transactions, paste the fee payer wallet address into the search bar:
+
+```text
+6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5
+```
+
+This returns every transaction that wallet has paid for — which is every AuditQR blockchain write. To find the three transactions for a specific product, open each result and check the `parentQRID` in the memo data. To do this programmatically (without the Explorer UI), use the Solana RPC method `getSignaturesForAddress` with the wallet address, then fetch and parse the memo from each transaction.
+
 ### What a Customer Can Verify
 
-Opening the block explorer for a unit's scan tx, a customer can see:
-
-> _"Unit #7 was scanned at Lagos, 2026-05-29, and it belongs to Parent Carton [hash], which was registered by SME [address] on [date]."_
-
-This is the oracle proof — verifiable without trusting the AuditQR backend at all.
+Opening the block explorer for any of the three transactions, a customer can see the memo data directly — the `parentQRID`, the role (genesis / transporter / retailer), the timestamp, and the fee payer wallet (the SME's registered Solana address). This is verifiable without trusting the AuditQR backend at all.
 
 ### Schema Changes Needed for Blockchain Integration
 

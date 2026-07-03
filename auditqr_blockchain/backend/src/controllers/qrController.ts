@@ -50,7 +50,7 @@ export const generateQRCodes = async (req: AuthRequest, res: Response): Promise<
       });
     }
 
-    writeGenesisToChain(parentQRID)
+    writeGenesisToChain(parentQRID, product.productName)
       .then((txHash) => {
         if (txHash) {
           return prisma.parentQRCode.update({
