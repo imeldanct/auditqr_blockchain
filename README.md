@@ -345,7 +345,7 @@ The backend returns HTTP 400 (not 401) when the current password is wrong. This 
 
 Options considered: SendGrid, Mailgun, Amazon SES, Resend, and Gmail SMTP via nodemailer.
 
-For a demo application, Gmail SMTP with an App Password was chosen. It requires no account setup, no API key management, no monthly fee, and no webhook configuration — just the Gmail address and a 16-character App Password generated in Google Account → Security → 2-Step Verification → App Passwords. The credentials go into `.env` as `EMAIL_USER` and `EMAIL_PASSWORD`. `nodemailer` (`npm install nodemailer`) wraps the SMTP connection.
+For a demo application, Gmail SMTP with an App Password was chosen. It requires no account setup, no API key management, no monthly fee, and no webhook configuration — just the Gmail address and a 16-character App Password generated in Google Account → Security → 2-Step Verification → App Passwords. The credentials go into `.env` as `EMAIL_USERNAME` and `EMAIL_PASSWORD`. `nodemailer` (`npm install nodemailer`) wraps the SMTP connection.
 
 The limitation is that Gmail imposes a daily send limit (~500 emails/day) and will mark transactional email as promotional for some recipients. For a production system, a dedicated transactional email service (SendGrid, Resend) is the right move. The swap is a one-function change inside `emailService.ts` — no controller code changes.
 
@@ -365,8 +365,8 @@ No other data on that account was changed.
 
 ## Architecture
 
-- **Frontend**: Static HTML + Tailwind CSS (CLI build) + vanilla JS, served via Live Server
-- **Backend**: Node.js + TypeScript + Express + Prisma ORM
+- **Frontend**: Static HTML + Tailwind CSS (CLI build) + vanilla JS — deployed on Vercel
+- **Backend**: Node.js + TypeScript + Express + Prisma ORM — deployed on Render
 - **Database**: PostgreSQL (Supabase)
 - **Blockchain**: Transaction hashes stored against scan events (`txHash` field on `ScanEvent`)
 - **Auth**: JWT stored in `localStorage` as `auditqr_token`; `apiFetch()` helper attaches token to all API calls
@@ -543,7 +543,7 @@ solana-test-validator
 ```
 In a second Ubuntu terminal, fund the wallet once per fresh validator instance:
 ```bash
-solana airdrop 10 6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5 --url localhost
+solana airdrop 10 Ex6S244izw636k7t19Qo9NhDAgKV4oFJGA2RVzW52yfB --url localhost
 ```
 Then start the backend as normal. The validator must stay running alongside the backend.
 
@@ -580,6 +580,64 @@ The account settings page originally used an inline `<script>` at the bottom of 
 #### Footer policy
 
 Footers were present on pages that should not have them. The rule applied across the project: only `landing.html` (public marketing page) and `journey.html` (public product verification page) include a footer. All auth-flow pages and app/transactional pages have no footer. `journey.html` keeps its footer because it is the page customers land on directly from a QR scan — it is effectively a public-facing product page and is the appropriate place for an "About AuditQR" CTA. Auth pages and dashboard pages have a focused single-purpose UI where a footer adds clutter and no user value.
+
+---
+
+## Deployment
+
+### Backend — Render
+
+The backend is deployed as a **Web Service** on Render at `https://auditqr.onrender.com`.
+
+**Render settings:**
+- Root Directory: `backend`
+- Build Command: `npm install && npm run build`
+- Start Command: `npm start`
+
+**`postinstall` hook:** `package.json` includes `"postinstall": "prisma generate"` so Prisma Client is generated automatically during `npm install` on Render — no separate Prisma step needed.
+
+**Environment variables set on Render dashboard:**
+```
+DATABASE_URL       Supabase transaction pooler (port 5432)
+DIRECT_URL         Supabase direct connection
+JWT_SECRET         64-byte hex string (generated via crypto.randomBytes)
+EMAIL_USERNAME     Gmail address used for sending magic link and reset emails
+EMAIL_PASSWORD     Gmail App Password (16 characters, from Google Account → Security → App Passwords)
+SOLANA_KEYPAIR     base64-encoded 64-byte keypair
+SOLANA_PUBLIC_KEY  Ex6S244izw636k7t19Qo9NhDAgKV4oFJGA2RVzW52yfB
+FRONTEND_BASE      https://auditqr.vercel.app (or custom domain)
+```
+
+Health check: `GET https://auditqr.onrender.com/api/health` → `{"status":"ok","database":"connected"}`.
+
+---
+
+### Frontend — Vercel
+
+The frontend is deployed as a **static site** on Vercel, imported directly from the GitHub repository.
+
+**Vercel settings:**
+- Root Directory: `frontend`
+- Framework: Other (static)
+- No build command — Tailwind CSS is pre-compiled to `tailwind.css` and committed
+
+**`frontend/index.html`** was added at the root of the frontend folder. It immediately redirects to `layout/landing.html` via both `<meta http-equiv="refresh">` and a JS `window.location.replace`. This is necessary because Vercel serves static sites from the directory root — without a root `index.html`, hitting the base URL returns a 404.
+
+**`frontend/vercel.json`** disables Vercel's default URL rewriting (`cleanUrls: false`, `trailingSlash: false`) so that `.html` extensions are preserved in all page-to-page links.
+
+Vercel auto-deploys on every push to the `main` branch.
+
+---
+
+### Keep-Alive: UptimeRobot
+
+Render's free tier spins a service down after **15 minutes of no incoming requests**. The first request after a spin-down takes 30–60 seconds — unacceptable UX.
+
+**Fix:** UptimeRobot (free tier) is configured to ping `GET https://auditqr.onrender.com/api/health` every **5 minutes**. This keeps the Render service awake 24/7 with no code changes.
+
+**Why not a backend cron job:** A scheduled task running *inside* the process cannot prevent spin-down — Render only keeps the process alive when it receives *incoming* HTTP traffic from outside. The UptimeRobot ping provides that external trigger.
+
+**Free tier note:** Render's free plan allows 750 compute hours/month. 24/7 uptime = 720 hours/month — just within the limit. UptimeRobot also provides uptime monitoring as a side benefit: it alerts you if the service goes down for any reason.
 
 ---
 
@@ -667,7 +725,7 @@ npx outray http 5500
 Outray prints a second public URL. Open that URL on your phone and append the path to the scanner page:
 
 ```
-https://b3c4-xxx.outray.app/auditqr_blockchain/frontend/layout/qr_scanner.html
+https://b3c4-xxx.outray.app/frontend/layout/qr_scanner.html
 ```
 
 **7. Scan**
@@ -835,14 +893,14 @@ The original memo format used internal role identifiers (`genesis`, `transporter
 
 #### The backend wallet is permanent
 
-The fee payer shown in the Accounts section of every transaction is `6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5` — the AuditQR backend wallet. This address is mathematically derived from the `SOLANA_KEYPAIR` value in `.env`. It does not change between sessions, restarts, or validator resets. It only changes if a new keypair is generated and `.env` is updated. This means the fee payer wallet is a stable identifier: anyone can look up this address on the Solana Explorer and see every transaction AuditQR has ever written — all genesis, transporter, and retailer events across all products.
+The fee payer shown in the Accounts section of every transaction is `Ex6S244izw636k7t19Qo9NhDAgKV4oFJGA2RVzW52yfB` — the AuditQR backend wallet. This address is mathematically derived from the `SOLANA_KEYPAIR` value in `.env`. It does not change between sessions, restarts, or validator resets. It only changes if a new keypair is generated and `.env` is updated. This means the fee payer wallet is a stable identifier: anyone can look up this address on the Solana Explorer and see every transaction AuditQR has ever written — all genesis, transporter, and retailer events across all products.
 
 #### How to find all AuditQR transactions on the explorer
 
 The Solana Explorer search bar does not support searching by memo text. To find all AuditQR transactions, paste the fee payer wallet address into the search bar:
 
 ```text
-6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5
+Ex6S244izw636k7t19Qo9NhDAgKV4oFJGA2RVzW52yfB
 ```
 
 This returns every transaction that wallet has paid for — which is every AuditQR blockchain write. To find the three transactions for a specific product, open each result and check the `parentQRID` in the memo data. To do this programmatically (without the Explorer UI), use the Solana RPC method `getSignaturesForAddress` with the wallet address, then fetch and parse the memo from each transaction.
@@ -851,9 +909,9 @@ This returns every transaction that wallet has paid for — which is every Audit
 
 Opening the block explorer for any of the three transactions, a customer can see the memo data directly — the `parentQRID`, the role (genesis / transporter / retailer), the timestamp, and the fee payer wallet (the SME's registered Solana address). This is verifiable without trusting the AuditQR backend at all.
 
-### Schema Changes Needed for Blockchain Integration
+### Schema Fields Added for Blockchain Integration
 
-| Model          | Field to Add     | Purpose                                           |
-| -------------- | ---------------- | ------------------------------------------------- |
-| `ParentQRCode` | `txHash String?` | Stores the Solana tx hash from batch registration |
-| `ScanEvent`    | `txHash String?` | Already exists ✓                                  |
+| Model          | Field Added            | Purpose                                           |
+| -------------- | ---------------------- | ------------------------------------------------- |
+| `ParentQRCode` | `genesisTxHash String?` | Stores the Solana tx hash from batch registration |
+| `ScanEvent`    | `txHash String?`       | Stores the Solana tx hash from each scan event    |
