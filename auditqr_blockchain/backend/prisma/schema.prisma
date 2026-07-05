@@ -21,28 +21,35 @@ model SME {
   createdAt    DateTime @default(now())
 
   products     Product[]
+  authTokens   AuthToken[]
 }
 
 model Product {
-  productID   String   @id @default(uuid())
+  productID   String    @id @default(uuid())
   smeID       String
   productName String
   description String
   category    String?
-  createdAt   DateTime @default(now())
+  weight      Float?
+  mfgDate     DateTime?
+  expDate     DateTime?
+  createdAt   DateTime  @default(now())
 
   sme         SME      @relation(fields: [smeID], references: [smeID])
   parentQRs   ParentQRCode[]
 }
 
 model ParentQRCode {
-  parentQRID String   @id @default(uuid())
-  productID  String
-  qrData     String
-  createdAt  DateTime @default(now())
+  parentQRID    String   @id @default(uuid())
+  productID     String
+  qrData        String
+  currentStage  QRStage  @default(pending)
+  genesisTxHash String?
+  createdAt     DateTime @default(now())
 
-  product    Product  @relation(fields: [productID], references: [productID], onDelete: Cascade)
-  childQRs   ChildQRCode[]
+  product      Product      @relation(fields: [productID], references: [productID], onDelete: Cascade)
+  childQRs     ChildQRCode[]
+  scanEvents   ScanEvent[]
 }
 
 enum QRStage {
@@ -52,26 +59,24 @@ enum QRStage {
 }
 
 model ChildQRCode {
-  childQRID    String   @id @default(uuid())
-  parentQRID   String
-  itemNumber   Int
-  qrData       String
-  currentStage QRStage  @default(pending)
-  createdAt    DateTime @default(now())
+  childQRID  String   @id @default(uuid())
+  parentQRID String
+  itemNumber Int
+  qrData     String
+  createdAt  DateTime @default(now())
 
   parentQR   ParentQRCode @relation(fields: [parentQRID], references: [parentQRID], onDelete: Cascade)
-  scanEvents ScanEvent[]
 }
 
 model ScanEvent {
   scanID      String   @id @default(uuid())
-  childQRID   String
+  parentQRID  String
   scannerRole String
   ipLocation  String
   timestamp   DateTime @default(now())
   txHash      String?
 
-  childQR     ChildQRCode  @relation(fields: [childQRID], references: [childQRID])
+  parentQR    ParentQRCode @relation(fields: [parentQRID], references: [parentQRID], onDelete: Cascade)
   handoffCode HandoffCode?
 }
 
@@ -83,4 +88,21 @@ model HandoffCode {
   createdAt DateTime @default(now())
 
   scanEvent ScanEvent @relation(fields: [scanID], references: [scanID])
+}
+
+model AuthToken {
+  id        String    @id @default(uuid())
+  smeID     String
+  token     String    @unique
+  type      TokenType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  sme       SME @relation(fields: [smeID], references: [smeID], onDelete: Cascade)
+}
+
+enum TokenType {
+  magic_link
+  password_reset
 }

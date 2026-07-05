@@ -13,9 +13,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+  <style>
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: brightness(0) invert(1);
+      opacity: 0.6;
+      cursor: pointer;
+      transition: opacity 0.2s, filter 0.2s;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      filter: invert(38%) sepia(82%) saturate(1073%) hue-rotate(196deg) brightness(103%) contrast(97%);
+      opacity: 1;
+    }
+  </style>
   </head>
   <body class="flex flex-col min-h-screen">
     <!-- Navbar with Hamburger -->
@@ -74,7 +86,7 @@
       <div class="mt-8">
         <p class="sidebar-section-label">Account</p>
         <div class="space-y-1">
-          <a class="sidebar-link" href="#" id="sidebar-settings">
+          <a class="sidebar-link" href="account_settings.html" id="sidebar-settings">
             <span class="material-symbols-outlined text-sm">settings</span>
             <span>Settings</span>
           </a>
@@ -90,7 +102,7 @@
     <main class="flex-1 page-offset pb-16">
       <div class="page-container">
         <!-- Step Indicator + Header -->
-        <div class="max-w-[600px] mx-auto mb-12">
+        <div class="max-w-[600px] mx-auto mb-6">
           <div class="step-indicator">
             <span class="step-indicator-label">Step 1 of 3 — Product Details</span>
             <div class="step-dots">
@@ -112,7 +124,7 @@
         <div class="max-w-[600px] mx-auto">
           <div
             class="bg-surface border border-outline-variant border-t-2 rounded-xl overflow-hidden shadow-2xl"
-            style="border-top-color: #d6ffb7"
+            style="border-top-color: #3185FC"
             id="create-product-card"
           >
             <form class="p-4 sm:p-8 space-y-6" id="create-product-form">
@@ -177,9 +189,10 @@
                       type="number"
                       min="0"
                       id="items-per-carton"
+                      onwheel="this.blur()"
                     />
                     <p class="form-helper mt-2">
-                      <span class="text-green">1 Parent QR</span> will be generated for
+                      <span class="text-blue">1 Parent QR</span> will be generated for
                       the carton. <br />
                       <span class="text-blue">N Child QRs</span> will be generated for
                       each individual item inside.
@@ -207,6 +220,7 @@
                     step="0.01"
                     type="number"
                     id="unit-weight"
+                    onwheel="this.blur()"
                   />
                 </div>
               </div>
@@ -228,6 +242,7 @@
                     type="date"
                     id="exp-date"
                   />
+                  <p class="hidden text-danger text-[12px] mt-1" id="exp-date-error">Expiry date must be after the manufacture date.</p>
                 </div>
               </div>
 
@@ -267,3 +282,5 @@
     <script src="./create_product.js"></script>
   </body>
 </html>
+
+

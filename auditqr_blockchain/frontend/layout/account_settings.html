@@ -1,0 +1,241 @@
+﻿<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Account Settings | AuditQR</title>
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <link rel="stylesheet" href="../tailwind.css" />
+    <script src="../config.js"></script>
+    <script src="./toast.js"></script>
+    <script src="./account_settings.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="flex flex-col min-h-screen">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-content">
+        <a href="landing.html" class="navbar-logo" id="nav-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16">
+            <path d="M0 0h16v16H0z" fill="none" />
+            <g fill="#3185FC">
+              <path d="M2 2h2v2H2z" />
+              <path d="M6 0v6H0V0zM5 1H1v4h4zM4 12H2v2h2z" />
+              <path d="M6 10v6H0v-6zm-5 1v4h4v-4zm11-9h2v2h-2z" />
+              <path d="M10 0v6h6V0zm5 1v4h-4V1zM8 1V0h1v2H8v2H7V1zm0 5V4h1v2zM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8zm0 0v1H2V8H1v1H0V7h3v1zm10 1h-1V7h1zm-1 0h-1v2h2v-1h-1zm-4 0h2v1h-1v1h-1zm2 3v-1h-1v1h-1v1H9v1h3v-2zm0 0h3v1h-2v1h-1zm-4-1v1h1v-2H7v1z" />
+              <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z" />
+            </g>
+          </svg>
+          <span>AuditQR</span>
+        </a>
+        <div class="navbar-right">
+          <button class="hamburger-btn" onclick="toggleSidebar()" id="hamburger-btn">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar-menu" id="sidebarMenu">
+      <div>
+        <p class="sidebar-section-label">Main</p>
+        <div class="space-y-1">
+          <a class="sidebar-link" href="dashboard.html" id="sidebar-dashboard">
+            <span class="material-symbols-outlined text-sm">dashboard</span>
+            <span>Dashboard</span>
+          </a>
+          <a class="sidebar-link" href="products_list.html" id="sidebar-products">
+            <span class="material-symbols-outlined text-sm">inventory_2</span>
+            <span>My Products</span>
+          </a>
+          <a class="sidebar-link" href="create_product.html" id="sidebar-create">
+            <span class="material-symbols-outlined text-sm">add_box</span>
+            <span>Create Product</span>
+          </a>
+          <a class="sidebar-link" href="scan_events.html" id="sidebar-scans">
+            <span class="material-symbols-outlined text-sm">track_changes</span>
+            <span>Item Tracking</span>
+          </a>
+        </div>
+      </div>
+      <div class="mt-8">
+        <p class="sidebar-section-label">Account</p>
+        <div class="space-y-1">
+          <a class="sidebar-link active" href="account_settings.html" id="sidebar-settings">
+            <span class="material-symbols-outlined text-sm">settings</span>
+            <span>Settings</span>
+          </a>
+          <a class="sidebar-link danger" href="#" id="sidebar-logout" onclick="logout()">
+            <span class="material-symbols-outlined text-sm">logout</span>
+            <span>Log out</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 page-offset pb-16">
+      <div class="page-container-narrow space-y-10">
+
+        <!-- Header -->
+        <header>
+          <h1 class="font-headline text-[28px] sm:text-[32px] font-medium text-white">Account Settings</h1>
+          <p class="text-muted text-sm mt-1">Manage your business profile and login credentials.</p>
+        </header>
+
+        <!-- Business Profile -->
+        <section class="bg-surface border border-outline-variant rounded-xl overflow-hidden">
+          <div class="p-6 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue text-[18px]">business</span>
+              <h2 class="font-body text-[15px] font-medium text-white">Business Profile</h2>
+            </div>
+            <button
+              id="edit-profile-btn"
+              class="flex items-center gap-1 text-blue text-[13px] font-medium hover:opacity-80 transition-opacity"
+              onclick="startEditProfile()"
+            >
+              <span class="material-symbols-outlined text-[16px]">edit</span>
+              Edit
+            </button>
+          </div>
+
+          <!-- Read-only display -->
+          <div class="p-6 space-y-5" id="profile-display">
+            <div>
+              <p class="form-label">Business Name</p>
+              <p id="display-business-name" class="text-white text-[14px] py-1"><span class="skeleton block rounded" style="height:1rem;width:14rem;margin-top:2px"></span></p>
+            </div>
+            <div>
+              <p class="form-label">Contact Email</p>
+              <p id="display-email" class="text-white text-[14px] py-1"><span class="skeleton block rounded" style="height:1rem;width:11rem;margin-top:2px"></span></p>
+            </div>
+            <div>
+              <p class="form-label">RC Number</p>
+              <p id="display-rc-number" class="text-muted text-[13px] font-mono py-1"><span class="skeleton block rounded" style="height:0.875rem;width:8rem;margin-top:2px"></span></p>
+              <p class="text-[11px] text-muted mt-1">RC number is your verified CAC identity and cannot be changed.</p>
+            </div>
+          </div>
+
+          <!-- Edit mode (hidden by default) -->
+          <div class="p-6 space-y-5 hidden" id="profile-edit">
+            <div>
+              <label class="form-label" for="business-name">Business Name</label>
+              <input
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                type="text"
+                id="business-name"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="email">Contact Email</label>
+              <input
+                class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                type="email"
+                id="email"
+                autocomplete="off"
+              />
+            </div>
+            <div>
+              <label class="form-label">RC Number</label>
+              <div class="w-full bg-surface-2 border border-border/50 rounded-lg px-4 py-3 text-[14px] text-muted font-mono flex items-center gap-2">
+                <span class="material-symbols-outlined text-[14px] text-muted/50">lock</span>
+                <span id="rc-number">—</span>
+              </div>
+              <p class="text-[11px] text-muted mt-1.5">RC number is your verified CAC identity and cannot be changed.</p>
+            </div>
+            <div class="flex gap-3 pt-1">
+              <button
+                class="flex-1 border border-border text-muted py-3 rounded-lg font-body font-medium text-[14px] hover:text-white hover:border-white/30 transition-all"
+                onclick="cancelEditProfile()"
+              >
+                Cancel
+              </button>
+              <button
+                class="flex-1 bg-blue hover:bg-blue-dark text-white py-3 rounded-lg font-body font-medium text-[14px] active:scale-[0.98] transition-all"
+                id="save-profile-btn"
+                onclick="saveProfile()"
+              >
+                Save changes
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Change Password -->
+        <section class="bg-surface border border-outline-variant rounded-xl overflow-hidden">
+          <div class="p-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-blue text-[18px]">lock</span>
+            <h2 class="font-body text-[15px] font-medium text-white">Change Password</h2>
+          </div>
+          <div class="p-6 space-y-5">
+            <div>
+              <label class="form-label" for="current-password">Current Password</label>
+              <div class="relative">
+                <input
+                  class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 pr-11 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                  type="password"
+                  id="current-password"
+                  placeholder="Enter your current password"
+                  autocomplete="current-password"
+                />
+                <button type="button" tabindex="-1" id="btn-toggle-current" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors">
+                  <span class="material-symbols-outlined text-[20px]" id="icon-current">visibility</span>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="form-label" for="new-password">New Password</label>
+              <div class="relative">
+                <input
+                  class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 pr-11 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                  type="password"
+                  id="new-password"
+                  placeholder="Min. 8 characters"
+                  autocomplete="new-password"
+                />
+                <button type="button" tabindex="-1" id="btn-toggle-new" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors">
+                  <span class="material-symbols-outlined text-[20px]" id="icon-new">visibility</span>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="form-label" for="confirm-password">Confirm New Password</label>
+              <div class="relative">
+                <input
+                  class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 pr-11 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
+                  type="password"
+                  id="confirm-password"
+                  placeholder="Re-enter new password"
+                  autocomplete="new-password"
+                />
+                <button type="button" tabindex="-1" id="btn-toggle-confirm" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors">
+                  <span class="material-symbols-outlined text-[20px]" id="icon-confirm">visibility</span>
+                </button>
+              </div>
+            </div>
+            <button
+              class="w-full bg-blue hover:bg-blue-dark text-white py-3 rounded-lg font-body font-medium text-[14px] active:scale-[0.98] transition-all"
+              id="save-password-btn"
+              onclick="savePassword()"
+            >
+              Update password
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </body>
+</html>
+

@@ -2,6 +2,7 @@ import { Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { randomUUID } from "crypto";
+import { writeGenesisToChain } from "../services/solanaService";
 
 const prisma = new PrismaClient();
 
@@ -26,26 +27,39 @@ export const generateQRCodes = async (req: AuthRequest, res: Response): Promise<
         .json({ error: "Product not found or does not belong to you." });
     }
 
-    // Create Parent QR Code
-    const parentQR = await prisma.parentQRCode.create({
-      data: {
-        productID: productId,
-        qrData: `auditqr://product?id=${productId}`,
-      },
-    });
-
-    // Generate Child QR Codes with deterministic UUIDs
     const childRecords = Array.from({ length: quantity }, (_, i) => {
       const id = randomUUID();
       return {
         childQRID: id,
-        parentQRID: parentQR.parentQRID,
         itemNumber: i + 1,
         qrData: `auditqr://verify?id=${id}`,
       };
     });
 
-    await prisma.childQRCode.createMany({ data: childRecords });
+    const parentQRID = randomUUID();
+    const parentQR = await prisma.parentQRCode.create({
+      data: {
+        parentQRID,
+        productID: productId,
+        qrData: `auditqr://product?id=${parentQRID}`,
+      },
+    });
+    if (childRecords.length > 0) {
+      await prisma.childQRCode.createMany({
+        data: childRecords.map((r) => ({ ...r, parentQRID })),
+      });
+    }
+
+    writeGenesisToChain(parentQRID, product.productName)
+      .then((txHash) => {
+        if (txHash) {
+          return prisma.parentQRCode.update({
+            where: { parentQRID },
+            data: { genesisTxHash: txHash },
+          });
+        }
+      })
+      .catch((err) => console.error("Background genesis Solana update failed:", err));
 
     res.status(201).json({
       message: "QR codes generated successfully.",

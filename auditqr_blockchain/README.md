@@ -5,11 +5,17 @@
 - [Overview](#overview)
 - [Core Problem: The Oracle Problem](#core-problem-the-oracle-problem)
 - [Supply Chain Flow](#supply-chain-flow)
-- [Scan Stage Logic](#scan-stage-logic)
+- [Scan Role Determination](#scan-role-determination-parent-qr-only)
 - [Design Decisions](#design-decisions)
+  - [Why not participant accounts?](#why-not-participant-accounts)
+  - [Stage-based logic + handoff code gate](#chosen-approach-stage-based-logic--handoff-code-gate)
+  - [Tailwind CSS: CDN → CLI Build](#tailwind-css-cdn--cli-build)
+  - [Account Settings: Scope Decision](#account-settings-scope-decision)
+  - [Authentication Flow: Email Verification + Password Login](#authentication-flow-email-verification--password-login)
 - [Blockchain Architecture (Solana)](#blockchain-architecture-solana)
 - [Architecture](#architecture)
 - [QR Code Structure](#qr-code-structure)
+  - [Why Child QRs are read-only](#why-child-qrs-are-read-only)
 - [Key Pages](#key-pages)
 
 ---
@@ -36,33 +42,62 @@ Because SMEs operate in real business relationships (they know their transporter
 
 ## Supply Chain Flow
 
-```
+```text
 SME (Manufacturer)
       │
-      │ generates QR codes → prints & attaches to products
+      │ generates QR codes → genesis event recorded
+      │   ├── Parent QR (carton label, 1 per batch)  → affixed to the outer carton
+      │   └── Child QRs (item stickers, N per batch) → affixed to individual units
       │
 Transporter
-      │ scans QR → Scan 1 recorded → redirected to handoff confirmation page
+      │ scans Parent QR with any camera → ScanEvent saved to DB → lands on handoff.html
+      │ confirms pickup → blockchain write → sees 4-digit handoff code on handoff_code.html
+      │ shares code with retailer
       │
 Retailer
-      │ scans QR → Scan 2 recorded → retailer confirmed as receiver
+      │ scans Parent QR with any camera → lands on code.html
+      │ enters 4-digit code + confirms receipt → ScanEvent saved to DB + blockchain write
+      │ batch stage advances to `delivered` → retailer_confirmed.html
       │
 Customer
-        scans QR → Scan 3 → redirected to journey.html (read-only verification)
-                             NO data stored. Customer is not tracked.
+        scans Child QR with any camera → journey.html (read-only)
+                                          no API write, no record stored, ever.
 ```
 
-### Scan Role Determination
+### Two QR types, two different scan paths
 
-All three participants use the **same QR code** — any phone camera or QR scanning app works. The system determines the participant's role automatically based on the `currentStage` of that specific child QR code:
+| QR Type | Format | Who scans it | What happens |
+| ------- | ------ | ------------ | ------------ |
+| **Parent QR** (carton label) | `<frontendBase>/layout/journey.html?parentId=<uuid>` | Transporter, then Retailer — any scanner | Stage-based flow — recorded in DB and blockchain, advances `currentStage` on the batch |
+| **Child QR** (item sticker) | `<frontendBase>/layout/journey.html?childId=<uuid>` | Customer — any scanner | Opens `journey.html` directly — read-only, nothing recorded |
 
-| Current Stage | Role        | Action                                                                                                                            |
-| ------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `pending`     | Transporter | `ScanEvent` created, stage → `transit`; the transporter then generates a handoff code to share                                     |
-| `transit`     | Retailer    | Routed to code entry. Entering the transporter's code (validated against _that specific unit_) records the retailer `ScanEvent` and advances stage → `delivered` |
-| `delivered`   | Customer    | Redirected to `journey.html` — no data stored                                                                                     |
+Both QR types encode real HTTPS URLs. Any phone camera can scan them without a dedicated app — no dedicated scanner app required.
 
-`qr_scanner.html` is an optional landing page on the website for anyone browsing — it is **not** the core scanning mechanism. The QR code URL itself carries the logic.
+**Parent QR** encodes `<frontendBase>/layout/handoff.html?parentId=<uuid>`. When opened (by any camera), `handoff.html` checks the batch's current stage and routes accordingly:
+
+- `pending` → show transporter content (confirm pickup → generate handoff code)
+- `transit` → redirect to `code.html` (enter handoff code → confirm receipt)
+- `delivered` → redirect to `journey.html?parentId=<uuid>` (read-only audit trail)
+
+**Child QR** encodes `<frontendBase>/layout/journey.html?childId=<uuid>`. Opens the journey page directly with no routing step — always read-only.
+
+### Scan Role Determination (Parent QR only)
+
+The system determines the participant's role automatically based on the `currentStage` of the **batch** (ParentQRCode):
+
+| Current Stage | Role        | Landing page | Action |
+| ------------- | ----------- | ------------ | ------ |
+| `pending`     | Transporter | `handoff.html` | `ScanEvent` saved to DB at scan time; transporter confirms pickup → blockchain write fires → sees 4-digit handoff code on `handoff_code.html` to share with retailer |
+| `transit`     | Retailer    | `code.html` (redirected from `handoff.html`) | Retailer enters the transporter's code and confirms receipt → `POST /api/handoff/confirm` → retailer `ScanEvent` saved to DB + blockchain write → stage advances to `delivered` → `retailer_confirmed.html` |
+| `delivered`   | Anyone      | `journey.html?parentId=<uuid>` (redirected from `handoff.html`) | No further stage change — read-only audit trail shown |
+
+### Two-step recording logic
+
+Every scan event is recorded in two places: the database and the blockchain. The timing differs deliberately:
+
+- **Database write — at scan time (transporter) or at code confirmation (retailer).** The DB record is fast and captures the event the moment it happens. For the transporter, this is when the QR is scanned. For the retailer, the DB record is only created once the handoff code is validated — because the code is the proof that the handover actually happened.
+
+- **Blockchain write — at confirmation for both roles.** The transporter's blockchain write fires when they tap confirm on `handoff.html`. The retailer's fires when they enter the code and tap confirm on `code.html`. The confirmation is a deliberate physical action — tapping that button is the participant saying "I acknowledge this." That consent is what the blockchain record represents, not just the presence of a scan.
 
 ---
 
@@ -70,13 +105,35 @@ All three participants use the **same QR code** — any phone camera or QR scann
 
 ### What is stored
 
-- `ScanEvent`: childQR ID, scanner role (transporter/retailer), IP address, timestamp, optional blockchain tx hash
-- `HandoffCode`: a confirmation code generated at the transporter scan, required to be entered by the retailer — this is the multiparty confirmation step
+- `ScanEvent`: references `parentQRID`, scanner role (transporter/retailer), IP address, timestamp, optional blockchain tx hash
+- `HandoffCode`: a 4-digit confirmation code generated at the transporter scan, required to be entered by the retailer — this is the multiparty confirmation step
 
 ### What is NOT stored
 
 - Customer/consumer scans — no tracking, no identity, no record
 - Any personally identifying information about supply chain participants
+
+### Stage on the batch, not the unit
+
+Stage tracking (`currentStage: pending | transit | delivered`) lives on **`ParentQRCode`**, not on individual `ChildQRCode` records. This matches physical reality: the transporter picks up the whole carton, not individual items. Scan events reference `parentQRID` and reflect the state of the whole batch. Individual Child QRs are read-only windows into that same journey.
+
+### Optional product fields
+
+The `Product` model includes three optional fields that SMEs can supply at creation time:
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `weight` | `Float?` | Unit weight in kg — displayed on handoff.html and code.html for supply chain participants |
+| `mfgDate` | `DateTime?` | Manufacture date — displayed alongside product info; expiry date must be after this date (validated on the frontend before submission) |
+| `expDate` | `DateTime?` | Expiry date — displayed alongside product info |
+
+All three are nullable. Products created without them still work normally; the fields simply don't render on the handoff/verification pages. The `productPayload` helper in `scanController.ts` always includes them in the scan response so the frontend can show or hide them based on null checks.
+
+---
+
+### Genesis event
+
+Every product journey begins with the QR generation itself. The genesis event is not a `ScanEvent` — it is the `ParentQRCode.createdAt` timestamp, always shown as the first entry in `journey.html`. This gives customers visibility that the product was registered and verified before it even moved.
 
 ### Why the retailer scan is the terminal event
 
@@ -98,16 +155,17 @@ An earlier approach inferred the participant's role from the scan count (scan #1
 
 ### Chosen approach: Stage-based logic + handoff code gate
 
-The system uses `currentStage` on each child QR to determine role explicitly. The enum has three values: `pending`, `transit`, `delivered`.
+The system uses `currentStage` on the **batch** (`ParentQRCode`) to determine role explicitly. The enum has three values: `pending`, `transit`, `delivered`.
 
-The critical guard is: **a `transit` unit only advances to `delivered` when the retailer enters the transporter's handoff code.** The retailer's scan alone changes nothing — it simply routes them to the code-entry screen. Confirmation (`POST /api/handoff/confirm`) validates the entered code against the `HandoffCode` linked to _that specific unit's_ transporter `ScanEvent`, then atomically marks it used, records the retailer `ScanEvent`, and advances the stage. The code is never matched globally, so 4-digit codes may safely collide across different units.
+The critical guard is: **a `transit` batch only advances to `delivered` when the retailer enters the transporter's handoff code.** The retailer's scan alone changes nothing — it simply routes them to the code-entry screen. Confirmation (`POST /api/handoff/confirm`) validates the entered code against the `HandoffCode` linked to that batch's transporter `ScanEvent`, then atomically marks it used, records the retailer `ScanEvent`, and advances the stage. The code is never matched globally, so 4-digit codes may safely collide across different batches.
 
 This means:
 
 - The transporter cannot accidentally trigger the retailer stage (advancing requires the code, which only the retailer can enter)
-- A random person who scans early gets treated as a transporter — but cannot advance further without the code
+- A random person who scans a Parent QR early gets treated as a transporter — but cannot advance further without the code
 - Two parties must physically coordinate at each handoff — the code is the proof of that coordination
-- The unit is advanced and the retailer scan recorded in a single transaction, so the chain can never be left half-confirmed
+- The batch advances and the retailer scan is recorded in a single transaction, so the chain can never be left half-confirmed
+- Customer-facing Child QRs are always read-only; scanning a Child QR never changes any stage
 
 This gives 80% of the security benefit of participant accounts at a fraction of the scope cost. It fits the SME context where participants are known business contacts, not anonymous actors.
 
@@ -158,7 +216,7 @@ Two changes were applied across all pages:
 
 2. **Both requests merged into one** by combining all font families into a single Google Fonts URL.
 
-The remaining significant CDN load is Tailwind's play CDN, which recompiles the stylesheet at runtime in the browser on every page load. This is acceptable in development. Before production, run a Tailwind build (`npx tailwindcss -o style.css --minify`) and serve the compiled CSS file — this removes the runtime compilation cost entirely.
+The Tailwind CDN has since been replaced with a proper CLI build (see below) — the runtime recompilation cost no longer applies.
 
 ---
 
@@ -195,24 +253,333 @@ To go live, swap the JSON lookup inside `cacService.ts` for an HTTP call to a re
 
 ---
 
+### Tailwind CSS: CDN → CLI Build
+
+The frontend originally used **Tailwind Play CDN** — a single `<script>` tag that compiles Tailwind in the browser at runtime. This was fine for early prototyping.
+
+It has two real costs that became problems as the project grew:
+
+1. **Runtime overhead** — The CDN recompiles the entire stylesheet on every page load. On a slow mobile connection this adds visible delay.
+2. **Config duplication** — Because the CDN requires the theme config (custom colours, fonts, sizes) to be defined inline as a `tailwind.config` object, every HTML file had to carry its own copy of the full design token block. Any change had to be replicated across 20+ files.
+3. **No responsive prefixes in style blocks** — Media query overrides (e.g. making a heading smaller on mobile) had to live in `<style>` blocks rather than Tailwind's `sm:` / `md:` prefixes, because the CDN couldn't pick them up from outside the HTML attributes it scanned.
+
+**What changed:**
+
+| File | Role |
+|------|------|
+| `frontend/tailwind.config.js` | Single source of truth for all design tokens — colours, fonts, font sizes, border radii |
+| `frontend/tailwind.input.css` | Source file — just the three `@tailwind` directives |
+| `frontend/tailwind.css` | Compiled output. Never hand-edited. Committed before deploy. |
+| `frontend/package.json` | Defines `watch:css` and `build:css` scripts |
+
+**Development workflow:** run `npm run watch:css` inside `/frontend` alongside Live Server. The watcher rebuilds `tailwind.css` whenever any HTML file changes, keeping responsive prefixes (`sm:`, `md:`) and arbitrary values (`pt-[max(18vh,90px)]`) in sync.
+
+**Production:** run `npm run build:css` once before deploying. This produces a minified `tailwind.css` with only the classes actually used in the HTML — no unused rules shipped.
+
+The CDN `<script>` block and its inline config were removed from all 20 HTML pages. Every page now links `../tailwind.css` and `../design-tokens.css` in `<head>`.
+
+---
+
+### Account Settings: Scope Decision
+
+The SME dashboard sidebar includes an **Account Settings** page. The scope of what's editable was a deliberate decision.
+
+**What is editable:**
+- **Business display name** — pre-filled from the API on load; the SME can update it if their trading name changes
+- **Contact email** — pre-filled; used for login and notifications
+- **Password** — current password, new password, and confirm fields. The current password is validated server-side before the change is accepted. The backend returns HTTP 400 (not 401) for an incorrect current password — 401 would cause `apiFetch` to treat it as an expired session and log the user out, which is the wrong behaviour for a wrong-password error
+
+**What is not editable:**
+- **RC number (CAC number)** — this is the verified identity anchor of the business record. It was confirmed against the CAC registry at registration and cannot be changed through the UI. Changing it would mean the account is no longer tied to the same legal entity.
+
+**Why no team/staff access:**
+Only SMEs have accounts in this system. Distributors and retailers scan QR codes without logging in — they are participants in the supply chain, not platform users. There is no multi-user access pattern to support in v1, so team management was ruled out entirely rather than built as a stub.
+
+**How updates work:**
+The settings page fetches the current SME profile from `GET /api/sme/profile` on load. On load, the Business Name, Contact Email, and RC Number fields display a skeleton shimmer animation while the request is in flight. Once the response arrives the real values replace the skeleton. Password fields are intentionally left empty on load. On save, a `PATCH /api/sme/profile` call updates only the changed fields. Password changes go through `PATCH /api/sme/password` and require the current password to be provided and validated server-side.
+
+---
+
+### Authentication Flow: Email Verification + Password Login
+
+**What was built:** New accounts set a password at registration, then receive a one-time verification link via email that must be clicked before they can access their account. Returning users log in with email and password. Forgotten passwords are recovered via a reset link sent to the registered email. Account settings allow a password change at any time with no current-password check.
+
+**Pages added:**
+
+- `magic_login.html` — reads `?token=` from the URL, calls `GET /api/sme/auth/magic`, stores JWT, redirects to dashboard. Has three error states, each with a link back to `login.html`: (1) no token in URL — user navigated directly rather than from the email link; (2) link expired or already used — the 24-hour window passed or the link was clicked twice; (3) network error — server unreachable. The first state is one a real user would never hit in normal use; the second and third are genuine failure paths that need clear feedback and a recovery route
+- `forgot_password.html` — email input that posts to `POST /api/sme/auth/forgot-password`; shows a generic success screen regardless of whether the email exists (prevents email enumeration)
+- `reset_password.html` — reads `?token=` from the URL; shows an error screen immediately if the token is missing; on success shows "Password updated" with a link to login
+
+**Backend added:** `AuthToken` table with a `TokenType` enum (`magic_link | password_reset`). Tokens are UUIDs, unique, one-time use (marked `usedAt` on redemption), and expire — 24 hours for magic links, 1 hour for reset links. `verifyMagicLink`, `forgotPassword`, and `resetPassword` were added to `smeController.ts`. Email sending is handled by `emailService.ts` (nodemailer + Gmail App Password).
+
+**The full flow:**
+
+| Scenario | Steps |
+| -------- | ----- |
+| New account | CAC verify → `create_account.html` → email + password set → account created → verification link sent to email → click link → `magic_login.html` verifies email + issues JWT → dashboard |
+| Returning user | `login.html` → email + password → JWT issued → dashboard |
+| Forgot password | `login.html` → "Forgot password?" → `forgot_password.html` → enter email → reset link sent → click link → `reset_password.html` → enter new password → back to login |
+| Change password | Dashboard → Account Settings → current password + new password + confirm → saved |
+
+**Options considered:**
+
+**Option 1 — Email + password only, no verification step.**
+Standard and simple. The problem: accounts go live immediately with no proof that the email address is real or belongs to the person who registered. Anyone could register with a fake email and access the dashboard immediately. For a system where the SME's email is the recovery mechanism (forgot password, future logins), an unverified email breaks the entire recovery chain.
+
+**Option 2 — Passwordless magic link for every login.**
+Every login sends a one-time email link — no password at all. Clean from a security standpoint and solves the verification problem automatically (you proved you own the email by clicking the link). The tradeoff is that every login requires inbox access. For someone checking their dashboard daily on a slow mobile connection, waiting for an email every time is unacceptable.
+
+**Option 3 — OAuth (Google/Microsoft).**
+Familiar to users, no password management on our side. Ruled out for two reasons: it requires setting up an OAuth application with a provider (out of scope for a demo), and Nigerian SMEs using custom domain email addresses may not have those addresses attached to a Google account.
+
+**Option 4 — Email + password at registration, verification link required before first access (what was built).**
+The user sets their own password during registration — they choose it and they know it. A one-time verification link is sent to their email immediately after. They must click it before they can access their account for the first time. From that point on, all logins use email + password on `login.html`. This approach verifies the email is real, gives the user full control of their own password from day one, and keeps returning logins fast without inbox dependency.
+
+**Why the current password is required to change your password in Account Settings:**
+
+When a logged-in SME changes their password, the backend validates their current password before accepting the new one. This guards against session hijacking: if an attacker obtains an active JWT token (e.g. via physical device access or XSS), they cannot silently rotate the password to lock out the legitimate owner. The current password acts as a second factor that the attacker is unlikely to have.
+
+The backend returns HTTP 400 (not 401) when the current password is wrong. This distinction matters: `apiFetch` in `config.js` treats any 401 as a sign of an expired or revoked session and immediately redirects to `login.html`. Returning 401 for a wrong password would log the user out every time they made a typo, which is the wrong behaviour. The 400 response is surfaced as a field-level error on the settings page instead.
+
+**Email sending — nodemailer + Gmail App Password:**
+
+Options considered: SendGrid, Mailgun, Amazon SES, Resend, and Gmail SMTP via nodemailer.
+
+For a demo application, Gmail SMTP with an App Password was chosen. It requires no account setup, no API key management, no monthly fee, and no webhook configuration — just the Gmail address and a 16-character App Password generated in Google Account → Security → 2-Step Verification → App Passwords. The credentials go into `.env` as `EMAIL_USER` and `EMAIL_PASSWORD`. `nodemailer` (`npm install nodemailer`) wraps the SMTP connection.
+
+The limitation is that Gmail imposes a daily send limit (~500 emails/day) and will mark transactional email as promotional for some recipients. For a production system, a dedicated transactional email service (SendGrid, Resend) is the right move. The swap is a one-function change inside `emailService.ts` — no controller code changes.
+
+**Test account email update:**
+
+The demo account (Pinnacle Pharmaceuticals Nigeria Limited) had a placeholder email address in the database from initial setup. It was updated to a real inbox (`imeldaabudei@gmail.com`) so that magic link and password reset emails could be received and tested end-to-end. The update was applied directly via the Supabase SQL editor:
+
+```sql
+UPDATE "SME"
+SET email = 'imeldaabudei@gmail.com'
+WHERE "businessName" = 'PINNACLE PHARMACEUTICALS NIGERIA LIMITED';
+```
+
+No other data on that account was changed.
+
+---
+
 ## Architecture
 
-- **Frontend**: Static HTML + Tailwind CSS + vanilla JS, served via Live Server
+- **Frontend**: Static HTML + Tailwind CSS (CLI build) + vanilla JS, served via Live Server
 - **Backend**: Node.js + TypeScript + Express + Prisma ORM
 - **Database**: PostgreSQL (Supabase)
 - **Blockchain**: Transaction hashes stored against scan events (`txHash` field on `ScanEvent`)
 - **Auth**: JWT stored in `localStorage` as `auditqr_token`; `apiFetch()` helper attaches token to all API calls
-- **QR Library**: `qrcodejs` from cdnjs
+- **QR Generator**: `qrcodejs` from cdnjs — generates QR code images on the client
+- **QR Scanner**: `jsQR 1.4.0` from cdnjs — decodes QR codes from camera frames in `qr_scanner.html`
 - **ZIP Library**: `JSZip` from cdnjs — used for client-side ZIP generation on the QR download page
+- **Icon Font**: `material-symbols` npm package (self-hosted) — the `.woff2` variable font file is copied from `node_modules/material-symbols/` into `frontend/fonts/material-symbols-outlined.woff2` and referenced via `@font-face` in `design-tokens.css`; no CDN dependency at runtime. The copy step is necessary because `node_modules/` is not served as a web path by Live Server or Outray tunnels
+- **Skeleton loading states**: all pages that fetch data on load show a shimmer placeholder animation while the API request is in flight. The `.skeleton` utility class is defined in `design-tokens.css`. Setting `textContent` or `innerHTML` on the element automatically clears the skeleton and shows real data once it arrives. This was extended to `handoff.html` (transporter page) and `code.html` (retailer code-entry page) after the initial "—" dash placeholder was identified as poor UX — a blank dash gives no visual feedback that content is actually loading, whereas a skeleton shimmer communicates that the page is working
 
 ---
 
 ## QR Code Structure
 
-- **Parent QR**: Represents a batch (e.g. 100 units of Paracetamol)
-- **Child QR**: Represents a single unit/item within that batch
-- Each child QR tracks its own `currentStage`: `pending` → `transit` → `delivered`
-- The SME dashboard shows **Units** (total child QRs) per product, not batches
+**The Parent QR is the supply chain actor (changes product state), and the Child QR is the verification tool (read-only journey view for whoever holds the product).**
+
+- **Parent QR** (carton label): Represents a batch. Encodes a real URL — `<frontendBase>/layout/handoff.html?parentId=<parentQRID>`. Affixed to the outer shipping carton. Scanned by **transporters and retailers** using any camera — `handoff.html` checks the current stage on load and routes to the correct page for that role.
+- **Child QR** (item sticker): Represents a single unit within that batch. Encodes a real URL — `<frontendBase>/layout/journey.html?childId=<childQRID>`. Affixed to individual items. Scanned by **customers** — any native camera or the AuditQR scanner opens the read-only journey page directly. No stage data is changed when a Child QR is scanned.
+- `currentStage` lives on `ParentQRCode` (the batch), not on individual units: `pending` → `transit` → `delivered`
+- The SME dashboard shows **Units** (total child QRs) per product, not batches; stage counts reflect how many units belong to a batch at each stage
+
+Both QR types encode real HTTPS URLs so that a native phone camera can open them without a dedicated app. The AuditQR scanner (`qr_scanner.html`) is limited to Child QRs only — scanning a `childId` opens `journey.html` with no API write. Parent QRs are meant for supply chain actors (transporters, retailers) who use any phone camera; the encoded `handoff.html?parentId=` URL opens directly and `handoff.html` handles all stage-based routing itself.
+
+### Why Child QRs are read-only
+
+The Child QR is an item-level proof of authenticity for the customer. By the time a customer has the product in hand and scans their individual item, the supply chain handoffs have already been recorded via the Parent QR (carton) scans. The Child QR simply surfaces that history. Scanning a Child QR triggers no API write — it resolves through the parent to display the journey.
+
+**Why transporters and retailers scan the Parent QR, not each Child QR:** The transporter picks up and delivers the whole carton, not individual items. Stage tracking at the batch level reflects this physical reality — one scan confirms the entire shipment changed hands. If tracking were per-item (via Child QRs), the transporter would need to scan every single unit before it left the warehouse, which is impractical. The batch scan is one action that advances the entire consignment.
+
+---
+
+## Sprint Implementation Log
+
+Documents how each sprint was built and what files were touched. Sprint 5 includes a step-by-step guide for completion.
+
+---
+
+### Sprint 1 — SME Registration and Authentication
+
+**What was built:** Business registration form, CAC verification, JWT login and session management.
+
+**How it was achieved:**
+
+1. Created `backend/src/services/cacService.ts` — `lookupCAC()` function that checks an RC number against `src/data/cac-mock-db.json`. Returns a typed result with field-specific errors (e.g. `field: "businessName"`) so the UI highlights the exact wrong input.
+2. Created `backend/src/controllers/smeController.ts` — `verifyCac`, `register`, `login`, `getProfile`, `updateProfile`, `updatePassword` endpoints.
+3. Created `backend/src/routes/smeRoutes.ts` — wires routes to controller. Auth-protected routes go through `authMiddleware.ts`.
+4. Created `backend/src/middleware/authMiddleware.ts` — verifies the JWT from the `Authorization` header and attaches `req.smeId` to the request.
+5. JWT secret generated once via `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` and stored in `.env` as `JWT_SECRET`.
+6. Frontend pages built: `register.html` (CAC check → passes verified details to next page), `create_account.html` (completes registration), `login.html` (login → stores token in `localStorage` as `auditqr_token`).
+7. `frontend/config.js` created — exports `API_BASE`, `FRONTEND_BASE`, and `apiFetch()` (attaches JWT to every API call, redirects to login on 401).
+
+---
+
+### Sprint 2 — QR Code Generation
+
+**What was built:** Create product form, Parent and Child QR code generation, QR download page.
+
+**How it was achieved:**
+
+1. Created `backend/src/controllers/productController.ts` — `createProduct`, `getProducts`, `deleteProduct` endpoints. Product has optional fields: `weight`, `mfgDate`, `expDate`.
+2. Created `backend/src/controllers/qrController.ts` — `generateQR` endpoint. Takes a `quantity`, creates one `ParentQRCode` row and N `ChildQRCode` rows via `createMany`. Parent encodes `handoff.html?parentId=<uuid>`, each child encodes `journey.html?childId=<uuid>` — both as full HTTPS URLs using `FRONTEND_BASE` from `.env`.
+3. Frontend pages built: `create_product.html` (form with validation — expiry must be after manufacture date), `qr_ready.html` (shows parent QR + all child QRs, downloads child QRs as a single ZIP using JSZip).
+
+---
+
+### Sprint 3 — Handoff Protocol
+
+**What was built:** Camera-based QR scanner, handoff code generation, supply chain stage progression.
+
+**How it was achieved:**
+
+1. Extended `backend/src/controllers/scanController.ts`:
+   - `recordScan` — called when a Parent QR is scanned. If `currentStage` is `pending`, creates a `ScanEvent` with `scannerRole: "transporter"` and advances stage to `transit`. If `transit`, checks a handoff code exists and returns `needsConfirmation: true`.
+   - `generateHandoffCode` — creates a 4-digit `HandoffCode` record linked to the transporter's `ScanEvent`. Idempotent — returns existing code if already generated.
+   - `confirmHandoff` — validates the entered code against the stored `HandoffCode`, marks it used, creates a `ScanEvent` with `scannerRole: "retailer"`, advances stage to `delivered`. All three DB writes happen atomically in sequence.
+2. Frontend pages built: `handoff.html` (entry point for any Parent QR scan — routes by stage), `handoff_code.html` (displays 4-digit code to transporter), `code.html` (retailer enters code), `retailer_confirmed.html` (retailer success screen).
+3. `qr_scanner.html` built — uses `jsQR` to decode Child QR codes from camera frames and redirect to `journey.html`. Restricted to Child QRs only.
+
+---
+
+### Sprint 4 — Customer Journey Display
+
+**What was built:** Customer-facing product journey timeline, SME dashboard, full products list, account settings.
+
+**How it was achieved:**
+
+1. Extended `scanController.ts`:
+   - `getScanHistory` — returns all scan events for a Parent QR, ordered by timestamp, alongside product details.
+   - `getJourneyForChildQR` — looks up a Child QR, walks up to its Parent QR, and returns the same scan history. This is what the customer-facing journey page calls.
+2. Extended `smeController.ts`:
+   - `getStats` — returns pending, in-transit, and delivered counts for the SME's dashboard stat cards.
+   - `getItems` — returns all Child QR codes grouped by product, with current stage and last scan time, for the activity table.
+3. Frontend pages built:
+   - `journey.html` — customer-facing, read-only. Shows genesis event (QR creation), then each transporter/retailer scan event in a timeline. Opened by Child QR.
+   - `dashboard.html` — SME overview. Three stat cards (pending/transit/delivered), recent products table, recent activity table. All show skeleton shimmer while loading.
+   - `products_list.html` — full product list with live search and date filter. Delete product via modal.
+   - `account_settings.html` — business name and email editable (pre-filled from API on load with skeleton states). RC number read-only. Password change requires current password.
+   - `scan_events.html` — per-unit item tracking page for the SME.
+
+---
+
+### Sprint 5 — Blockchain Logging
+
+**What was built:** Three events in a product's lifecycle are permanently recorded as memo transactions on a local Solana validator — QR code generation (genesis), transporter pickup, and retailer handoff confirmation. Transaction hashes are stored in the database and surfaced as "View on blockchain explorer" links on the customer-facing journey page, giving every product an immutable, three-point audit trail from creation to delivery.
+
+**Decision — Local test validator, not Devnet**
+
+Two options were considered:
+
+- **Solana Devnet** — public test network requiring a funded wallet and active internet per transaction. Rejected because the RPC returned connection errors during development, and Nigerian mobile hotspot networks block the Devnet RPC endpoint (same network-level blocking as the Supabase port 6543 issue).
+- **Local test validator** (`solana-test-validator`) — runs on `localhost:8899`, no internet dependency, unlimited SOL, near-instant confirmations.
+
+The local validator was chosen for reliability. Switching to Devnet later is a one-line change in `solanaService.ts` (change the `Connection` URL) and a one-word change in `config.js` (change `SOLANA_CLUSTER`).
+
+**How it was achieved:**
+
+1. **Solana CLI installed** via Ubuntu (WSL). The CLI runs inside WSL; because WSL2 exposes its ports to Windows via `localhost`, the Windows backend can reach the validator at `http://localhost:8899`.
+
+2. **Keypair generated** using `@solana/web3.js` — no CLI needed:
+   ```bash
+   node -e "const {Keypair} = require('@solana/web3.js'); const kp = Keypair.generate(); console.log('SECRET:', Buffer.from(kp.secretKey).toString('base64')); console.log('ADDRESS:', kp.publicKey.toBase58());"
+   ```
+   The secret key (64 bytes, base64-encoded) and public key (wallet address) were added to `.env` as `SOLANA_KEYPAIR` and `SOLANA_PUBLIC_KEY`.
+
+3. **`src/services/solanaService.ts` created** — two exported functions:
+   - `writeGenesisToChain(parentQRID)` — writes `AuditQR|parentQRID|genesis|timestamp` to the SPL Memo program. Called after every QR batch is created.
+   - `writeScanToChain(parentQRID, role, ip)` — writes `AuditQR|parentQRID|role|ip|timestamp`. Called after transporter and retailer scan events.
+   Both return the transaction signature on success, `null` on failure — a Solana outage never blocks a scan or QR generation.
+
+4. **`qrController.ts` updated** — after `prisma.parentQRCode.create()`, `writeGenesisToChain()` is fired in the background without `await`. When it resolves, `prisma.parentQRCode.update()` saves the `genesisTxHash`. The QR generation endpoint responds immediately.
+
+5. **`scanController.ts` updated** — after each `prisma.scanEvent.create()` in `recordScan` (transporter) and `confirmHandoff` (retailer), `writeScanToChain()` is fired in the background without `await`. When it resolves, `prisma.scanEvent.update()` saves the `txHash`. The scan endpoint responds immediately — blockchain write never adds latency.
+
+6. **Schema migration** — `genesisTxHash String?` added to `ParentQRCode`. Migration applied via `npx prisma migrate deploy` (not `migrate dev`, to avoid triggering a database reset prompt on a live database with existing records).
+
+7. **API responses updated** — both `getScanHistory` and `getJourneyForChildQR` now include `genesisTxHash: parentQR.genesisTxHash ?? null` alongside each scan event's `txHash: e.txHash ?? null`.
+
+8. **`journey.html` updated** — the genesis entry and each scan event entry show a "View on blockchain explorer" link if a `txHash` exists, or a muted "Recording to chain…" if still in flight. Both use `solanaExplorerTx()` from `config.js` (see below) so the link always points to the correct cluster.
+
+9. **`qr_ready.html` updated** — after QR codes are generated, the page polls `GET /api/scan/history/:parentQRID` every 3 seconds until `genesisTxHash` appears, then displays it in green. This gives the manufacturer immediate feedback that their batch has been recorded on-chain.
+
+**Decision — Cluster-aware explorer links via `config.js`**
+
+Every "View on blockchain explorer" link in the frontend uses the transaction hash directly in the URL. The correct URL format differs per environment:
+
+- **Local validator:** `https://explorer.solana.com/tx/{hash}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`
+- **Devnet:** `https://explorer.solana.com/tx/{hash}?cluster=devnet`
+- **Mainnet:** `https://explorer.solana.com/tx/{hash}`
+
+Rather than hardcode one URL format in every file that links to the explorer, a `solanaExplorerTx(txHash)` helper function was added to `frontend/config.js`. It reads a `SOLANA_CLUSTER` constant (also in `config.js`) and constructs the correct URL.
+
+This means moving from local to Devnet is a single line change in `config.js`:
+```js
+const SOLANA_CLUSTER = "devnet"; // was "custom"
+```
+
+Every explorer link across `journey.html`, `products_list.js`, and any future page automatically inherits the new cluster without touching those files. Hardcoding the URL in each file would require finding and updating every occurrence each time the environment changes.
+
+**Decision — `confirm_parentQRID` in localStorage**
+
+The retailer confirmation page (`retailer_confirmed.html`) needs to show a "View on blockchain explorer" link for the retailer's scan event. The problem: that txHash is written to the database *after* the confirmation response returns, in the background. By the time the page loads, the txHash does not exist yet.
+
+The page needs to poll `GET /api/scan/history/:parentQRID` until the txHash appears — but it has no way to know which `parentQRID` to poll for, because `retailer_confirmed.html` is a static success screen with no URL parameters.
+
+The fix: in `code.html`, immediately before navigating to `retailer_confirmed.html`, save the `parentQRID` to `localStorage` under the key `confirm_parentQRID`. On `retailer_confirmed.html`, read that key and start polling. Once the retailer txHash is found, the "View on blockchain explorer" link replaces the "Recording to chain…" placeholder and the key is removed from `localStorage`.
+
+This is the same pattern used for the genesis txHash on `qr_ready.html` — poll until the background write resolves, then update the UI. The alternative (waiting for the blockchain write before responding) would add 1–3 seconds of latency to every retailer confirmation and block the page from loading. That is not acceptable.
+
+**To run the validator (every session):**
+
+Open Ubuntu terminal, **from the home directory**:
+```bash
+cd ~
+solana-test-validator
+```
+In a second Ubuntu terminal, fund the wallet once per fresh validator instance:
+```bash
+solana airdrop 10 6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5 --url localhost
+```
+Then start the backend as normal. The validator must stay running alongside the backend.
+
+---
+
+### Post-Sprint 5 — Fixes and Resilience Improvements
+
+#### Transporter scan idempotency (network failure recovery)
+
+**Problem:** When a transporter tapped "Confirm pickup" on `handoff.html`, the backend created a `ScanEvent` and advanced the batch stage to `transit`. If the network died before the response reached the browser, the transporter saw a timeout error and the page stayed on `handoff.html`. On reload, `handoff.html` called `GET /api/scan/stage/:parentQRID`, got `currentStage: "transit"`, and immediately redirected to `code.html` — the retailer code-entry page. The transporter had no way to reach `handoff_code.html` to see their handoff code. Because the handoff code is generated in a second call (`POST /api/scan/:id/handoff`), and that call never completed, no handoff code existed at all.
+
+**Fix — two changes:**
+
+1. **`getStage` in `scanController.ts`** — when `currentStage` is `"transit"`, the endpoint now also looks up the most recent transporter `ScanEvent` and its linked `HandoffCode`. If the handoff code does not exist, or exists but `isUsed` is `false`, the response includes `pendingHandoff: true` and `existingScanId`. This signals that the transporter's handoff flow was interrupted and they should resume it.
+
+2. **`handoff.html`** — when `getStage` returns `currentStage: "transit"` with `pendingHandoff: true`, instead of redirecting to `code.html`, the page calls `POST /api/scan/:scanId/handoff` (already idempotent — returns the existing code if one was already generated, or creates a new one). It then stores the code in `localStorage` and redirects to `handoff_code.html` as normal. If `pendingHandoff` is absent or `false`, the page routes to `code.html` as before (genuine retailer scan).
+
+**Why this is safe:** `generateHandoffCode` has always been idempotent — it checks for an existing `HandoffCode` before creating one. The stage detection is deterministic: `isUsed: true` only ever happens inside `confirmHandoff`, which atomically marks the code used, records the retailer `ScanEvent`, and advances the stage to `"delivered"` in sequence. A batch cannot be `transit` with `isUsed: true` under normal operation, so the check is purely defensive.
+
+---
+
+#### `apiFetch` 10-second timeout
+
+`apiFetch` in `config.js` had no timeout. If the backend tunnel URL expired (Outray session ended) or the backend was unreachable, any `fetch` call would hang indefinitely — leaving skeleton loaders on screen forever with no error shown. An `AbortController` with a 10-second timeout was added. All API calls now fail fast if the backend does not respond, and the page surfaces an error instead of silently loading forever.
+
+---
+
+#### Account settings JavaScript architecture
+
+The account settings page originally used an inline `<script>` at the bottom of `<body>`. This triggered a timing bug: adding a `DOMContentLoaded` listener inside the script had no effect because that event had already fired before the inline script executed. The fix: all account settings logic was moved to an external file (`account_settings.js`) loaded with `<script src="./account_settings.js" defer>` in `<head>`. With `defer`, the browser guarantees the DOM is fully parsed before the script executes — no `DOMContentLoaded` wrapper needed, no timing ambiguity, and the JS file caches independently of the HTML. The sidebar overlay uses the CSS class `open` (not `visible`) — this matches the `.sidebar-overlay.open` selector in `design-tokens.css`.
+
+---
+
+#### Footer policy
+
+Footers were present on pages that should not have them. The rule applied across the project: only `landing.html` (public marketing page) and `journey.html` (public product verification page) include a footer. All auth-flow pages and app/transactional pages have no footer. `journey.html` keeps its footer because it is the page customers land on directly from a QR scan — it is effectively a public-facing product page and is the appropriate place for an "About AuditQR" CTA. Auth pages and dashboard pages have a focused single-purpose UI where a footer adds clutter and no user value.
 
 ---
 
@@ -220,14 +587,19 @@ To go live, swap the JSON lookup inside `cacService.ts` for an HTTP call to a re
 
 | Page                  | Purpose                                                  |
 | --------------------- | -------------------------------------------------------- |
-| `dashboard.html`      | SME overview — stats, recent scan activity, date filters |
-| `products_list.html`  | All products with unit counts                            |
-| `create_product.html` | Create a new product and generate QR batch               |
-| `qr_ready.html`       | Download generated QR codes                              |
-| `qr_scanner.html`     | Landing page for website QR scanning                     |
-| `journey.html`        | Customer-facing product verification page                |
-| `handoff.html`        | Transporter handoff confirmation flow                    |
-| `scan_events.html`    | Full item tracking page for the SME                      |
+| `landing.html`           | Public landing page — product scan button, feature overview  |
+| `dashboard.html`         | SME overview — stats, recent scan activity, date filters     |
+| `products_list.html`     | All products with unit counts                                |
+| `create_product.html`    | Create a new product and generate QR batch                   |
+| `qr_ready.html`          | Download generated QR codes                                  |
+| `qr_scanner.html`        | Website QR scanner — Child QRs only, opens journey.html      |
+| `journey.html`           | Customer-facing product verification page (read-only)        |
+| `handoff.html`           | Entry point for any Parent QR scan — checks stage and routes to transporter UI (pending), code.html (transit), or journey.html (delivered) |
+| `handoff_code.html`      | Transporter success page — displays 4-digit handoff code to pass to retailer |
+| `code.html`              | Retailer entry page — enter handoff code to confirm receipt  |
+| `retailer_confirmed.html`| Retailer success screen after confirmed delivery             |
+| `scan_events.html`       | Full item tracking page for the SME                          |
+| `account_settings.html`  | Change business name, email, and password                    |
 
 ---
 
@@ -237,7 +609,7 @@ QR scanning must be tested on a real phone. Since the backend runs on `localhost
 
 ### How the QR codes work
 
-Child QR codes encode a custom URI: `auditqr://verify?id=<childQRID>`. When a phone camera scans this, nothing happens — it's not an HTTP URL. Scanning only works through the in-app `qr_scanner.html` page, which parses the `auditqr://` scheme and submits the scan to the backend API.
+Both Parent and Child QR codes encode real HTTPS URLs pointing to the frontend tunnel. A native phone camera can open them directly — Child QRs open `journey.html` immediately (read-only, no API write). Parent QRs open `handoff.html?parentId=` directly; `handoff.html` calls `GET /api/scan/stage/:parentQRID` on load and routes to the correct page based on the current stage. The AuditQR website scanner (`qr_scanner.html`) is restricted to Child QRs only.
 
 ### Setup
 
@@ -271,18 +643,15 @@ npx outray http 3000
 
 Outray prints a public URL like `https://a1b2-xxx.outray.app`. This punches through your local network and makes your Express backend reachable from any device. Copy the URL.
 
-**4. Update the frontend API base**
+**4. Update the frontend config**
 
-In [frontend/config.js](../frontend/config.js), change:
+In [frontend/config.js](../frontend/config.js), update both URLs — they change every Outray session:
 ```js
-const API_BASE = "http://localhost:3000";
-```
-to:
-```js
-const API_BASE = "https://a1b2-xxx.outray.app";
+const API_BASE = "https://a1b2-xxx.outray.app";      // backend tunnel (port 3000)
+const FRONTEND_BASE = "https://b3c4-xxx.outray.app/auditqr_blockchain/frontend"; // frontend tunnel (port 5500)
 ```
 
-This is necessary because your phone can't reach `localhost:3000` — that only exists on your laptop. All frontend API calls now go through the Outray tunnel instead.
+`API_BASE` is used for all backend API calls. `FRONTEND_BASE` is embedded inside the QR codes themselves — it must be a URL reachable from the scanning device, so localhost won't work here.
 
 **5. Start Live Server in VS Code**
 
@@ -319,15 +688,59 @@ Phone browser
   → JS calls API_BASE      → backend tunnel (3000) → Express → Supabase
 ```
 
-### Testing notes
+### Known issues
 
-_This section will be updated as live mobile testing progresses with Outray._
+**Supabase port 6543 blocked on mobile hotspot (Nigeria)**
+
+Nigerian mobile carriers block port 6543, which is the default PgBouncer transaction pooler port in Supabase connection strings. The backend will start but every database query fails with a `P1001: Can't reach database server` error.
+
+Fix: in `.env`, change `DATABASE_URL` from port `6543` to port `5432` on the same host:
+
+```
+# Wrong (blocked on mobile hotspot)
+DATABASE_URL="postgresql://postgres.xxx:password@aws-1-eu-west-2.pooler.supabase.com:6543/postgres"
+
+# Correct (session pooler — same host, different port)
+DATABASE_URL="postgresql://postgres.xxx:password@aws-1-eu-west-2.pooler.supabase.com:5432/postgres"
+```
+
+Port 5432 uses the session pooler instead of the transaction pooler. Both are on the same Supabase pooler host — only the port differs. This fix is only needed when running over a mobile hotspot; a standard broadband connection works on either port.
+
+**Live Server reloading constantly when Solana validator is running**
+
+Running `solana-test-validator` from inside the project directory creates a `test-ledger/` folder at that location. The validator writes to this folder continuously as it processes slots. Live Server watches the entire project directory for file changes, so every validator write triggers a page reload — making the frontend unusable while the validator is running.
+
+Fix: always start `solana-test-validator` from the Ubuntu home directory, not from within the project:
+
+```bash
+cd ~
+solana-test-validator
+```
+
+This places `test-ledger/` in the home directory where Live Server cannot see it. If `test-ledger/` was already created inside the project directory, delete it:
+
+```bash
+rm -rf /mnt/c/Users/user/Documents/Dev-ing/qr-code-blockchain/test-ledger
+```
 
 ---
 
 ## Blockchain Architecture (Solana)
 
 The target chain is **Solana** — chosen for low transaction fees and high throughput, which matters when writing a scan event per supply chain handoff.
+
+### Development Environment: Local Test Validator (not Devnet)
+
+During development, blockchain writes target a **local Solana test validator** (`solana-test-validator`) running on `http://localhost:8899` rather than the public Solana Devnet.
+
+**Why local over Devnet:**
+
+- **No internet dependency** — Devnet RPC endpoints are blocked on Nigerian mobile hotspot networks (same class of issue as the Supabase port 6543 problem). The local validator has no network dependency at all.
+- **Unlimited SOL** — Devnet requires requesting free SOL from a public faucet, which has rate limits and requires an internet connection. The local validator funds wallets instantly with no limits.
+- **Faster confirmation** — Devnet transactions confirm in 1–3 seconds over the internet. Local validator confirmations are near-instant.
+- **Demo reliability** — The system works regardless of network conditions during presentations or testing. Devnet introduces an external point of failure.
+
+The tradeoff is that transactions are not publicly visible on a block explorer during development. This is acceptable for testing. Before final submission, change the connection string in `solanaService.ts` from `http://localhost:8899` to `https://api.devnet.solana.com` to switch to the public Devnet in one line.
 
 ### Two Types of On-Chain Writes
 
@@ -362,13 +775,81 @@ The `txHash` from this write is stored on the `ScanEvent` record (field already 
 
 The `parentQRID` reference ties every scan back to the original batch registration — giving a complete, independently verifiable chain of custody.
 
+### How the Three Transactions Are Linked
+
+Each event — genesis, transporter, retailer — is a **separate, independent Solana transaction** with its own hash. They are not chained to each other at the blockchain level. What links them is the **memo data embedded inside each transaction**:
+
+```
+AuditQR|<parentQRID>|QR Generation|<timestamp>
+AuditQR|<parentQRID>|Transporter Scan|<ip>|<timestamp>
+AuditQR|<parentQRID>|Retailer Scan|<ip>|<timestamp>
+```
+
+Every transaction carries the same `parentQRID`. To independently verify a product's full journey **without trusting the AuditQR database at all**, someone would:
+
+1. Open any of the three transaction links on the Solana Explorer
+2. Read the memo field — the `parentQRID` is embedded in plain text
+3. Search the blockchain for other memo transactions containing that same `parentQRID`
+
+The AuditQR database makes this convenient by storing all three hashes together and presenting them as a timeline — but the proof exists independently on-chain. The database is a reading aid, not the source of truth.
+
+### Memo Data: Field-by-Field
+
+The data logged to the blockchain is a plain pipe-delimited string written via the **SPL Memo Program** — a standard Solana program that attaches arbitrary text to a transaction. This is what you see in the **Logs panel** on the Solana Explorer when you open any AuditQR transaction:
+
+**Genesis (written when QR codes are generated):**
+
+```
+AuditQR|7134f545-b3da-4806-9a44-4941fd8fbc23|Garri|QR Generation|2026-07-03T11:51:06.846Z
+```
+
+**Transporter (written when the transporter confirms pickup):**
+
+```
+AuditQR|7134f545-b3da-4806-9a44-4941fd8fbc23|Garri|Transporter Scan|Lagos, NG|2026-07-03T12:10:44.221Z
+```
+
+**Retailer (written when the retailer confirms receipt):**
+
+```
+AuditQR|7134f545-b3da-4806-9a44-4941fd8fbc23|Garri|Retailer Scan|Lagos, NG|2026-07-03T13:04:17.509Z
+```
+
+| Position | Field | Example | What it means |
+| -------- | ----- | ------- | ------------- |
+| 1 | Identifier | `AUDITQR` | Marks this as an AuditQR transaction. Allows anyone to identify AuditQR records on the blockchain without querying the database |
+| 2 | `parentQRID` | `7134f545-b3da-...` | UUID of the batch. The shared key that links all three transactions — the same value appears in every memo for that product |
+| 3 | Product name | `Garri` | Human-readable product name. Makes the transaction self-explanatory on the explorer without cross-referencing the database |
+| 4 | Event type | `QR Generation` / `Transporter Scan` / `Retailer Scan` | Which stage of the supply chain this transaction represents |
+| 5 | Location | `Lagos, NG` | IP-resolved location of the scan. Genesis transactions skip this field — location is only meaningful for physical handoffs |
+| 6 | Timestamp | `2026-07-03T11:51:06.846Z` | UTC ISO timestamp of when the event occurred |
+
+The Solana Explorer shows this in two places:
+
+- **Data (UTF-8)** column in the Programs section — the raw memo string (may word-wrap across lines)
+- **Logs panel** on the right — the same string with the label `Memo (len N):` followed by the full value in quotes, untruncated
+
+#### Decision — Product name included in memo
+
+The original memo format used internal role identifiers (`genesis`, `transporter`, `retailer`). These are meaningless to anyone reading the transaction on the explorer without access to the AuditQR database. The product name was added so that every transaction is self-describing: a person opening the explorer link sees immediately what product it refers to, what happened, where, and when — no database lookup required.
+
+#### The backend wallet is permanent
+
+The fee payer shown in the Accounts section of every transaction is `6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5` — the AuditQR backend wallet. This address is mathematically derived from the `SOLANA_KEYPAIR` value in `.env`. It does not change between sessions, restarts, or validator resets. It only changes if a new keypair is generated and `.env` is updated. This means the fee payer wallet is a stable identifier: anyone can look up this address on the Solana Explorer and see every transaction AuditQR has ever written — all genesis, transporter, and retailer events across all products.
+
+#### How to find all AuditQR transactions on the explorer
+
+The Solana Explorer search bar does not support searching by memo text. To find all AuditQR transactions, paste the fee payer wallet address into the search bar:
+
+```text
+6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5
+```
+
+This returns every transaction that wallet has paid for — which is every AuditQR blockchain write. To find the three transactions for a specific product, open each result and check the `parentQRID` in the memo data. To do this programmatically (without the Explorer UI), use the Solana RPC method `getSignaturesForAddress` with the wallet address, then fetch and parse the memo from each transaction.
+
 ### What a Customer Can Verify
 
-Opening the block explorer for a unit's scan tx, a customer can see:
-
-> _"Unit #7 was scanned at Lagos, 2026-05-29, and it belongs to Parent Carton [hash], which was registered by SME [address] on [date]."_
-
-This is the oracle proof — verifiable without trusting the AuditQR backend at all.
+Opening the block explorer for any of the three transactions, a customer can see the memo data directly — the `parentQRID`, the role (genesis / transporter / retailer), the timestamp, and the fee payer wallet (the SME's registered Solana address). This is verifiable without trusting the AuditQR backend at all.
 
 ### Schema Changes Needed for Blockchain Integration
 

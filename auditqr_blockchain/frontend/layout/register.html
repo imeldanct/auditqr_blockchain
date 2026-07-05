@@ -15,14 +15,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <style>
-      @media (max-width: 576px) {
-        .font-headline.text-\[36px\] { font-size: 26px !important; }
-      }
-    </style>
   </head>
   <body class="min-h-screen flex flex-col">
     <!-- Navbar -->
@@ -55,7 +50,7 @@
     <main class="page-offset pb-20">
       <div class="page-container-narrow">
         <!-- Header -->
-        <header class="mb-10">
+        <header class="mb-6">
           <div class="step-indicator">
             <span class="step-indicator-label">Step 1 of 2</span>
             <div class="step-dots">
@@ -63,7 +58,7 @@
               <div class="step-dot"></div>
             </div>
           </div>
-          <h1 class="font-headline text-[36px] font-medium text-white leading-tight mb-3">
+          <h1 class="font-headline text-[26px] sm:text-[32px] md:text-[36px] font-medium text-white leading-tight mb-3">
             Register your business
           </h1>
           <p class="font-body text-[15px] text-muted leading-relaxed">
@@ -94,7 +89,7 @@
         <!-- Business Details Card -->
         <section
           class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 md:p-8 mb-6"
-          style="border-top-color: #d6ffb7"
+          style="border-top-color: #3185FC"
           id="business-details-card"
         >
           <div class="flex items-center gap-2 mb-8">
@@ -211,9 +206,6 @@
       </div>
     </main>
     <div class="glow-blue-center"></div>
-    <footer class="footer-compact">
-      <p>© 2026 AuditQR. Built for Nigerian SMEs</p>
-    </footer>
 
     <script>
       // Map each field id to the error element that should light up for it
@@ -320,3 +312,4 @@
     </script>
   </body>
 </html>
+

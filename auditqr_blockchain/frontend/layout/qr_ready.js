@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var _childQRs = [];
   var _productName = "";
   var _parentDataURL = "";
+  var _parentQRText = "";
 
   // qrcodejs renders into a div; extract canvas data URL from it
   function makeQRDataURL(text, size, cb) {
@@ -39,6 +40,46 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  // Poll for genesis txHash until it appears (background Solana write).
+  // Gives up after ~30 seconds and shows a warning — silent failure means
+  // the SME would never know the blockchain write didn't happen.
+  var _genesisPollTimer = null;
+  var _genesisPollAttempts = 0;
+  var GENESIS_POLL_MAX = 10; // 10 × 3s = 30 seconds
+
+  function pollGenesisTx() {
+    _genesisPollAttempts++;
+    apiFetch("/api/scan/history/" + parentQRID)
+      .then(function (res) { return res && res.ok ? res.json() : null; })
+      .then(function (data) {
+        var el = document.getElementById("genesis-tx-display");
+        if (data && data.genesisTxHash && el) {
+          var h = data.genesisTxHash;
+          el.innerHTML =
+            '<a href="' + solanaExplorerTx(h) + '" target="_blank" rel="noopener noreferrer"' +
+            ' class="text-blue text-[11px] hover:underline inline-flex items-center gap-1">' +
+            'View on blockchain explorer' +
+            '<span class="material-symbols-outlined text-[11px]">open_in_new</span></a>';
+          el.classList.remove("text-muted");
+        } else if (_genesisPollAttempts >= GENESIS_POLL_MAX) {
+          // Timed out — write probably failed
+          if (el) {
+            el.textContent = "Blockchain write failed";
+            el.classList.add("text-danger");
+            el.classList.remove("text-muted");
+          }
+          showToast("Blockchain record not written. Check that the Solana validator is running and funded, then restart the backend.", "error");
+        } else {
+          _genesisPollTimer = setTimeout(pollGenesisTx, 3000);
+        }
+      })
+      .catch(function () {
+        if (_genesisPollAttempts < GENESIS_POLL_MAX) {
+          _genesisPollTimer = setTimeout(pollGenesisTx, 5000);
+        }
+      });
+  }
+
   apiFetch("/api/qr/" + parentQRID)
     .then(function (res) {
       if (!res || !res.ok) {
@@ -49,6 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .then(function (data) {
       if (!data) return;
+      pollGenesisTx();
       _productName = data.productName;
       _childQRs = data.childQRs || [];
       localStorage.removeItem("product_quantity");
@@ -62,8 +104,9 @@ document.addEventListener("DOMContentLoaded", function () {
       var badge = document.getElementById("child-count-badge");
       if (badge) badge.textContent = data.quantity + " Items";
 
-      // Parent QR
-      makeQRDataURL("auditqr://product?id=" + data.parentQRID, 180, function (url) {
+      // Parent QR — preview at 180px, download at 512px
+      _parentQRText = FRONTEND_BASE + "/layout/handoff.html?parentId=" + data.parentQRID;
+      makeQRDataURL(_parentQRText, 180, function (url) {
         _parentDataURL = url;
         var img = document.getElementById("parent-qr-img");
         if (img && url) {
@@ -77,7 +120,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!grid) return;
       grid.innerHTML = "";
       _childQRs.forEach(function (child) {
-        makeQRDataURL(child.qrData, 90, function (url) {
+        var childQRText = FRONTEND_BASE + "/layout/journey.html?childId=" + child.childQRID;
+        makeQRDataURL(childQRText, 90, function (url) {
           var wrapper = document.createElement("div");
           wrapper.className =
             "aspect-square bg-white rounded flex items-center justify-center p-1";
@@ -120,13 +164,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.getElementById("download-parent-btn").addEventListener("click", function (e) {
     e.preventDefault();
-    if (!_parentDataURL) {
+    if (!_parentQRText) {
       showToast("QR not ready yet.", "error");
       return;
     }
-    var blob = dataURLtoBlob(_parentDataURL);
-    var blobURL = URL.createObjectURL(blob);
-    triggerDownload(blobURL, "ParentQR_" + (_productName || "AuditQR") + ".png");
+    makeQRDataURL(_parentQRText, 512, function (highResUrl) {
+      if (!highResUrl) { showToast("Failed to generate QR.", "error"); return; }
+      var blob = dataURLtoBlob(highResUrl);
+      var blobURL = URL.createObjectURL(blob);
+      triggerDownload(blobURL, "ParentQR_" + (_productName || "AuditQR") + ".png");
+    });
   });
 
   document
@@ -148,7 +195,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Generate all QR images in parallel
         var promises = _childQRs.map(function (child, idx) {
           return new Promise(function (resolve) {
-            makeQRDataURL(child.qrData, 300, function (url) {
+            var childQRText = FRONTEND_BASE + "/layout/journey.html?childId=" + child.childQRID;
+            makeQRDataURL(childQRText, 300, function (url) {
               if (url) {
                 // strip data:image/png;base64, prefix
                 var base64 = url.split(",")[1];

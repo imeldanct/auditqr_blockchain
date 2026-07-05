@@ -15,25 +15,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <style>
-      @keyframes check-pop {
-        0% {
-          transform: scale(0.5);
-          opacity: 0;
-        }
-        60% {
-          transform: scale(1.15);
-        }
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
+      @keyframes circle-pop {
+        0%   { transform: scale(0);    opacity: 0; }
+        55%  { transform: scale(1.18); opacity: 1; }
+        75%  { transform: scale(0.94);             }
+        100% { transform: scale(1);    opacity: 1; }
       }
-      .check-animate {
-        animation: check-pop 0.5s ease-out forwards;
+      @keyframes icon-pop {
+        0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+        60%  { transform: scale(1.2) rotate(4deg); opacity: 1; }
+        80%  { transform: scale(0.95) rotate(-1deg);            }
+        100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+      }
+      .circle-animate {
+        animation: circle-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      .icon-animate {
+        animation: icon-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both;
       }
     </style>
   </head>
@@ -71,27 +73,24 @@
     >
       <div class="w-full max-w-[400px] text-center">
         <div
-          class="w-[100px] h-[100px] rounded-full bg-green/10 border border-green/30 flex items-center justify-center mx-auto mb-8 check-animate"
+          class="w-[100px] h-[100px] rounded-full bg-blue/10 border border-blue/30 flex items-center justify-center mx-auto mb-8 circle-animate"
         >
           <span
-            class="material-symbols-outlined text-green text-[52px]"
+            class="material-symbols-outlined text-blue text-[52px] icon-animate"
             style="font-variation-settings: &quot;FILL&quot; 1"
             >check_circle</span
           >
         </div>
-        <h1 class="font-headline text-2xl font-medium text-white mb-2">
+        <h1 class="font-headline text-2xl font-medium text-white mb-10">
           Delivery confirmed
         </h1>
-        <p class="text-muted text-sm mb-10">
-          This handoff has been permanently recorded on the audit trail.
-        </p>
 
         <div
           class="text-left space-y-5 bg-surface border border-outline-variant rounded-xl p-6 mb-8"
         >
           <div class="flex items-center gap-4">
             <span
-              class="material-symbols-outlined text-green text-[20px]"
+              class="material-symbols-outlined text-blue text-[20px]"
               style="font-variation-settings: &quot;FILL&quot; 1"
               >check_circle</span
             >
@@ -101,7 +100,7 @@
           </div>
           <div class="flex items-center gap-4">
             <span
-              class="material-symbols-outlined text-green text-[20px]"
+              class="material-symbols-outlined text-blue text-[20px]"
               style="font-variation-settings: &quot;FILL&quot; 1"
               >check_circle</span
             >
@@ -109,7 +108,7 @@
           </div>
           <div class="flex items-center gap-4">
             <span
-              class="material-symbols-outlined text-green text-[20px]"
+              class="material-symbols-outlined text-blue text-[20px]"
               style="font-variation-settings: &quot;FILL&quot; 1"
               >check_circle</span
             >
@@ -119,23 +118,9 @@
           </div>
         </div>
 
-        <div class="bg-surface-2 border border-border rounded-lg p-4 mb-4 text-left">
-          <p class="font-mono text-muted text-[11px] mb-1">Transaction hash</p>
-          <p class="font-mono text-white text-[12px] truncate" id="tx-hash">—</p>
-          <p class="font-mono text-muted text-[11px] mt-1" id="tx-network">
-            Polygon Amoy Testnet
-          </p>
-          <a
-            id="explorer-link"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue text-[12px] hover:underline mt-2 inline-flex items-center gap-1"
-            >View on blockchain explorer<span
-              class="material-symbols-outlined text-[12px] leading-none"
-              >open_in_new</span
-            ></a
-          >
+        <div id="blockchain-row" class="flex items-center gap-1.5 mb-6">
+          <span class="material-symbols-outlined text-[13px] text-muted/50">schedule</span>
+          <span class="text-[12px] text-muted/50">Recording to chain…</span>
         </div>
 
         <button
@@ -149,12 +134,38 @@
     </main>
 
     <script>
-      const txHash = localStorage.getItem("confirm_tx_hash");
-      if (txHash) {
-        document.getElementById("tx-hash").textContent = txHash;
-        document.getElementById("explorer-link").href =
-          `https://amoy.polygonscan.com/tx/${txHash}`;
+      var _retailerPollAttempts = 0;
+      var _confirmedParentQRID = localStorage.getItem("confirm_parentQRID");
+
+      function pollRetailerTx() {
+        if (!_confirmedParentQRID) return;
+        _retailerPollAttempts++;
+        fetch(API_BASE + "/api/scan/history/" + encodeURIComponent(_confirmedParentQRID))
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (data) {
+            if (!data) return;
+            var retailerEvent = (data.events || []).filter(function (e) {
+              return e.scannerRole === "retailer" && e.txHash;
+            }).pop();
+            var row = document.getElementById("blockchain-row");
+            if (retailerEvent && row) {
+              row.innerHTML =
+                '<a href="' + solanaExplorerTx(retailerEvent.txHash) + '" target="_blank" rel="noopener noreferrer"' +
+                ' class="text-blue text-[12px] hover:underline inline-flex items-center gap-1">' +
+                'View on blockchain explorer' +
+                '<span class="material-symbols-outlined text-[12px]">open_in_new</span></a>';
+              localStorage.removeItem("confirm_parentQRID");
+            } else if (_retailerPollAttempts < 10) {
+              setTimeout(pollRetailerTx, 3000);
+            }
+          })
+          .catch(function () {
+            if (_retailerPollAttempts < 10) setTimeout(pollRetailerTx, 5000);
+          });
       }
+
+      pollRetailerTx();
     </script>
   </body>
 </html>
+

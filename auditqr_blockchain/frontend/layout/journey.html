@@ -9,21 +9,9 @@
     <link rel="stylesheet" href="../tailwind.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="../config.js"></script>
 <script src="./toast.js"></script>
-<style>
-  @media (max-width: 576px) {
-    #product-name { font-size: 32px !important; }
-    #main-view .bg-surface.border.border-outline-variant.rounded-xl.p-8 { padding: 16px !important; }
-    #main-view .absolute.left-\[39px\] { left: 23px; }
-    #main-view .flex.gap-6 { gap: 14px; }
-    #verdict-card { flex-direction: column; gap: 12px; }
-  }
-  @media (min-width: 577px) and (max-width: 768px) {
-    #product-name { font-size: 38px !important; }
-  }
-</style>
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -55,29 +43,27 @@
 </div>
 
 <!-- Main content (hidden until loaded) -->
-<main id="main-view" class="flex-grow page-offset pb-16 glow-green-top px-6 hidden">
-<div class="page-container-narrow space-y-12">
+<main id="main-view" class="flex-grow page-offset pb-16 glow-blue-top hidden">
+<div class="page-container-narrow space-y-8">
 
   <!-- Product Header -->
-  <section class="space-y-4">
-    <div class="space-y-1">
-      <h1 id="product-name" class="text-5xl font-headline font-medium text-white tracking-tight">—</h1>
-      <p id="item-number" class="font-mono text-[11px] text-muted">Item —</p>
+  <section class="space-y-2">
+    <div class="space-y-0.5">
+      <h1 id="product-name" class="text-[32px] sm:text-[38px] md:text-5xl font-headline font-medium text-white tracking-tight">—</h1>
     </div>
-    <div class="flex flex-wrap items-center gap-3 pt-2">
+    <div class="space-y-1">
+      <span id="business-name" class="font-medium text-sm block">—</span>
       <div class="flex items-center gap-2">
-        <span id="business-name" class="font-medium text-sm">—</span>
-        <span id="verified-badge" class="bg-green/10 border border-green/30 text-green text-[10px] font-body font-medium px-2 py-0.5 rounded-full uppercase tracking-wider hidden">CAC verified</span>
+        <span id="verified-badge" class="bg-blue/10 border border-blue/30 text-blue text-[10px] font-body font-medium px-2 py-0.5 rounded-full uppercase tracking-wider hidden">CAC verified</span>
+        <span id="cac-number" class="text-muted text-sm font-mono text-[11px]">RC—</span>
       </div>
-      <span class="text-muted text-sm">•</span>
-      <span id="cac-number" class="text-muted text-sm font-mono text-[11px]">RC—</span>
     </div>
   </section>
 
   <!-- Authenticity Verdict -->
-  <section id="verdict-card" class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 flex items-start gap-5 shadow-sm" style="border-top-color: #D6FFB7;">
-    <div class="bg-green/10 p-3 rounded-lg">
-      <span class="material-symbols-outlined text-2xl text-green" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+  <section id="verdict-card" class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6 flex flex-col sm:flex-row items-start gap-3 sm:gap-5 shadow-sm" style="border-top-color: #3185FC;">
+    <div class="bg-blue/10 p-3 rounded-lg">
+      <span class="material-symbols-outlined text-2xl text-blue" style="font-variation-settings: 'FILL' 1;">verified_user</span>
     </div>
     <div>
       <h2 class="text-white font-medium text-lg mb-1 font-headline">This product is authentic</h2>
@@ -89,14 +75,13 @@
   <section class="space-y-6">
     <div class="space-y-1">
       <h2 class="font-headline text-3xl font-medium text-white">Product Journey</h2>
-      <p id="journey-summary" class="text-sm font-body font-medium text-blue">Loading…</p>
     </div>
-    <div class="bg-surface border border-outline-variant rounded-xl p-8 relative">
-      <div class="absolute left-[39px] top-[48px] bottom-[48px] w-px bg-muted/20"></div>
-      <div id="timeline" class="space-y-10 relative">
+    <div class="bg-surface border border-outline-variant rounded-xl p-5 relative">
+      <div class="absolute left-[27px] top-[48px] bottom-[48px] w-px bg-muted/20"></div>
+      <div id="timeline" class="space-y-6 relative">
         <!-- Filled dynamically -->
       </div>
-      <div class="mt-10 pt-6 border-t border-muted/10 text-center">
+      <div class="mt-4 pt-4 border-t border-muted/10 text-center">
         <p id="last-updated" class="text-muted text-[11px]">Fetching scan events…</p>
       </div>
     </div>
@@ -110,19 +95,19 @@
         <div class="grid grid-cols-2 p-5"><span class="text-muted text-sm">Product name</span><span id="detail-name" class="text-white text-sm font-medium">—</span></div>
         <div class="grid grid-cols-2 p-5"><span class="text-muted text-sm">Item ID</span><span id="detail-id" class="text-white text-sm font-mono text-[11px]">—</span></div>
         <div class="grid grid-cols-2 p-5"><span class="text-muted text-sm">Registered by</span><span id="detail-business" class="text-white text-sm font-medium">—</span></div>
-        <div class="p-5"><div class="text-muted text-sm mb-2">Description</div><p id="detail-description" class="text-white text-sm leading-relaxed">—</p></div>
+        <div class="grid grid-cols-2 p-5"><span class="text-muted text-sm">Description</span><span id="detail-description" class="text-white text-sm font-medium">—</span></div>
       </div>
     </div>
   </section>
 
   <!-- Footer CTA -->
-  <section class="text-center pt-8 pb-12 space-y-6 glow-blue-bottom" id="cta-section">
+  <section class="text-center pt-4 pb-12 space-y-6 glow-blue-bottom" id="cta-section">
     <div class="space-y-2">
       <p class="text-white text-lg font-medium">Are you a Nigerian SME?</p>
       <p class="text-muted text-sm">Secure your supply chain and build radical trust with your customers.</p>
     </div>
     <button class="bg-blue text-white font-body font-bold px-8 py-4 rounded-lg active:scale-95 transition-all w-full sm:w-auto hover:bg-blue-dark shadow-lg shadow-blue/20" id="cta-register-btn" onclick="window.location.href='landing.html'">
-      Register your business on AuditQR
+      Register on AuditQR
     </button>
   </section>
 
@@ -135,10 +120,8 @@
 
 <script>
   const roleLabels = {
-    manufacturer: "Manufacturer / Origin",
-    distributor: "Distributor",
+    transporter: "Transporter",
     retailer: "Retailer",
-    consumer: "Consumer",
     unknown: "Unknown handler",
   };
 
@@ -149,34 +132,72 @@
     });
   }
 
-  function buildTimelineItem(event, index, total) {
-    const label = roleLabels[event.scannerRole] || event.scannerRole;
-    const isFirst = index === 0;
-    const time = formatDate(event.timestamp);
-    const actionLabel = isFirst ? "QR code scanned (origin)" : "Scanned / Handoff verified";
+  function buildGenesisItem(genesisAt, genesisTxHash) {
+    const txRow = genesisTxHash
+      ? `<div class="flex items-center gap-1.5 mt-1">
+           <a href="${solanaExplorerTx(genesisTxHash)}" target="_blank" rel="noopener noreferrer"
+              class="text-blue text-[11px] hover:underline inline-flex items-center gap-1">
+             View on blockchain explorer
+             <span class="material-symbols-outlined text-[11px]">open_in_new</span>
+           </a>
+         </div>`
+      : `<div class="flex items-center gap-1.5 mt-1">
+           <span class="material-symbols-outlined text-[12px] text-muted/50">schedule</span>
+           <span class="font-mono text-[10px] text-muted/50">Recording to chain…</span>
+         </div>`;
     return `
       <div class="flex gap-6">
         <div class="relative z-10 flex items-center justify-center w-[22px] h-[22px]">
-          <div class="w-[9px] h-[9px] rounded-full bg-green"></div>
+          <div class="w-[9px] h-[9px] rounded-full bg-blue"></div>
+        </div>
+        <div class="space-y-1">
+          <span class="text-white font-medium">Manufacturer</span>
+          <div class="text-xs font-body text-blue">QR codes generated</div>
+          <div class="text-muted text-[11px]">${formatDate(genesisAt)}</div>
+          ${txRow}
+        </div>
+      </div>`;
+  }
+
+  function buildScanItem(event) {
+    const label = roleLabels[event.scannerRole] || event.scannerRole;
+    const actionLabel = event.scannerRole === "transporter"
+      ? "Picked up"
+      : "Received";
+    const txRow = event.txHash
+      ? `<div class="flex items-center gap-1.5 mt-1">
+           <a href="${solanaExplorerTx(event.txHash)}" target="_blank" rel="noopener noreferrer"
+              class="text-blue text-[11px] hover:underline inline-flex items-center gap-1">
+             View on blockchain explorer
+             <span class="material-symbols-outlined text-[11px]">open_in_new</span>
+           </a>
+         </div>`
+      : `<div class="flex items-center gap-1.5 mt-1">
+           <span class="material-symbols-outlined text-[12px] text-muted/50">schedule</span>
+           <span class="font-mono text-[10px] text-muted/50">Recording to chain…</span>
+         </div>`;
+    return `
+      <div class="flex gap-6">
+        <div class="relative z-10 flex items-center justify-center w-[22px] h-[22px]">
+          <div class="w-[9px] h-[9px] rounded-full bg-blue"></div>
         </div>
         <div class="space-y-1">
           <div class="flex items-center gap-2">
             <span class="text-white font-medium">${label}</span>
-            ${event.ipLocation && event.ipLocation !== "unknown"
-              ? `<span class="text-green text-xs">(${event.ipLocation})</span>`
-              : ""}
           </div>
-          <div class="text-xs font-body text-green">${actionLabel}</div>
-          <div class="text-muted text-[11px]">${time}</div>
+          <div class="text-xs font-body text-blue">${actionLabel}</div>
+          <div class="text-muted text-[11px]">${formatDate(event.timestamp)}</div>
+          ${txRow}
         </div>
       </div>`;
   }
 
   async function load() {
     const params = new URLSearchParams(window.location.search);
-    const childQRID = params.get("id");
+    const parentId = params.get("parentId");
+    const childId = params.get("childId");
 
-    if (!childQRID) {
+    if (!parentId && !childId) {
       document.getElementById("loading-view").classList.add("hidden");
       document.getElementById("error-view").classList.remove("hidden");
       document.getElementById("error-message").textContent = "No QR ID provided in the URL.";
@@ -184,21 +205,20 @@
     }
 
     try {
-      // Read-only verification view. The scan itself was already recorded by the
-      // scanner flow (qr_scanner.html) before routing here; this page must never
-      // POST /api/scan, or simply opening it (e.g. from the SME dashboard) would
-      // advance a pending unit's stage and record a bogus scan.
-      const res = await fetch(API_BASE + `/api/scan/history/${childQRID}`);
+      const url = childId
+        ? API_BASE + "/api/scan/child/" + encodeURIComponent(childId)
+        : API_BASE + "/api/scan/history/" + encodeURIComponent(parentId);
+
+      const res = await fetch(url);
       if (!res.ok) {
         throw new Error((await res.json()).error || "Not found");
       }
 
       const data = await res.json();
-      const { product, events, itemNumber } = data;
+      const { product, events, genesisAt, genesisTxHash, itemNumber, parentQRID } = data;
 
       // Fill header
       document.getElementById("product-name").textContent = product.productName;
-      document.getElementById("item-number").textContent = `Item #${itemNumber}`;
       document.getElementById("business-name").textContent = product.businessName;
       document.getElementById("cac-number").textContent = product.rcNumber;
       if (product.isVerified) {
@@ -207,21 +227,21 @@
 
       // Fill details
       document.getElementById("detail-name").textContent = product.productName;
-      document.getElementById("detail-id").textContent = childQRID;
+      document.getElementById("detail-id").textContent = childId || parentQRID || parentId;
       document.getElementById("detail-business").textContent = product.businessName;
       document.getElementById("detail-description").textContent = product.description || "No description provided.";
 
-      // Fill timeline
+      // Build timeline — genesis always first, then scan events
       const timeline = document.getElementById("timeline");
-      if (events.length === 0) {
-        timeline.innerHTML = `<p class="text-muted text-sm">No scan events recorded yet.</p>`;
-      } else {
-        timeline.innerHTML = events.map((e, i) => buildTimelineItem(e, i, events.length)).join("");
-        document.getElementById("journey-summary").textContent =
-          `${events.length} scan event${events.length !== 1 ? "s" : ""} recorded`;
-        const lastTime = formatDate(events[events.length - 1].timestamp);
-        document.getElementById("last-updated").textContent = `All events independently recorded · Last updated ${lastTime}`;
-      }
+      const allItems = [buildGenesisItem(genesisAt, genesisTxHash ?? null)];
+      events.forEach(function(e) { allItems.push(buildScanItem(e)); });
+      timeline.innerHTML = allItems.join("");
+
+      const lastTime = events.length
+        ? formatDate(events[events.length - 1].timestamp)
+        : formatDate(genesisAt);
+      document.getElementById("last-updated").textContent =
+        `All events independently recorded · Last updated ${lastTime}`;
 
       // Show page
       document.getElementById("loading-view").classList.add("hidden");
@@ -238,3 +258,4 @@
 </script>
 </body>
 </html>
+

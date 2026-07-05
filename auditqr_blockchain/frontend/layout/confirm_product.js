@@ -59,7 +59,10 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify({
           productName: productName,
           description: description,
-          category: category,
+          category: category || null,
+          weight: weight || null,
+          mfgDate: mfgDate || null,
+          expDate: expDate || null,
         }),
       });
       if (!res || !res.ok) throw new Error("Failed to create product");
@@ -83,9 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error(err);
       showToast("Error: " + err.message, "error");
       btn.disabled = false;
-      btn.innerHTML =
-        '<span class="material-symbols-outlined text-[18px]">' +
-        "verified_user</span> Confirm &amp; generate QR codes";
+      btn.textContent = "Generate QR codes";
     }
   });
 });

@@ -1,125 +1,104 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { writeScanToChain } from "../services/solanaService";
 
 const prisma = new PrismaClient();
 
-export const recordScan = async (req: Request, res: Response): Promise<any> => {
-  const { childQRID } = req.body;
+function ip(req: Request) {
+  return (req.ip || "unknown").replace("::ffff:", "");
+}
 
-  if (!childQRID) {
-    return res.status(400).json({ error: "childQRID is required." });
+function productPayload(parentQR: any) {
+  return {
+    productName: parentQR.product.productName,
+    description: parentQR.product.description,
+    category: parentQR.product.category,
+    weight: parentQR.product.weight,
+    mfgDate: parentQR.product.mfgDate,
+    expDate: parentQR.product.expDate,
+    businessName: parentQR.product.sme.businessName,
+    rcNumber: parentQR.product.sme.rcNumber,
+    isVerified: parentQR.product.sme.isVerified,
+  };
+}
+
+export const recordScan = async (req: Request, res: Response): Promise<any> => {
+  const { parentQRID } = req.body;
+
+  if (!parentQRID) {
+    return res.status(400).json({ error: "parentQRID is required." });
   }
 
   try {
-    const childQR = await prisma.childQRCode.findUnique({
-      where: { childQRID },
-      include: {
-        parentQR: {
-          include: {
-            product: {
-              include: { sme: true },
-            },
-          },
-        },
-      },
+    const parentQR = await prisma.parentQRCode.findUnique({
+      where: { parentQRID },
+      include: { product: { include: { sme: true } } },
     });
 
-    if (!childQR) {
-      return res
-        .status(404)
-        .json({ error: "QR code not found. This product cannot be verified." });
+    if (!parentQR) {
+      return res.status(404).json({ error: "QR code not found. This product cannot be verified." });
     }
 
-    // Determine role and next stage from currentStage
-    const stage = childQR.currentStage;
-    let scannerRole: string;
-    let nextStage: "transit" | "delivered";
-    let isFirstScan = false;
-    let isRetailerScan = false;
+    const stage = parentQR.currentStage;
 
     if (stage === "pending") {
-      scannerRole = "transporter";
-      nextStage = "transit";
-      isFirstScan = true;
-    } else if (stage === "transit") {
-      // Retailer scan. The retailer does not advance the stage by scanning —
-      // they must enter the transporter's handoff code to confirm receipt.
-      // We only require that the transporter has actually generated a code to
-      // share; the stage advance + retailer ScanEvent happen in confirmHandoff.
+      const scanEvent = await prisma.scanEvent.create({
+        data: { parentQRID, scannerRole: "transporter", ipLocation: ip(req) },
+      });
+      await prisma.parentQRCode.update({
+        where: { parentQRID },
+        data: { currentStage: "transit" },
+      });
+
+      writeScanToChain(parentQRID, parentQR.product.productName, "transporter", ip(req))
+        .then((txHash) => {
+          if (txHash) {
+            return prisma.scanEvent.update({
+              where: { scanID: scanEvent.scanID },
+              data: { txHash },
+            });
+          }
+        })
+        .catch((err) => console.error("Background Solana update failed:", err));
+
+      return res.status(200).json({
+        scanId: scanEvent.scanID,
+        isFirstScan: true,
+        isRetailerScan: false,
+        currentStage: "transit",
+        product: productPayload(parentQR),
+        scanTime: scanEvent.timestamp,
+      });
+    }
+
+    if (stage === "transit") {
       const lastTransporterScan = await prisma.scanEvent.findFirst({
-        where: { childQRID, scannerRole: "transporter" },
+        where: { parentQRID, scannerRole: "transporter" },
         orderBy: { timestamp: "desc" },
         include: { handoffCode: true },
       });
 
       if (!lastTransporterScan?.handoffCode) {
         return res.status(403).json({
-          error:
-            "Handoff code not generated yet. Ask the transporter to generate and share the code first.",
+          error: "Handoff code not generated yet. Ask the transporter to generate and share the code first.",
         });
       }
 
-      // Route the retailer to the code-entry screen without recording anything.
       return res.status(200).json({
         isFirstScan: false,
         isRetailerScan: true,
         needsConfirmation: true,
         currentStage: "transit",
-        product: {
-          productName: childQR.parentQR.product.productName,
-          description: childQR.parentQR.product.description,
-          businessName: childQR.parentQR.product.sme.businessName,
-          rcNumber: childQR.parentQR.product.sme.rcNumber,
-          isVerified: childQR.parentQR.product.sme.isVerified,
-        },
-        itemNumber: childQR.itemNumber,
-      });
-    } else {
-      // already delivered — consumer/public view only, no stage change
-      return res.status(200).json({
-        isFirstScan: false,
-        isRetailerScan: false,
-        currentStage: "delivered",
-        product: {
-          productName: childQR.parentQR.product.productName,
-          description: childQR.parentQR.product.description,
-          businessName: childQR.parentQR.product.sme.businessName,
-          rcNumber: childQR.parentQR.product.sme.rcNumber,
-          isVerified: childQR.parentQR.product.sme.isVerified,
-        },
-        itemNumber: childQR.itemNumber,
+        product: productPayload(parentQR),
       });
     }
 
-    // Record scan and advance stage atomically
-    const [scanEvent] = await prisma.$transaction([
-      prisma.scanEvent.create({
-        data: {
-          childQRID,
-          scannerRole,
-          ipLocation: (req.ip || "unknown").replace("::ffff:", ""),
-        },
-      }),
-      prisma.childQRCode.update({
-        where: { childQRID },
-        data: { currentStage: nextStage },
-      }),
-    ]);
-
-    res.status(200).json({
-      scanId: scanEvent.scanID,
-      isFirstScan,
-      isRetailerScan,
-      currentStage: nextStage,
-      product: {
-        productName: childQR.parentQR.product.productName,
-        description: childQR.parentQR.product.description,
-        businessName: childQR.parentQR.product.sme.businessName,
-        rcNumber: childQR.parentQR.product.sme.rcNumber,
-        isVerified: childQR.parentQR.product.sme.isVerified,
-      },
-      itemNumber: childQR.itemNumber,
-      scanTime: scanEvent.timestamp,
+    // delivered — read-only
+    return res.status(200).json({
+      isFirstScan: false,
+      isRetailerScan: false,
+      currentStage: "delivered",
+      product: productPayload(parentQR),
     });
   } catch (error) {
     console.error("Scan Error:", error);
@@ -128,7 +107,6 @@ export const recordScan = async (req: Request, res: Response): Promise<any> => {
 };
 
 function generateHandoffCodeValue(): string {
-  // 4-digit numeric — single-use nature is the security, not character space
   return String(Math.floor(1000 + Math.random() * 9000));
 }
 
@@ -141,7 +119,6 @@ export const generateHandoffCode = async (req: Request, res: Response): Promise<
       return res.status(404).json({ error: "Scan event not found." });
     }
 
-    // Return existing code if already generated
     const existing = await prisma.handoffCode.findUnique({ where: { scanID: scanId } });
     if (existing) {
       return res.status(200).json({ codeValue: existing.codeValue });
@@ -159,87 +136,33 @@ export const generateHandoffCode = async (req: Request, res: Response): Promise<
   }
 };
 
-export const getScanHistory = async (req: Request, res: Response): Promise<any> => {
-  const childQRID = req.params.childQRID as string;
-
-  try {
-    const childQR = await prisma.childQRCode.findUnique({
-      where: { childQRID },
-      include: {
-        parentQR: {
-          include: {
-            product: {
-              include: { sme: true },
-            },
-          },
-        },
-      },
-    });
-
-    if (!childQR) {
-      return res.status(404).json({ error: "QR code not found." });
-    }
-
-    const scanEvents = await prisma.scanEvent.findMany({
-      where: { childQRID },
-      orderBy: { timestamp: "asc" },
-    });
-
-    res.status(200).json({
-      childQRID,
-      itemNumber: childQR.itemNumber,
-      product: {
-        productName: childQR.parentQR.product.productName,
-        description: childQR.parentQR.product.description,
-        businessName: childQR.parentQR.product.sme.businessName,
-        rcNumber: childQR.parentQR.product.sme.rcNumber,
-        isVerified: childQR.parentQR.product.sme.isVerified,
-      },
-      events: scanEvents.map((e) => ({
-        scanID: e.scanID,
-        scannerRole: e.scannerRole,
-        ipLocation: e.ipLocation,
-        timestamp: e.timestamp,
-      })),
-    });
-  } catch (error) {
-    console.error("Scan History Error:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-};
-
 export const confirmHandoff = async (req: Request, res: Response): Promise<any> => {
-  const { codeValue, childQRID } = req.body;
+  const { codeValue, parentQRID } = req.body;
 
-  if (!codeValue || !childQRID) {
-    return res
-      .status(400)
-      .json({ error: "codeValue and childQRID are required." });
+  if (!codeValue || !parentQRID) {
+    return res.status(400).json({ error: "codeValue and parentQRID are required." });
   }
 
   try {
-    const childQR = await prisma.childQRCode.findUnique({
-      where: { childQRID },
+    const parentQR = await prisma.parentQRCode.findUnique({
+      where: { parentQRID },
+      include: { product: true },
     });
 
-    if (!childQR) {
+    if (!parentQR) {
       return res.status(404).json({ error: "QR code not found." });
     }
 
-    if (childQR.currentStage !== "transit") {
-      // Either nothing to confirm (pending) or already delivered.
+    if (parentQR.currentStage !== "transit") {
       return res.status(400).json({
-        error:
-          childQR.currentStage === "delivered"
-            ? "This item has already been confirmed as delivered."
-            : "This item is not awaiting a handoff confirmation.",
+        error: parentQR.currentStage === "delivered"
+          ? "This batch has already been confirmed as delivered."
+          : "This batch is not awaiting a handoff confirmation.",
       });
     }
 
-    // The code is validated against THIS item's transporter handoff code only —
-    // never globally — so codes can collide across items without confusion.
     const transporterScan = await prisma.scanEvent.findFirst({
-      where: { childQRID, scannerRole: "transporter" },
+      where: { parentQRID, scannerRole: "transporter" },
       orderBy: { timestamp: "desc" },
       include: { handoffCode: true },
     });
@@ -247,9 +170,7 @@ export const confirmHandoff = async (req: Request, res: Response): Promise<any> 
     const handoffCode = transporterScan?.handoffCode;
 
     if (!handoffCode) {
-      return res
-        .status(400)
-        .json({ error: "No handoff code has been generated for this item yet." });
+      return res.status(400).json({ error: "No handoff code has been generated for this batch yet." });
     }
 
     if (handoffCode.isUsed) {
@@ -260,31 +181,156 @@ export const confirmHandoff = async (req: Request, res: Response): Promise<any> 
       return res.status(400).json({ error: "Invalid handoff code." });
     }
 
-    // Confirm receipt: mark the code used, record the retailer scan, and advance
-    // the unit to delivered — atomically, so the chain can never be left partial.
-    await prisma.$transaction([
-      prisma.handoffCode.update({
-        where: { codeID: handoffCode.codeID },
-        data: { isUsed: true },
-      }),
-      prisma.scanEvent.create({
-        data: {
-          childQRID,
-          scannerRole: "retailer",
-          ipLocation: (req.ip || "unknown").replace("::ffff:", ""),
-        },
-      }),
-      prisma.childQRCode.update({
-        where: { childQRID },
-        data: { currentStage: "delivered" },
-      }),
-    ]);
+    await prisma.handoffCode.update({
+      where: { codeID: handoffCode.codeID },
+      data: { isUsed: true },
+    });
+    const retailerScan = await prisma.scanEvent.create({
+      data: { parentQRID, scannerRole: "retailer", ipLocation: ip(req) },
+    });
+    await prisma.parentQRCode.update({
+      where: { parentQRID },
+      data: { currentStage: "delivered" },
+    });
 
-    res
-      .status(200)
-      .json({ message: "Handoff confirmed successfully.", currentStage: "delivered" });
+    writeScanToChain(parentQRID, parentQR.product.productName, "retailer", ip(req))
+      .then((txHash) => {
+        if (txHash) {
+          return prisma.scanEvent.update({
+            where: { scanID: retailerScan.scanID },
+            data: { txHash },
+          });
+        }
+      })
+      .catch((err) => console.error("Background Solana update failed:", err));
+
+    res.status(200).json({ message: "Handoff confirmed successfully.", currentStage: "delivered" });
   } catch (error) {
     console.error("Confirm Handoff Error:", error);
     res.status(500).json({ error: "Internal server error confirming handoff." });
+  }
+};
+
+export const getStage = async (req: Request, res: Response): Promise<any> => {
+  const parentQRID = req.params.parentQRID as string;
+  try {
+    const parentQR = await prisma.parentQRCode.findUnique({
+      where: { parentQRID },
+      include: { product: { include: { sme: true } } },
+    });
+    if (!parentQR) {
+      return res.status(404).json({ error: "QR code not found." });
+    }
+
+    const baseResponse: any = {
+      currentStage: parentQR.currentStage,
+      product: productPayload(parentQR),
+      genesisAt: parentQR.createdAt,
+    };
+
+    // When in transit, detect whether the transporter's handoff flow was interrupted.
+    // pendingHandoff: true only when no HandoffCode exists yet — meaning the network
+    // failed between POST /api/scan (stage → transit) and POST /api/scan/:id/handoff.
+    // If a HandoffCode exists (even unused), the transporter already saw handoff_code.html
+    // (the code was stored in localStorage before that redirect), so any new scan is
+    // the retailer — route normally to code.html.
+    if (parentQR.currentStage === "transit") {
+      const lastTransporterScan = await prisma.scanEvent.findFirst({
+        where: { parentQRID, scannerRole: "transporter" },
+        orderBy: { timestamp: "desc" },
+        include: { handoffCode: true },
+      });
+
+      if (lastTransporterScan && !lastTransporterScan.handoffCode) {
+        baseResponse.pendingHandoff = true;
+        baseResponse.existingScanId = lastTransporterScan.scanID;
+      }
+    }
+
+    res.status(200).json(baseResponse);
+  } catch (error) {
+    console.error("Stage Check Error:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+export const getScanHistory = async (req: Request, res: Response): Promise<any> => {
+  const parentQRID = req.params.parentQRID as string;
+
+  try {
+    const parentQR = await prisma.parentQRCode.findUnique({
+      where: { parentQRID },
+      include: { product: { include: { sme: true } } },
+    });
+
+    if (!parentQR) {
+      return res.status(404).json({ error: "QR code not found." });
+    }
+
+    const scanEvents = await prisma.scanEvent.findMany({
+      where: { parentQRID },
+      orderBy: { timestamp: "asc" },
+    });
+
+    res.status(200).json({
+      parentQRID,
+      currentStage: parentQR.currentStage,
+      genesisAt: parentQR.createdAt,
+      genesisTxHash: parentQR.genesisTxHash ?? null,
+      product: productPayload(parentQR),
+      events: scanEvents.map((e) => ({
+        scanID: e.scanID,
+        scannerRole: e.scannerRole,
+        ipLocation: e.ipLocation,
+        timestamp: e.timestamp,
+        txHash: e.txHash ?? null,
+      })),
+    });
+  } catch (error) {
+    console.error("Scan History Error:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+export const getJourneyForChildQR = async (req: Request, res: Response): Promise<any> => {
+  const childQRID = req.params.childQRID as string;
+
+  try {
+    const childQR = await prisma.childQRCode.findUnique({
+      where: { childQRID },
+      include: {
+        parentQR: { include: { product: { include: { sme: true } } } },
+      },
+    });
+
+    if (!childQR) {
+      return res.status(404).json({ error: "QR code not found." });
+    }
+
+    const parentQR = childQR.parentQR;
+
+    const scanEvents = await prisma.scanEvent.findMany({
+      where: { parentQRID: parentQR.parentQRID },
+      orderBy: { timestamp: "asc" },
+    });
+
+    res.status(200).json({
+      parentQRID: parentQR.parentQRID,
+      itemNumber: childQR.itemNumber,
+      currentStage: parentQR.currentStage,
+      genesisAt: parentQR.createdAt,
+      genesisTxHash: parentQR.genesisTxHash ?? null,
+      product: productPayload(parentQR),
+      events: scanEvents.map((e) => ({
+        scanID: e.scanID,
+        scannerRole: e.scannerRole,
+        ipLocation: e.ipLocation,
+        timestamp: e.timestamp,
+        txHash: e.txHash ?? null,
+      })),
+    });
+  } catch (error) {
+    console.error("Child Journey Error:", error);
+    res.status(500).json({ error: "Internal server error." });
   }
 };

@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -51,30 +51,29 @@
     <main class="flex-1 page-offset pb-12">
       <div class="page-container-narrow">
         <section class="mb-8 text-left">
-          <p class="font-label text-[11px] uppercase tracking-widest text-muted mb-1">
-            You are receiving
+          <p class="font-label text-[11px] uppercase tracking-widest text-muted mb-2">
+            You are picking up
           </p>
           <h1
-            class="font-headline text-4xl font-medium text-white mb-2"
+            class="font-headline text-4xl font-medium text-white mb-4"
             id="handoff-product-name"
           >
             —
           </h1>
-          <div class="flex flex-wrap items-center gap-3 mb-4">
-            <span class="font-mono text-[11px] text-muted" id="handoff-item-number"
-              >Item #—</span
-            >
-            <div class="w-1 h-1 rounded-full bg-muted/30"></div>
-            <span class="font-body text-[13px] text-muted" id="handoff-date">—</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="font-body text-[15px] text-white" id="handoff-business-name"
-              >—</span
-            >
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="font-body text-[14px] text-white" id="handoff-business-name">—</span>
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-green/10 border border-green/30 text-green tracking-wider uppercase"
-              >CAC Verified</span
+              id="handoff-cac-badge"
+              class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue/10 border border-blue/30 text-blue tracking-wider uppercase"
             >
+              <span class="material-symbols-outlined text-[12px]" style="font-variation-settings:'FILL' 1">verified</span>
+              CAC Verified
+            </span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-mono text-[11px] text-muted" id="handoff-item-number">Batch · —</span>
+            <div class="w-1 h-1 rounded-full bg-muted/30"></div>
+            <span class="font-mono text-[11px] text-muted" id="handoff-date">—</span>
           </div>
         </section>
 
@@ -85,15 +84,26 @@
             >
               Product Information
             </h2>
-            <div class="space-y-3">
-              <div class="pt-2">
-                <span class="text-muted text-[13px] block mb-1">Description</span>
-                <p
-                  class="text-white text-[14px] leading-relaxed"
-                  id="product-description"
-                >
-                  —
-                </p>
+            <div class="space-y-4">
+              <div>
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Description</span>
+                <p class="text-white text-[14px] leading-relaxed" id="product-description">—</p>
+              </div>
+              <div id="product-category-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Category</span>
+                <p class="text-white text-[14px]" id="product-category">—</p>
+              </div>
+              <div id="product-weight-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Weight per unit</span>
+                <p class="text-white text-[14px]" id="product-weight">—</p>
+              </div>
+              <div id="product-mfg-date-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Mfg. date</span>
+                <p class="text-white text-[14px]" id="product-mfg-date">—</p>
+              </div>
+              <div id="product-exp-date-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Expiry date</span>
+                <p class="text-white text-[14px]" id="product-exp-date">—</p>
               </div>
             </div>
           </div>
@@ -102,14 +112,11 @@
         <section class="mb-6">
           <div class="bg-surface border border-outline-variant rounded-xl p-5">
             <div class="flex justify-between items-start mb-6">
-              <div>
-                <h2
-                  class="font-label text-[11px] font-medium text-muted uppercase tracking-widest"
-                >
-                  Journey So Far
-                </h2>
-                <p class="text-[11px] text-blue mt-1" id="journey-summary">Loading…</p>
-              </div>
+              <h2
+                class="font-label text-[11px] font-medium text-muted uppercase tracking-widest"
+              >
+                Product Journey
+              </h2>
               <span class="material-symbols-outlined text-muted/40">timeline</span>
             </div>
             <div class="relative pl-2" id="journey-timeline">
@@ -128,23 +135,22 @@
         <section class="mb-10">
           <div
             class="bg-surface border border-outline-variant border-t-2 rounded-xl p-5 shadow-2xl"
-            style="border-top-color: #d6ffb7"
+            style="border-top-color: #3185FC"
           >
             <div class="flex items-center gap-2 mb-4">
-              <span class="material-symbols-outlined text-green text-[20px]"
+              <span class="material-symbols-outlined text-blue text-[20px]"
                 >verified_user</span
               >
               <h2
                 class="font-label text-[11px] font-medium text-white uppercase tracking-widest"
               >
-                Confirm Receipt
+                Confirm Pickup
               </h2>
             </div>
             <p class="text-muted text-[13px] leading-relaxed mb-6">
-              By confirming receipt, you are verifying that you have physically received
-              this product from
-              <span class="text-white" id="handoff-business-name-2">—</span>. This
-              confirmation will be permanently recorded.
+              By confirming pickup, you are verifying that you have collected this product from
+              <span class="text-white" id="handoff-business-name-2">—</span> and are
+              taking responsibility for its delivery. This will be permanently recorded.
             </p>
             <form class="space-y-4">
               <button
@@ -152,7 +158,7 @@
                 type="button"
                 id="confirm-receipt-btn"
               >
-                Confirm receipt<span class="material-symbols-outlined text-[20px]"
+                Confirm pickup<span class="material-symbols-outlined text-[20px]"
                   >arrow_forward</span
                 >
               </button>
@@ -166,140 +172,228 @@
           </div>
         </section>
 
-        <footer class="pt-8 border-t border-border flex flex-col items-center gap-4">
-          <div class="flex items-center gap-2 opacity-40 grayscale">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span
-            ><span class="font-label text-[10px] tracking-widest uppercase"
-              >Secured by AuditQR</span
-            >
-          </div>
-          <p class="font-body text-[11px] text-muted text-center">
-            © 2026 AuditQR · Built for Nigerian SMEs
-          </p>
-        </footer>
       </div>
     </main>
+
 
     <div class="glow-blue-center"></div>
 
     <script>
-      const product = JSON.parse(localStorage.getItem("scan_product") || "{}");
-      const scanId = localStorage.getItem("scan_id");
-      const itemNumber = localStorage.getItem("scan_item_number");
-      const childQRID = localStorage.getItem("scan_childQRID");
+      var _parentQRID = new URLSearchParams(window.location.search).get("parentId");
+      var _product = null;
 
-      // Populate header from localStorage
-      const nameEl = document.getElementById("handoff-product-name");
-      if (nameEl && product.productName) nameEl.textContent = product.productName;
-
-      const itemEl = document.getElementById("handoff-item-number");
-      if (itemEl) itemEl.textContent = itemNumber ? "Item #" + itemNumber : "—";
-
-      const dateEl2 = document.getElementById("handoff-date");
-      const scanTime = localStorage.getItem("scan_time");
-      if (dateEl2 && scanTime) {
-        dateEl2.textContent = new Date(scanTime).toLocaleDateString("en-NG", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        });
-      }
-
-      const bizName = product.businessName || "—";
-      const bnEl = document.getElementById("handoff-business-name");
-      const bnEl2 = document.getElementById("handoff-business-name-2");
-      if (bnEl) bnEl.textContent = bizName;
-      if (bnEl2) bnEl2.textContent = bizName;
-
-      if (product.isVerified === false) {
-        const badge = document.querySelector(".text-green.tracking-wider");
-        if (badge) {
-          badge.textContent = "Unverified";
-          badge.classList.remove("text-green", "border-green/30", "bg-green/10");
-          badge.classList.add("text-danger");
+      async function resumeHandoff(scanId) {
+        const btn = document.getElementById("confirm-receipt-btn");
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Resuming handoff…";
+        }
+        try {
+          const codeRes = await fetch(API_BASE + "/api/scan/" + scanId + "/handoff", {
+            method: "POST",
+          });
+          if (!codeRes.ok) throw new Error("Failed to recover handoff code.");
+          const codeData = await codeRes.json();
+          localStorage.setItem("handoff_code", codeData.codeValue);
+          localStorage.setItem("scan_product", JSON.stringify(_product || {}));
+          localStorage.setItem("handoff_parentQRID", _parentQRID);
+          window.location.href = "handoff_code.html";
+        } catch (e) {
+          showToast("Could not recover your handoff code. Please try again.", "error");
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'Confirm pickup <span class="material-symbols-outlined text-[20px]">arrow_forward</span>';
+          }
         }
       }
-      if (product.description) {
-        const desc = document.getElementById("product-description");
-        if (desc) desc.textContent = product.description;
+
+      const fmt = (iso) =>
+        new Date(iso).toLocaleString("en-NG", {
+          day: "numeric", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit",
+        });
+
+      function skeletonLine(w) {
+        return '<span class="skeleton block rounded" style="height:0.75rem;width:' + w + '"></span>';
       }
 
-      // Load journey from API
-      async function loadJourney() {
-        if (!childQRID) return;
+      async function init() {
+        if (!_parentQRID) {
+          showToast("Invalid QR code link.", "error");
+          return;
+        }
+
+        // Skeleton states while product loads
+        document.getElementById("handoff-product-name").innerHTML =
+          '<span class="skeleton block rounded" style="height:2rem;width:55%"></span>';
+        document.getElementById("handoff-business-name").innerHTML = skeletonLine("40%");
+        document.getElementById("handoff-item-number").innerHTML = skeletonLine("30%");
+        document.getElementById("handoff-date").innerHTML = skeletonLine("25%");
+        document.getElementById("product-description").innerHTML =
+          skeletonLine("80%") + '<span class="skeleton block rounded mt-2" style="height:0.75rem;width:60%"></span>';
+        document.getElementById("journey-timeline").innerHTML =
+          '<div class="flex gap-4">' +
+          '<div class="skeleton rounded-full flex-shrink-0" style="width:9px;height:9px;margin-top:6px"></div>' +
+          '<div class="flex-1 space-y-2">' + skeletonLine("50%") + skeletonLine("35%") + '</div></div>';
+
         try {
-          const res = await fetch(API_BASE + "/api/scan/history/" + childQRID);
+          const res = await fetch(API_BASE + "/api/scan/stage/" + encodeURIComponent(_parentQRID));
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "QR code not found.");
+
+          if (data.currentStage === "transit") {
+            if (data.pendingHandoff && data.existingScanId) {
+              // Transporter is retrying after a network failure — resume the handoff flow.
+              // generateHandoffCode is idempotent, so this safely returns the existing code.
+              _product = data.product;
+              await resumeHandoff(data.existingScanId);
+              return;
+            }
+            window.location.replace("code.html?parentId=" + encodeURIComponent(_parentQRID));
+            return;
+          }
+          if (data.currentStage === "delivered") {
+            window.location.replace("journey.html?parentId=" + encodeURIComponent(_parentQRID));
+            return;
+          }
+
+          // pending — transporter UI
+          _product = data.product;
+
+          const nameEl = document.getElementById("handoff-product-name");
+          if (nameEl) nameEl.textContent = _product.productName || "—";
+
+          const itemEl = document.getElementById("handoff-item-number");
+          if (itemEl) itemEl.textContent = "Batch · " + _parentQRID.slice(0, 8);
+
+          const dateEl = document.getElementById("handoff-date");
+          if (dateEl) dateEl.textContent = new Date().toLocaleDateString("en-NG", {
+            day: "numeric", month: "short", year: "numeric",
+          });
+
+          const bizName = _product.businessName || "—";
+          const bnEl = document.getElementById("handoff-business-name");
+          const bnEl2 = document.getElementById("handoff-business-name-2");
+          if (bnEl) bnEl.textContent = bizName;
+          if (bnEl2) bnEl2.textContent = bizName;
+
+          const badge = document.getElementById("handoff-cac-badge");
+          if (badge) {
+            badge.classList.remove("hidden");
+            if (!_product.isVerified) {
+              badge.textContent = "Unverified";
+              badge.classList.remove("text-blue", "border-blue/30", "bg-blue/10");
+              badge.classList.add("text-danger", "border-danger/30", "bg-danger/10");
+            }
+          }
+
+          if (_product.description) {
+            const desc = document.getElementById("product-description");
+            if (desc) desc.textContent = _product.description;
+          }
+          if (_product.category) {
+            document.getElementById("product-category").textContent = _product.category;
+            document.getElementById("product-category-row").classList.remove("hidden");
+          }
+          if (_product.weight != null) {
+            document.getElementById("product-weight").textContent = _product.weight + " kg";
+            document.getElementById("product-weight-row").classList.remove("hidden");
+          }
+          const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" }) : null;
+          const mfgFmt = fmtDate(_product.mfgDate);
+          const expFmt = fmtDate(_product.expDate);
+          if (mfgFmt) {
+            document.getElementById("product-mfg-date").textContent = mfgFmt;
+            document.getElementById("product-mfg-date-row").classList.remove("hidden");
+          }
+          if (expFmt) {
+            document.getElementById("product-exp-date").textContent = expFmt;
+            document.getElementById("product-exp-date-row").classList.remove("hidden");
+          }
+
+          loadJourney();
+        } catch (err) {
+          showToast(err.message || "Could not load product.", "error");
+        }
+      }
+
+      async function loadJourney() {
+        try {
+          const res = await fetch(API_BASE + "/api/scan/history/" + encodeURIComponent(_parentQRID));
           if (!res.ok) return;
           const data = await res.json();
           const events = data.events || [];
-          const roleLabel = {
-            transporter: "Transporter",
-            retailer: "Retailer",
-            consumer: "Consumer",
-            unknown: "Unknown",
-          };
-          const fmt = (iso) =>
-            new Date(iso).toLocaleString("en-NG", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-          const timeline = document.getElementById("journey-timeline");
-          const summary = document.getElementById("journey-summary");
-          if (events.length === 0) {
-            timeline.innerHTML = `<p class="text-muted text-[13px] italic">No prior scan events.</p>`;
-            summary.textContent = "First scan";
-          } else {
-            timeline.innerHTML = events
-              .map(
-                (e, i) => `
-              <div class="flex gap-4 ${i < events.length - 1 ? "mb-4" : ""}">
-                <div class="flex flex-col items-center">
-                  <div class="w-[9px] h-[9px] rounded-full bg-green mt-1.5 shadow-[0_0_8px_rgba(214,255,183,0.5)]"></div>
-                  ${i < events.length - 1 ? '<div class="timeline-line"></div>' : ""}
-                </div>
-                <div class="pb-2">
-                  <p class="text-white font-medium text-[14px]">${roleLabel[e.scannerRole] || e.scannerRole}</p>
-                  <p class="text-green text-[12px] font-medium mt-0.5">${i === 0 ? "First scan (origin)" : "Handoff recorded"}</p>
-                  <p class="text-muted text-[11px] mt-1">${fmt(e.timestamp)}</p>
-                </div>
-              </div>`,
-              )
-              .join("");
-            summary.textContent =
-              events.length +
-              " scan event" +
-              (events.length !== 1 ? "s" : "") +
-              " recorded";
-          }
-        } catch (e) {
-          /* non-fatal */
-        }
-      }
-      loadJourney();
+          const genesisAt = data.genesisAt;
+          const roleLabel = { transporter: "Transporter", retailer: "Retailer", unknown: "Unknown" };
 
-      // Wire confirm button
-      document
-        .getElementById("confirm-receipt-btn")
-        .addEventListener("click", async () => {
-          if (!scanId) {
-            window.location.href = "handoff_code.html";
-            return;
+          const genesisRow = `
+            <div class="flex gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-[9px] h-[9px] rounded-full bg-blue mt-1.5"></div>
+                ${events.length > 0 ? '<div class="timeline-line"></div>' : ""}
+              </div>
+              <div class="pb-2">
+                <p class="text-white font-medium text-[14px]">Manufacturer</p>
+                <p class="text-blue text-[12px] font-medium mt-0.5">QR codes generated</p>
+                <p class="text-muted text-[11px] mt-1">${fmt(genesisAt)}</p>
+              </div>
+            </div>`;
+
+          const eventRows = events.map((e, i) => `
+            <div class="flex gap-4 ${i < events.length - 1 ? "mb-4" : ""}">
+              <div class="flex flex-col items-center">
+                <div class="w-[9px] h-[9px] rounded-full bg-blue mt-1.5"></div>
+                ${i < events.length - 1 ? '<div class="timeline-line"></div>' : ""}
+              </div>
+              <div class="pb-2">
+                <p class="text-white font-medium text-[14px]">${roleLabel[e.scannerRole] || e.scannerRole}</p>
+                <p class="text-blue text-[12px] font-medium mt-0.5">${e.scannerRole === "transporter" ? "Picked up" : "Handoff recorded"}</p>
+                <p class="text-muted text-[11px] mt-1">${fmt(e.timestamp)}</p>
+              </div>
+            </div>`).join("");
+
+          const timeline = document.getElementById("journey-timeline");
+          if (timeline) timeline.innerHTML = genesisRow + eventRows;
+        } catch (e) { /* non-fatal */ }
+      }
+
+      document.getElementById("confirm-receipt-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("confirm-receipt-btn");
+        btn.disabled = true;
+        btn.textContent = "Recording…";
+        try {
+          // Step 1: Record scan event in DB
+          const scanRes = await fetch(API_BASE + "/api/scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ parentQRID: _parentQRID }),
+          });
+          if (!scanRes.ok) {
+            const err = await scanRes.json();
+            throw new Error(err.error || "Failed to record scan.");
           }
-          try {
-            const res = await fetch(`${API_BASE}/api/scan/${scanId}/handoff`, {
-              method: "POST",
-            });
-            if (!res.ok) throw new Error();
-            const data = await res.json();
-            localStorage.setItem("handoff_code", data.codeValue);
-            window.location.href = "handoff_code.html";
-          } catch (e) {
-            showToast("Error generating handoff code. Please try again.", "error");
-          }
-        });
+          const scanData = await scanRes.json();
+
+          // Step 2: Generate handoff code (blockchain write goes here when implemented)
+          const codeRes = await fetch(API_BASE + "/api/scan/" + scanData.scanId + "/handoff", {
+            method: "POST",
+          });
+          if (!codeRes.ok) throw new Error("Failed to generate handoff code.");
+          const codeData = await codeRes.json();
+
+          localStorage.setItem("handoff_code", codeData.codeValue);
+          localStorage.setItem("scan_product", JSON.stringify(_product));
+          localStorage.setItem("handoff_parentQRID", _parentQRID);
+          window.location.href = "handoff_code.html";
+        } catch (e) {
+          showToast(e.message || "Error. Please try again.", "error");
+          btn.disabled = false;
+          btn.innerHTML = 'Confirm pickup <span class="material-symbols-outlined text-[20px]">arrow_forward</span>';
+        }
+      });
+
+      init();
     </script>
   </body>
 </html>
+

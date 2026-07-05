@@ -23,6 +23,15 @@ document.addEventListener("DOMContentLoaded", function() {
   var btn = document.getElementById("confirm-details-btn");
   if (!btn) { return; }
 
+  var expDateInput = document.getElementById("exp-date");
+  var mfgDateInput = document.getElementById("mfg-date");
+  function clearExpError() {
+    var expErrEl = document.getElementById("exp-date-error");
+    if (expErrEl) expErrEl.classList.add("hidden");
+  }
+  if (expDateInput) expDateInput.addEventListener("change", clearExpError);
+  if (mfgDateInput) mfgDateInput.addEventListener("change", clearExpError);
+
   btn.addEventListener("click", function() {
     var nameEl = document.getElementById("product-name");
     var productName = nameEl ? nameEl.value.trim() : "";
@@ -50,6 +59,14 @@ document.addEventListener("DOMContentLoaded", function() {
     var wt   = wtEl   ? wtEl.value          : "";
     var mfg  = mfgEl  ? mfgEl.value         : "";
     var exp  = expEl  ? expEl.value         : "";
+
+    var expErrEl = document.getElementById("exp-date-error");
+    if (mfg && exp && new Date(exp) < new Date(mfg)) {
+      if (expErrEl) expErrEl.classList.remove("hidden");
+      if (expEl) expEl.focus();
+      return;
+    }
+    if (expErrEl) expErrEl.classList.add("hidden");
 
     localStorage.setItem("product_name",        productName);
     localStorage.setItem("product_description", desc);

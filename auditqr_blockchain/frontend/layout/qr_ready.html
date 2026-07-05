@@ -17,7 +17,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
   </head>
@@ -53,7 +53,7 @@
     <main class="flex-1 page-offset pb-16">
       <div class="page-container">
         <!-- Step Indicator + Header -->
-        <div class="max-w-[600px] mx-auto mb-10">
+        <div class="max-w-[600px] mx-auto mb-6">
           <div class="step-indicator">
             <span class="step-indicator-label">Step 3 of 3 — Download QR Codes</span>
             <div class="step-dots">
@@ -64,7 +64,7 @@
           </div>
           <div class="flex items-center gap-3 mb-3">
             <span
-              class="material-symbols-outlined text-green text-3xl"
+              class="material-symbols-outlined text-blue text-3xl"
               style="font-variation-settings: &quot;FILL&quot; 1"
               >check_circle</span
             >
@@ -143,11 +143,8 @@
                   <p class="text-[13px] text-white">Outer shipping carton</p>
                 </div>
                 <div>
-                  <p class="text-[10px] text-muted uppercase tracking-wider mb-1">
-                    Smart Contract
-                  </p>
-                  <p class="font-mono text-[11px] text-muted">
-                    0x7F2...D901 · Polygon Amoy
+                  <p class="font-mono text-[11px] text-muted" id="genesis-tx-display">
+                    Solana · Recording to chain…
                   </p>
                 </div>
               </div>
@@ -167,16 +164,16 @@
         <!-- Child QR Section -->
         <section
           class="max-w-[600px] mx-auto bg-surface border border-outline-variant border-t-2 rounded-xl p-6 md:p-8 mb-8"
-          style="border-top-color: #d6ffb7"
+          style="border-top-color: #3185FC"
           id="child-qr-section"
         >
           <div class="flex items-center gap-2 mb-6">
-            <span class="material-symbols-outlined text-green text-[18px]"
+            <span class="material-symbols-outlined text-blue text-[18px]"
               >data_array</span
             >
             <h2 class="font-body text-[15px] font-medium text-white">Child QR Codes</h2>
             <span
-              class="ml-auto px-2.5 py-0.5 rounded-full bg-green/10 border border-green/20 text-green text-[10px] font-medium uppercase tracking-wider"
+              class="ml-auto px-2.5 py-0.5 rounded-full bg-blue/10 border border-blue/20 text-blue text-[10px] font-medium uppercase tracking-wider"
               id="child-count-badge"
               >— Items</span
             >
@@ -192,7 +189,7 @@
           <!-- Download All Actions -->
           <div class="flex gap-3">
             <button
-              class="flex-1 bg-green text-bg py-3 rounded-lg text-[13px] font-bold transition-all flex items-center justify-center gap-2 active:scale-[0.98] hover:opacity-90"
+              class="flex-1 bg-blue text-bg py-3 rounded-lg text-[13px] font-bold transition-all flex items-center justify-center gap-2 active:scale-[0.98] hover:opacity-90"
               id="download-all-children-btn"
             >
               <span class="material-symbols-outlined text-[16px]">download</span>
@@ -209,7 +206,7 @@
           >
             <input
               type="checkbox"
-              class="mt-0.5 rounded border-muted/30 bg-surface-2 text-green focus:ring-green/30 focus:ring-offset-0"
+              class="mt-0.5 rounded border-muted/30 bg-surface-2 text-blue focus:ring-green/30 focus:ring-offset-0"
               id="confirm-saved-checkbox"
             />
             <label
@@ -240,3 +237,4 @@
     <script src="./qr_ready.js"></script>
   </body>
 </html>
+

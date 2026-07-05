@@ -1,8 +1,37 @@
-/**
+﻿/**
  * AuditQR CSS CUSTOM PROPERTIES
  * Global design tokens as CSS variables
  * Import this in all HTML files for consistent theming
  */
+
+/* Self-hosted Material Symbols Outlined — no CDN dependency */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('./fonts/material-symbols-outlined.woff2') format('woff2');
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+body {
+  min-width: 320px;
+}
 
 :root {
   /* COLOR PALETTE */
@@ -10,7 +39,7 @@
   --color-primary-light: #4A9AFF;
   --color-primary-dark: #1E4D99;
   
-  --color-success: #D6FFB7;
+  --color-success: #3185FC;
   --color-success-light: #E8FFCC;
   --color-success-dark: #A8D47A;
   
@@ -311,8 +340,8 @@
   gap: var(--space-sm);
   padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-full);
-  background-color: rgba(214, 255, 183, 0.15);
-  border: 1px solid rgba(214, 255, 183, 0.3);
+  background-color: rgba(49, 133, 252, 0.15);
+  border: 1px solid rgba(49, 133, 252, 0.3);
   color: var(--color-success);
   font-family: var(--font-label);
   font-size: var(--fs-label-small);
@@ -378,8 +407,8 @@
 
 /* SUCCESS STATE */
 .success-state {
-  background-color: rgba(214, 255, 183, 0.1);
-  border: 1px solid rgba(214, 255, 183, 0.3);
+  background-color: rgba(49, 133, 252, 0.1);
+  border: 1px solid rgba(49, 133, 252, 0.3);
   color: var(--color-success);
   border-radius: var(--radius-sm);
   padding: var(--space-lg);
@@ -423,7 +452,7 @@
 
 /* ============================================================
    SHARED LAYOUT COMPONENTS
-   All pages import this file — no more duplicating these blocks
+   All pages import this file â€” no more duplicating these blocks
    ============================================================ */
 
 /* BASE RESET */
@@ -657,7 +686,7 @@ body {
   padding-top: 96px; /* 64px navbar + 32px breathing room */
 }
 
-/* Full-width content container — flush with navbar edges */
+/* Full-width content container â€” flush with navbar edges */
 .page-container {
   max-width: 1200px;
   margin-left: auto;
@@ -720,7 +749,7 @@ body {
 
 .step-dot.completed {
   background: var(--color-success);
-  box-shadow: 0 0 8px rgba(214, 255, 183, 0.3);
+  box-shadow: 0 0 8px rgba(49, 133, 252, 0.3);
 }
 
 /* ---- FORM LABEL ---- */
@@ -741,6 +770,34 @@ body {
   font-size: 11px;
   color: var(--color-text-muted);
   margin-top: 6px;
+}
+
+/* ---- NUMBER INPUT: remove WebKit/Firefox spin buttons ---- */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ---- SKELETON LOADER ---- */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
 }
 
 /* ---- COMPACT FOOTER ---- */
@@ -785,7 +842,7 @@ body {
 }
 
 .glow-green-top {
-  background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(214, 255, 183, 0.09) 0%, transparent 70%);
+  background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(49, 133, 252, 0.09) 0%, transparent 70%);
 }
 
 .glow-blue-center {
@@ -839,11 +896,11 @@ body {
 }
 
 /* ---- GLOBAL BORDER RADIUS CONSISTENCY ----
-   All rectangular/square elements use --radius-sm (4px) — same as the navbar
+   All rectangular/square elements use --radius-sm (4px) â€” same as the navbar
    "Get Started" button. !important is required because Tailwind play CDN injects
    its stylesheet after this file loads, so it would otherwise win the cascade.
-   rounded-full is intentionally excluded — pills, badges, and circular elements
-   keep their circular shape. rounded-none is intentionally excluded — elements
+   rounded-full is intentionally excluded â€” pills, badges, and circular elements
+   keep their circular shape. rounded-none is intentionally excluded â€” elements
    explicitly opting out of radius keep zero radius. */
 .rounded,
 .rounded-sm,
@@ -887,32 +944,32 @@ body {
 
 /* ============================================================
    RESPONSIVE BREAKPOINTS
-   LG  — Small laptops  : 1024px – 1280px
-   MD  — Tablets        : 768px  – 1024px
-   SM  — Phone landscape: 576px  – 768px
-   XS  — Phone portrait : < 576px
+   LG  â€” Small laptops  : 1024px â€“ 1280px
+   MD  â€” Tablets        : 768px  â€“ 1024px
+   SM  â€” Phone landscape: 576px  â€“ 768px
+   XS  â€” Phone portrait : < 576px
    ============================================================ */
 
 /* ---- LG: Small laptops ---- */
 @media (max-width: 1280px) {
-  .navbar-content { padding: 0 24px; }
-  .page-container  { padding-left: 24px; padding-right: 24px; }
+  .navbar-content  { padding: 0 28px; }
+  .page-container  { padding-left: 28px; padding-right: 28px; }
 }
 
 /* ---- MD: Tablets ---- */
 @media (max-width: 1024px) {
-  .navbar-content          { padding: 0 20px; }
-  .page-container          { padding-left: 20px; padding-right: 20px; }
-  .page-container-narrow   { padding-left: 20px; padding-right: 20px; }
-  .page-container-xs       { padding-left: 16px; padding-right: 16px; }
+  .navbar-content          { padding: 0 24px; }
+  .page-container          { padding-left: 24px; padding-right: 24px; }
+  .page-container-narrow   { padding-left: 24px; padding-right: 24px; }
+  .page-container-xs       { padding-left: 20px; padding-right: 20px; }
 }
 
 /* ---- SM: Phone landscape ---- */
 @media (max-width: 768px) {
-  .navbar-content          { padding: 0 16px; }
-  .page-container          { padding-left: 16px; padding-right: 16px; }
-  .page-container-narrow   { padding-left: 16px; padding-right: 16px; }
-  .page-container-xs       { padding-left: 12px; padding-right: 12px; }
+  .navbar-content          { padding: 0 24px; }
+  .page-container          { padding-left: 24px; padding-right: 24px; }
+  .page-container-narrow   { padding-left: 24px; padding-right: 24px; }
+  .page-container-xs       { padding-left: 20px; padding-right: 20px; }
   .footer-compact          { padding: 16px; }
   .sidebar-menu            { width: min(300px, 85vw); right: min(-300px, -85vw); }
 }
@@ -920,19 +977,19 @@ body {
 /* ---- XS: Phone portrait ---- */
 @media (max-width: 576px) {
   /* Navbar */
-  .navbar-content          { padding: 0 12px; }
+  .navbar-content          { padding: 0 20px; }
   .navbar-logo             { font-size: 17px; }
 
   /* Page layout */
   .page-offset             { padding-top: 80px; }
-  .page-container          { padding-left: 12px; padding-right: 12px; }
-  .page-container-narrow   { padding-left: 12px; padding-right: 12px; }
-  .page-container-xs       { padding-left: 10px; padding-right: 10px; }
+  .page-container          { padding-left: 20px; padding-right: 20px; }
+  .page-container-narrow   { padding-left: 20px; padding-right: 20px; }
+  .page-container-xs       { padding-left: 16px; padding-right: 16px; }
 
   /* Sidebar */
   .sidebar-menu            { width: min(280px, 88vw); right: min(-280px, -88vw); }
 
-  /* Tables — reduce cell padding on mobile */
+  /* Tables â€” reduce cell padding on mobile */
   .table-xs td,
   .table-xs th             { padding: 10px 8px !important; font-size: 12px !important; }
 
@@ -946,7 +1003,7 @@ body {
   .footer-compact          { padding: 14px 12px; }
   .footer-compact p        { font-size: 10px; }
 
-  /* Buttons — full width on XS by default unless overridden */
+  /* Buttons â€” full width on XS by default unless overridden */
   .btn-full-xs             { width: 100%; }
 }
 
@@ -955,3 +1012,4 @@ body {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+

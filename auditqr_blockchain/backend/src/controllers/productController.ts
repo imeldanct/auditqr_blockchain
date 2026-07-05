@@ -9,10 +9,13 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const { productName, description, category } = req.body as {
+  const { productName, description, category, weight, mfgDate, expDate } = req.body as {
     productName: string;
     description: string;
     category?: string;
+    weight?: number | string;
+    mfgDate?: string;
+    expDate?: string;
   };
 
   try {
@@ -22,6 +25,9 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
         productName,
         description,
         category: category || null,
+        weight: weight != null && weight !== "" ? parseFloat(String(weight)) : null,
+        mfgDate: mfgDate ? new Date(mfgDate) : null,
+        expDate: expDate ? new Date(expDate) : null,
       },
     });
 
@@ -50,7 +56,17 @@ export const deleteProduct = async (req: AuthRequest, res: Response): Promise<an
         .json({ error: "Product not found or does not belong to you." });
     }
 
-    // Cascade via schema: deleting product deletes all ParentQRs → ChildQRs → ScanEvents
+    const parentQRs = await prisma.parentQRCode.findMany({
+      where: { productID: productId },
+      select: { parentQRID: true },
+    });
+    const ids = parentQRs.map((p) => p.parentQRID);
+    if (ids.length) {
+      await prisma.handoffCode.deleteMany({ where: { scanEvent: { parentQRID: { in: ids } } } });
+      await prisma.scanEvent.deleteMany({ where: { parentQRID: { in: ids } } });
+      await prisma.childQRCode.deleteMany({ where: { parentQRID: { in: ids } } });
+      await prisma.parentQRCode.deleteMany({ where: { parentQRID: { in: ids } } });
+    }
     await prisma.product.delete({ where: { productID: productId } });
 
     res.status(200).json({ message: "Product and all associated QR codes deleted." });
@@ -83,8 +99,9 @@ export const getProducts = async (req: AuthRequest, res: Response): Promise<any>
         (sum, parent) => sum + parent._count.childQRs,
         0,
       );
+      const parentQRID = p.parentQRs[0]?.parentQRID ?? null;
       const { parentQRs, ...rest } = p;
-      return { ...rest, childQRCount };
+      return { ...rest, childQRCount, parentQRID };
     });
 
     res.status(200).json(productsWithCount);

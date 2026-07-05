@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -11,22 +11,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <style>
+      .timeline-line {
+        width: 1px;
+        background: rgba(119, 134, 127, 0.2);
+        height: 40px;
+        margin-left: 4px;
+      }
       .input-code:focus {
         outline: none;
-        border-color: #d6ffb7;
-        box-shadow: 0 0 0 1px rgba(214, 255, 183, 0.3);
-      }
-      @media (max-width: 576px) {
-        .text-4xl { font-size: 28px !important; }
-        .input-code { height: 52px !important; font-size: 20px !important; }
+        border-color: #3185FC;
+        box-shadow: 0 0 0 1px rgba(49, 133, 252, 0.3);
       }
     </style>
   </head>
-  <body class="min-h-screen flex flex-col items-center">
+  <body class="min-h-screen flex flex-col">
     <nav class="navbar">
       <div class="navbar-content">
         <a href="landing.html" class="navbar-logo" id="nav-logo"
@@ -52,100 +54,146 @@
     </nav>
 
     <main class="flex-1 page-offset pb-12">
-      <div class="page-container-xs space-y-8">
-        <section class="pt-4">
-          <span class="text-[11px] font-medium uppercase tracking-[0.1em] text-muted"
-            >You are receiving</span
-          >
+      <div class="page-container-narrow">
+
+        <!-- Header -->
+        <section class="mb-8 text-left">
+          <p class="font-label text-[11px] uppercase tracking-widest text-muted mb-2">
+            You are receiving
+          </p>
           <h1
-            class="text-4xl font-headline font-medium text-white mt-2 mb-1"
+            class="font-headline text-4xl font-medium text-white mb-4"
             id="code-product-name"
           >
             —
           </h1>
-          <div class="flex flex-col gap-2">
-            <span class="font-mono text-[11px] text-muted" id="code-item-number">—</span>
-            <div class="flex items-center gap-3">
-              <span class="text-sm font-medium text-white" id="code-business-name"
-                >—</span
-              >
-              <span
-                id="code-verified-badge"
-                class="bg-green/10 border border-green/30 text-green text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider hidden"
-                >CAC verified</span
-              >
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="font-body text-[14px] text-white" id="code-business-name">—</span>
+            <span
+              id="code-verified-badge"
+              class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue/10 border border-blue/30 text-blue tracking-wider uppercase"
+            >
+              <span class="material-symbols-outlined text-[12px]" style="font-variation-settings:'FILL' 1">verified</span>
+              CAC Verified
+            </span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-mono text-[11px] text-muted" id="code-item-number">Batch · —</span>
+            <div class="w-1 h-1 rounded-full bg-muted/30"></div>
+            <span class="font-mono text-[11px] text-muted" id="code-batch-date">—</span>
+          </div>
+        </section>
+
+        <!-- Product Information -->
+        <section class="mb-6">
+          <div class="bg-surface border border-outline-variant rounded-xl p-5">
+            <h2
+              class="font-label text-[11px] font-medium text-muted uppercase tracking-widest mb-4"
+            >
+              Product Information
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Description</span>
+                <p class="text-white text-[14px] leading-relaxed" id="code-description">—</p>
+              </div>
+              <div id="code-category-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Category</span>
+                <p class="text-white text-[14px]" id="code-category">—</p>
+              </div>
+              <div id="code-weight-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Weight per unit</span>
+                <p class="text-white text-[14px]" id="code-weight">—</p>
+              </div>
+              <div id="code-mfg-date-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Mfg. date</span>
+                <p class="text-white text-[14px]" id="code-mfg-date">—</p>
+              </div>
+              <div id="code-exp-date-row" class="hidden">
+                <span class="text-muted text-[11px] uppercase tracking-wider block mb-1">Expiry date</span>
+                <p class="text-white text-[14px]" id="code-exp-date">—</p>
+              </div>
             </div>
           </div>
         </section>
 
-        <section class="bg-surface border border-outline-variant rounded-xl p-6">
-          <label class="block text-[10px] uppercase tracking-widest text-muted mb-2"
-            >Description</label
+        <!-- Product Journey -->
+        <section class="mb-6">
+          <div class="bg-surface border border-outline-variant rounded-xl p-5">
+            <div class="flex justify-between items-start mb-6">
+              <h2
+                class="font-label text-[11px] font-medium text-muted uppercase tracking-widest"
+              >
+                Product Journey
+              </h2>
+              <span class="material-symbols-outlined text-muted/40">timeline</span>
+            </div>
+            <div class="relative pl-2" id="code-timeline">
+              <div class="flex gap-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-[9px] h-[9px] rounded-full bg-muted/30 mt-1.5"></div>
+                </div>
+                <div>
+                  <p class="text-muted font-medium text-[14px]">Loading scan events…</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Code Entry -->
+        <section class="mb-6">
+          <div
+            class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6"
+            style="border-top-color: #3185FC"
           >
-          <p class="text-[13px] text-white leading-relaxed" id="code-description">—</p>
-        </section>
-
-        <section class="bg-surface border border-outline-variant rounded-xl p-6">
-          <h3 class="text-[10px] uppercase tracking-widest text-muted mb-6">
-            Journey so far
-          </h3>
-          <div class="space-y-6 relative" id="code-timeline">
-            <div class="absolute left-[4px] top-2 bottom-2 w-[1px] bg-muted/20"></div>
-            <p class="text-muted text-[12px] italic pl-6">Loading…</p>
+            <h3 class="text-[13px] font-medium text-white mb-2">
+              Enter 4-digit handoff code
+            </h3>
+            <p class="text-[12px] text-muted mb-6">
+              Ask the current handler for the verification code displayed on their screen.
+            </p>
+            <div class="flex justify-between gap-3">
+              <input
+                class="input-code w-full h-[52px] sm:h-[60px] bg-surface-2 border border-muted/30 rounded-lg text-center text-xl sm:text-2xl text-white font-medium focus:ring-0"
+                maxlength="1"
+                type="text"
+                inputmode="numeric"
+                id="code-1"
+              />
+              <input
+                class="input-code w-full h-[52px] sm:h-[60px] bg-surface-2 border border-muted/30 rounded-lg text-center text-xl sm:text-2xl text-white font-medium focus:ring-0"
+                maxlength="1"
+                type="text"
+                inputmode="numeric"
+                id="code-2"
+              />
+              <input
+                class="input-code w-full h-[52px] sm:h-[60px] bg-surface-2 border border-muted/30 rounded-lg text-center text-xl sm:text-2xl text-white font-medium focus:ring-0"
+                maxlength="1"
+                type="text"
+                inputmode="numeric"
+                id="code-3"
+              />
+              <input
+                class="input-code w-full h-[52px] sm:h-[60px] bg-surface-2 border border-muted/30 rounded-lg text-center text-xl sm:text-2xl text-white font-medium focus:ring-0"
+                maxlength="1"
+                type="text"
+                inputmode="numeric"
+                id="code-4"
+              />
+            </div>
           </div>
         </section>
 
-        <section
-          class="bg-surface border border-outline-variant border-t-2 rounded-xl p-6"
-          style="border-top-color: #d6ffb7"
-        >
-          <h3 class="text-[13px] font-medium text-white mb-4">
-            Enter 4-digit handoff code
-          </h3>
-          <p class="text-[12px] text-muted mb-6">
-            Ask the current handler for the verification code displayed on their screen.
-          </p>
-          <div class="flex justify-between gap-3">
-            <input
-              class="input-code w-full h-[60px] bg-surface-2 border border-muted/30 rounded-lg text-center text-2xl text-white font-medium focus:ring-0"
-              maxlength="1"
-              type="text"
-              inputmode="numeric"
-              id="code-1"
-            />
-            <input
-              class="input-code w-full h-[60px] bg-surface-2 border border-muted/30 rounded-lg text-center text-2xl text-white font-medium focus:ring-0"
-              maxlength="1"
-              type="text"
-              inputmode="numeric"
-              id="code-2"
-            />
-            <input
-              class="input-code w-full h-[60px] bg-surface-2 border border-muted/30 rounded-lg text-center text-2xl text-white font-medium focus:ring-0"
-              maxlength="1"
-              type="text"
-              inputmode="numeric"
-              id="code-3"
-            />
-            <input
-              class="input-code w-full h-[60px] bg-surface-2 border border-muted/30 rounded-lg text-center text-2xl text-white font-medium focus:ring-0"
-              maxlength="1"
-              type="text"
-              inputmode="numeric"
-              id="code-4"
-            />
-          </div>
-        </section>
-
-        <section>
+        <!-- Confirm Receipt -->
+        <section class="mb-10">
           <div
             class="bg-surface border border-outline-variant border-t-2 rounded-xl p-5 shadow-2xl"
-            style="border-top-color: #d6ffb7"
+            style="border-top-color: #3185FC"
           >
             <div class="flex items-center gap-2 mb-4">
-              <span class="material-symbols-outlined text-green text-[20px]"
-                >verified_user</span
-              >
+              <span class="material-symbols-outlined text-blue text-[20px]">verified_user</span>
               <h2
                 class="font-label text-[11px] font-medium text-white uppercase tracking-widest"
               >
@@ -162,34 +210,19 @@
               type="button"
               id="confirm-receipt-btn"
               disabled
-              onclick="window.location.href='retailer_confirmed.html'"
             >
-              Confirm receipt<span class="material-symbols-outlined text-[20px]"
-                >arrow_forward</span
-              >
+              Confirm receipt<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
             </button>
-            <div
-              class="mt-5 flex items-center justify-center gap-2 text-muted text-[11px]"
-            >
+            <div class="mt-5 flex items-center justify-center gap-2 text-muted text-[11px]">
               <span class="material-symbols-outlined text-[14px]">info</span>
               <p>This action is permanent and cannot be undone.</p>
             </div>
           </div>
         </section>
 
-        <footer class="pt-8 border-t border-border flex flex-col items-center gap-4">
-          <div class="flex items-center gap-2 opacity-40 grayscale">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span
-            ><span class="font-label text-[10px] tracking-widest uppercase"
-              >Secured by AuditQR</span
-            >
-          </div>
-          <p class="font-body text-[11px] text-muted text-center">
-            © 2026 AuditQR · Built for Nigerian SMEs
-          </p>
-        </footer>
       </div>
     </main>
+
 
     <div class="glow-blue-center"></div>
 
@@ -197,70 +230,133 @@
       const codeInputs = [1, 2, 3, 4].map((i) => document.getElementById("code-" + i));
       const confirmBtn = document.getElementById("confirm-receipt-btn");
 
-      // Populate from localStorage
-      const product = JSON.parse(localStorage.getItem("scan_product") || "{}");
-      const itemNumber = localStorage.getItem("scan_item_number");
-      const childQRID = localStorage.getItem("scan_childQRID");
+      const parentQRID = new URLSearchParams(window.location.search).get("parentId")
+        || localStorage.getItem("scan_parentQRID");
 
-      if (product.productName)
-        document.getElementById("code-product-name").textContent = product.productName;
-      if (product.businessName) {
-        document.getElementById("code-business-name").textContent = product.businessName;
-        document.getElementById("code-from-name").textContent = product.businessName;
+      const fmtDate = (iso) => iso
+        ? new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })
+        : null;
+
+      const fmt = (iso) =>
+        new Date(iso).toLocaleString("en-NG", {
+          day: "numeric", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit",
+        });
+
+      function skeletonLine(w) {
+        return '<span class="skeleton block rounded" style="height:0.75rem;width:' + w + '"></span>';
       }
-      if (itemNumber)
-        document.getElementById("code-item-number").textContent = "Item #" + itemNumber;
-      if (product.isVerified)
-        document.getElementById("code-verified-badge").classList.remove("hidden");
-      if (product.description)
-        document.getElementById("code-description").textContent = product.description;
 
-      // Load journey
-      async function loadJourney() {
-        if (!childQRID) return;
+      async function init() {
+        if (!parentQRID) return;
+
+        // Skeleton states while product loads
+        document.getElementById("code-product-name").innerHTML =
+          '<span class="skeleton block rounded" style="height:2rem;width:55%"></span>';
+        document.getElementById("code-business-name").innerHTML = skeletonLine("40%");
+        document.getElementById("code-item-number").innerHTML = skeletonLine("30%");
+        document.getElementById("code-batch-date").innerHTML = skeletonLine("25%");
+        document.getElementById("code-description").innerHTML =
+          skeletonLine("80%") + '<span class="skeleton block rounded mt-2" style="height:0.75rem;width:60%"></span>';
+        document.getElementById("code-timeline").innerHTML =
+          '<div class="flex gap-4">' +
+          '<div class="skeleton rounded-full flex-shrink-0" style="width:9px;height:9px;margin-top:6px"></div>' +
+          '<div class="flex-1 space-y-2">' + skeletonLine("50%") + skeletonLine("35%") + '</div></div>';
+
         try {
-          const res = await fetch(API_BASE + "/api/scan/history/" + childQRID);
+          const res = await fetch(API_BASE + "/api/scan/stage/" + encodeURIComponent(parentQRID));
+          if (!res.ok) return;
+          const data = await res.json();
+          const product = data.product || {};
+
+          if (product.productName)
+            document.getElementById("code-product-name").textContent = product.productName;
+
+          const bizName = product.businessName || "—";
+          document.getElementById("code-business-name").textContent = bizName;
+          document.getElementById("code-from-name").textContent = bizName;
+
+          document.getElementById("code-item-number").textContent = "Batch · " + parentQRID.slice(0, 8);
+          document.getElementById("code-batch-date").textContent = new Date().toLocaleDateString("en-NG", {
+            day: "numeric", month: "short", year: "numeric",
+          });
+
+          const badge = document.getElementById("code-verified-badge");
+          if (badge) {
+            badge.classList.remove("hidden");
+            if (!product.isVerified) {
+              badge.textContent = "Unverified";
+              badge.classList.remove("text-blue", "border-blue/30", "bg-blue/10");
+              badge.classList.add("text-danger", "border-danger/30", "bg-danger/10");
+            }
+          }
+
+          if (product.description)
+            document.getElementById("code-description").textContent = product.description;
+          if (product.category) {
+            document.getElementById("code-category").textContent = product.category;
+            document.getElementById("code-category-row").classList.remove("hidden");
+          }
+          if (product.weight != null) {
+            document.getElementById("code-weight").textContent = product.weight + " kg";
+            document.getElementById("code-weight-row").classList.remove("hidden");
+          }
+          const mfgFmt = fmtDate(product.mfgDate);
+          const expFmt = fmtDate(product.expDate);
+          if (mfgFmt) {
+            document.getElementById("code-mfg-date").textContent = mfgFmt;
+            document.getElementById("code-mfg-date-row").classList.remove("hidden");
+          }
+          if (expFmt) {
+            document.getElementById("code-exp-date").textContent = expFmt;
+            document.getElementById("code-exp-date-row").classList.remove("hidden");
+          }
+        } catch (e) { /* non-fatal */ }
+        loadJourney();
+      }
+
+      async function loadJourney() {
+        if (!parentQRID) return;
+        try {
+          const res = await fetch(API_BASE + "/api/scan/history/" + parentQRID);
           if (!res.ok) return;
           const data = await res.json();
           const events = data.events || [];
-          const roleLabel = {
-            transporter: "Transporter",
-            retailer: "Retailer",
-            consumer: "Consumer",
-            unknown: "Unknown",
-          };
-          const fmt = (iso) =>
-            new Date(iso).toLocaleString("en-NG", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+          const genesisAt = data.genesisAt;
+          const roleLabel = { transporter: "Transporter", retailer: "Retailer", unknown: "Unknown" };
+
+          const genesisRow = `
+            <div class="flex gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-[9px] h-[9px] rounded-full bg-blue mt-1.5"></div>
+                ${events.length > 0 ? '<div class="timeline-line"></div>' : ""}
+              </div>
+              <div class="pb-2">
+                <p class="text-white font-medium text-[14px]">Manufacturer</p>
+                <p class="text-blue text-[12px] font-medium mt-0.5">QR codes generated</p>
+                <p class="text-muted text-[11px] mt-1">${fmt(genesisAt)}</p>
+              </div>
+            </div>`;
+
+          const eventRows = events.map((e, i) => `
+            <div class="flex gap-4 ${i < events.length - 1 ? "mb-4" : ""}">
+              <div class="flex flex-col items-center">
+                <div class="w-[9px] h-[9px] rounded-full bg-blue mt-1.5"></div>
+                ${i < events.length - 1 ? '<div class="timeline-line"></div>' : ""}
+              </div>
+              <div class="pb-2">
+                <p class="text-white font-medium text-[14px]">${roleLabel[e.scannerRole] || e.scannerRole}</p>
+                <p class="text-blue text-[12px] font-medium mt-0.5">${e.scannerRole === "transporter" ? "Picked up" : "Handoff recorded"}</p>
+                <p class="text-muted text-[11px] mt-1">${fmt(e.timestamp)}</p>
+              </div>
+            </div>`).join("");
+
           const timeline = document.getElementById("code-timeline");
-          if (events.length === 0) {
-            timeline.innerHTML =
-              "<p class='text-muted text-[12px] italic pl-6'>No events yet.</p>";
-          } else {
-            timeline.innerHTML = events
-              .map(
-                (e, i) => `
-              <div class="flex gap-4 relative">
-                <div class="w-2 h-2 rounded-full bg-green mt-1.5 z-10 flex-shrink-0"></div>
-                <div>
-                  <p class="text-sm text-white font-medium">${roleLabel[e.scannerRole] || e.scannerRole}</p>
-                  <p class="text-[11px] text-green mb-1">${i === 0 ? "Origin scan" : "Handoff recorded"}</p>
-                  <span class="text-[11px] text-muted">${fmt(e.timestamp)}</span>
-                </div>
-              </div>`,
-              )
-              .join("");
-          }
-        } catch (e) {
-          /* non-fatal */
-        }
+          if (timeline) timeline.innerHTML = genesisRow + eventRows;
+        } catch (e) { /* non-fatal */ }
       }
-      loadJourney();
+
+      init();
 
       function checkComplete() {
         const allFilled = codeInputs.every((inp) => inp.value.trim().length === 1);
@@ -278,7 +374,6 @@
         });
       });
 
-      confirmBtn.removeAttribute("onclick");
       confirmBtn.addEventListener("click", async () => {
         const codeValue = codeInputs.map((inp) => inp.value).join("");
         confirmBtn.disabled = true;
@@ -287,11 +382,11 @@
           const res = await fetch(API_BASE + "/api/handoff/confirm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ codeValue, childQRID }),
+            body: JSON.stringify({ codeValue, parentQRID }),
           });
           const data = await res.json();
           if (res.ok) {
-            if (data.txHash) localStorage.setItem("confirm_tx_hash", data.txHash);
+            localStorage.setItem("confirm_parentQRID", parentQRID);
             showToast("Handoff confirmed!", "success");
             setTimeout(() => {
               window.location.href = "retailer_confirmed.html";
