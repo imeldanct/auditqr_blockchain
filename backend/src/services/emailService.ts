@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
+    user: process.env.EMAIL_USERNAME,
     pass: process.env.EMAIL_PASSWORD,
   },
 });
@@ -39,7 +39,7 @@ const HEADER = `
 
 export async function sendMagicLinkEmail(to: string, businessName: string, magicLink: string) {
   await transporter.sendMail({
-    from: `"AuditQR" <${process.env.EMAIL_USER}>`,
+    from: `"AuditQR" <${process.env.EMAIL_USERNAME}>`,
     to,
     subject: "Verify your AuditQR account",
     attachments: [LOGO_ATTACHMENT],
@@ -94,7 +94,7 @@ export async function sendMagicLinkEmail(to: string, businessName: string, magic
 
 export async function sendPasswordResetEmail(to: string, businessName: string, resetLink: string) {
   await transporter.sendMail({
-    from: `"AuditQR" <${process.env.EMAIL_USER}>`,
+    from: `"AuditQR" <${process.env.EMAIL_USERNAME}>`,
     to,
     subject: "Reset your AuditQR password",
     attachments: [LOGO_ATTACHMENT],
