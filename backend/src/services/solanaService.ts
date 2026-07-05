@@ -8,7 +8,7 @@ import {
 } from "@solana/web3.js";
 
 const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
-const connection = new Connection("http://localhost:8899", "confirmed");
+const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
 function getKeypair(): Keypair {
   const raw = process.env.SOLANA_KEYPAIR;
