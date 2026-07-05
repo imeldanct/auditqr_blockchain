@@ -40,13 +40,22 @@ async function apiFetch(path, options = {}) {
     ...(options.headers || {}),
   };
 
-  const res = await fetch(API_BASE + path, { ...options, headers });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-  if (res.status === 401) {
-    localStorage.removeItem("auditqr_token");
-    window.location.href = "login.html";
-    return null; // never resolves
+  try {
+    const res = await fetch(API_BASE + path, { ...options, headers, signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (res.status === 401) {
+      localStorage.removeItem("auditqr_token");
+      window.location.href = "login.html";
+      return null;
+    }
+
+    return res;
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
   }
-
-  return res;
 }

@@ -2,7 +2,11 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { randomUUID } from "crypto";
 import { lookupCAC, LookupResult } from "../services/cacService";
+import { sendMagicLinkEmail, sendPasswordResetEmail } from "../services/emailService";
+
+const FRONTEND_BASE = process.env.FRONTEND_BASE || "http://127.0.0.1:5500/auditqr_blockchain/frontend";
 
 const prisma = new PrismaClient();
 
@@ -64,24 +68,125 @@ export const registerSME = async (req: Request, res: Response): Promise<any> => 
     const passwordHash = await bcrypt.hash(password, salt);
 
     const newSME = await prisma.sME.create({
-      data: {
-        businessName,
-        rcNumber,
-        email,
-        passwordHash,
-        isVerified: true,
-      },
+      data: { businessName, rcNumber, email, passwordHash, isVerified: true },
     });
 
-    res.status(201).json({
-      message: "Document extracted, verified with CAC, and Registration successful.",
-      smeId: newSME.smeID,
+    const token = randomUUID();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await prisma.authToken.create({
+      data: { smeID: newSME.smeID, token, type: "magic_link", expiresAt },
     });
+
+    const magicLink = `${FRONTEND_BASE}/layout/magic_login.html?token=${token}`;
+    sendMagicLinkEmail(email, businessName, magicLink).catch((err) =>
+      console.error("Magic link email failed:", err)
+    );
+
+    res.status(201).json({ message: "Registration successful. Check your email to log in." });
   } catch (error) {
     console.error("Registration Error:", error);
-    res
-      .status(500)
-      .json({ error: "Internal server error during registration and verification." });
+    res.status(500).json({ error: "Internal server error during registration and verification." });
+  }
+};
+
+export const verifyMagicLink = async (req: Request, res: Response): Promise<any> => {
+  const { token } = req.query as { token: string };
+
+  if (!token) return res.status(400).json({ error: "Token is required." });
+
+  try {
+    const authToken = await prisma.authToken.findUnique({
+      where: { token },
+      include: { sme: true },
+    });
+
+    if (!authToken || authToken.type !== "magic_link") {
+      return res.status(400).json({ error: "Invalid or expired link." });
+    }
+    if (authToken.usedAt) {
+      return res.status(400).json({ error: "This link has already been used." });
+    }
+    if (authToken.expiresAt < new Date()) {
+      return res.status(400).json({ error: "This link has expired." });
+    }
+
+    await prisma.authToken.update({ where: { id: authToken.id }, data: { usedAt: new Date() } });
+
+    const secretKey = process.env.JWT_SECRET!;
+    const jwt_token = jwt.sign(
+      { smeId: authToken.sme.smeID, email: authToken.sme.email, businessName: authToken.sme.businessName },
+      secretKey,
+      { expiresIn: "24h" }
+    );
+
+    res.status(200).json({ token: jwt_token, sme: { id: authToken.sme.smeID, businessName: authToken.sme.businessName, email: authToken.sme.email } });
+  } catch (error) {
+    console.error("Magic Link Error:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response): Promise<any> => {
+  const { email } = req.body;
+
+  if (!email) return res.status(400).json({ error: "Email is required." });
+
+  try {
+    const sme = await prisma.sME.findUnique({ where: { email } });
+
+    if (!sme) {
+      return res.status(200).json({ message: "If that email exists, a reset link has been sent." });
+    }
+
+    const token = randomUUID();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    await prisma.authToken.create({
+      data: { smeID: sme.smeID, token, type: "password_reset", expiresAt },
+    });
+
+    const resetLink = `${FRONTEND_BASE}/layout/reset_password.html?token=${token}`;
+    sendPasswordResetEmail(email, sme.businessName, resetLink).catch((err) =>
+      console.error("Reset email failed:", err)
+    );
+
+    res.status(200).json({ message: "If that email exists, a reset link has been sent." });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response): Promise<any> => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: "Token and new password are required." });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters." });
+  }
+
+  try {
+    const authToken = await prisma.authToken.findUnique({ where: { token } });
+
+    if (!authToken || authToken.type !== "password_reset") {
+      return res.status(400).json({ error: "Invalid or expired link." });
+    }
+    if (authToken.usedAt) {
+      return res.status(400).json({ error: "This link has already been used." });
+    }
+    if (authToken.expiresAt < new Date()) {
+      return res.status(400).json({ error: "This link has expired." });
+    }
+
+    const hash = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
+    await prisma.sME.update({ where: { smeID: authToken.smeID }, data: { passwordHash: hash } });
+    await prisma.authToken.update({ where: { id: authToken.id }, data: { usedAt: new Date() } });
+
+    res.status(200).json({ message: "Password reset successfully. You can now log in." });
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    res.status(500).json({ error: "Internal server error." });
   }
 };
 
@@ -253,11 +358,10 @@ export const updatePassword = async (req: any, res: any): Promise<any> => {
   const { currentPassword, newPassword } = req.body;
 
   if (!currentPassword || !newPassword) {
-    return res.status(400).json({ error: "Current and new password are required." });
+    return res.status(400).json({ error: "Current password and new password are required." });
   }
-
   if (newPassword.length < 8) {
-    return res.status(400).json({ error: "New password must be at least 8 characters.", field: "newPassword" });
+    return res.status(400).json({ error: "New password must be at least 8 characters." });
   }
 
   try {
@@ -265,16 +369,10 @@ export const updatePassword = async (req: any, res: any): Promise<any> => {
     if (!sme) return res.status(404).json({ error: "Account not found." });
 
     const valid = await bcrypt.compare(currentPassword, sme.passwordHash);
-    if (!valid) {
-      return res.status(401).json({ error: "Current password is incorrect.", field: "currentPassword" });
-    }
+    if (!valid) return res.status(400).json({ error: "Current password is incorrect." });
 
     const hash = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
-    await prisma.sME.update({
-      where: { smeID: req.sme.smeId },
-      data: { passwordHash: hash },
-    });
-
+    await prisma.sME.update({ where: { smeID: req.sme.smeId }, data: { passwordHash: hash } });
     res.status(200).json({ message: "Password updated successfully." });
   } catch (error) {
     console.error("Password Update Error:", error);

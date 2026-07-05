@@ -119,9 +119,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // Load recent item activity — grouped by parent product, same as item tracking page
   apiFetch("/api/sme/items").then(function (res) {
     var tbody = document.getElementById("activity-tbody");
-    var empty = document.getElementById("activity-empty");
+    function setEmpty(msg) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted text-sm py-8">' + msg + "</td></tr>";
+    }
     if (!res || !res.ok) {
-      if (empty) empty.textContent = "Could not load activity.";
+      setEmpty("Could not load activity.");
       return;
     }
     res.json().then(function (body) {
@@ -166,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       if (products.length === 0) {
-        if (empty) empty.textContent = "No item activity yet.";
+        setEmpty("No item activity yet.");
         return;
       }
 

@@ -175,15 +175,37 @@
       </div>
     </main>
 
-    <footer class="footer-compact">
-      <p>© 2026 AuditQR · Built for Nigerian SMEs</p>
-    </footer>
 
     <div class="glow-blue-center"></div>
 
     <script>
       var _parentQRID = new URLSearchParams(window.location.search).get("parentId");
       var _product = null;
+
+      async function resumeHandoff(scanId) {
+        const btn = document.getElementById("confirm-receipt-btn");
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Resuming handoff…";
+        }
+        try {
+          const codeRes = await fetch(API_BASE + "/api/scan/" + scanId + "/handoff", {
+            method: "POST",
+          });
+          if (!codeRes.ok) throw new Error("Failed to recover handoff code.");
+          const codeData = await codeRes.json();
+          localStorage.setItem("handoff_code", codeData.codeValue);
+          localStorage.setItem("scan_product", JSON.stringify(_product || {}));
+          localStorage.setItem("handoff_parentQRID", _parentQRID);
+          window.location.href = "handoff_code.html";
+        } catch (e) {
+          showToast("Could not recover your handoff code. Please try again.", "error");
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'Confirm pickup <span class="material-symbols-outlined text-[20px]">arrow_forward</span>';
+          }
+        }
+      }
 
       const fmt = (iso) =>
         new Date(iso).toLocaleString("en-NG", {
@@ -220,6 +242,13 @@
           if (!res.ok) throw new Error(data.error || "QR code not found.");
 
           if (data.currentStage === "transit") {
+            if (data.pendingHandoff && data.existingScanId) {
+              // Transporter is retrying after a network failure — resume the handoff flow.
+              // generateHandoffCode is idempotent, so this safely returns the existing code.
+              _product = data.product;
+              await resumeHandoff(data.existingScanId);
+              return;
+            }
             window.location.replace("code.html?parentId=" + encodeURIComponent(_parentQRID));
             return;
           }

@@ -21,6 +21,7 @@ model SME {
   createdAt    DateTime @default(now())
 
   products     Product[]
+  authTokens   AuthToken[]
 }
 
 model Product {
@@ -87,4 +88,21 @@ model HandoffCode {
   createdAt DateTime @default(now())
 
   scanEvent ScanEvent @relation(fields: [scanID], references: [scanID])
+}
+
+model AuthToken {
+  id        String    @id @default(uuid())
+  smeID     String
+  token     String    @unique
+  type      TokenType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  sme       SME @relation(fields: [smeID], references: [smeID], onDelete: Cascade)
+}
+
+enum TokenType {
+  magic_link
+  password_reset
 }

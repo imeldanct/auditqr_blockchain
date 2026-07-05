@@ -5,16 +5,17 @@
 - [Overview](#overview)
 - [Core Problem: The Oracle Problem](#core-problem-the-oracle-problem)
 - [Supply Chain Flow](#supply-chain-flow)
-- [Scan Stage Logic](#scan-stage-logic)
+- [Scan Role Determination](#scan-role-determination-parent-qr-only)
 - [Design Decisions](#design-decisions)
   - [Why not participant accounts?](#why-not-participant-accounts)
   - [Stage-based logic + handoff code gate](#chosen-approach-stage-based-logic--handoff-code-gate)
   - [Tailwind CSS: CDN → CLI Build](#tailwind-css-cdn--cli-build)
   - [Account Settings: Scope Decision](#account-settings-scope-decision)
+  - [Authentication Flow: Email Verification + Password Login](#authentication-flow-email-verification--password-login)
 - [Blockchain Architecture (Solana)](#blockchain-architecture-solana)
 - [Architecture](#architecture)
 - [QR Code Structure](#qr-code-structure)
-  - [Why the scanner only accepts child QRs](#why-the-scanner-only-accepts-child-qrs)
+  - [Why Child QRs are read-only](#why-child-qrs-are-read-only)
 - [Key Pages](#key-pages)
 
 ---
@@ -41,7 +42,7 @@ Because SMEs operate in real business relationships (they know their transporter
 
 ## Supply Chain Flow
 
-```
+```text
 SME (Manufacturer)
       │
       │ generates QR codes → genesis event recorded
@@ -66,13 +67,14 @@ Customer
 ### Two QR types, two different scan paths
 
 | QR Type | Format | Who scans it | What happens |
-|---------|--------|-------------|--------------|
+| ------- | ------ | ------------ | ------------ |
 | **Parent QR** (carton label) | `<frontendBase>/layout/journey.html?parentId=<uuid>` | Transporter, then Retailer — any scanner | Stage-based flow — recorded in DB and blockchain, advances `currentStage` on the batch |
 | **Child QR** (item sticker) | `<frontendBase>/layout/journey.html?childId=<uuid>` | Customer — any scanner | Opens `journey.html` directly — read-only, nothing recorded |
 
 Both QR types encode real HTTPS URLs. Any phone camera can scan them without a dedicated app — no dedicated scanner app required.
 
 **Parent QR** encodes `<frontendBase>/layout/handoff.html?parentId=<uuid>`. When opened (by any camera), `handoff.html` checks the batch's current stage and routes accordingly:
+
 - `pending` → show transporter content (confirm pickup → generate handoff code)
 - `transit` → redirect to `code.html` (enter handoff code → confirm receipt)
 - `delivered` → redirect to `journey.html?parentId=<uuid>` (read-only audit trail)
@@ -285,7 +287,7 @@ The SME dashboard sidebar includes an **Account Settings** page. The scope of wh
 **What is editable:**
 - **Business display name** — pre-filled from the API on load; the SME can update it if their trading name changes
 - **Contact email** — pre-filled; used for login and notifications
-- **Password** — both the current password field and the new password field are left empty intentionally. The user must type their current password to prove identity before a change is accepted. This is standard security practice — never pre-fill passwords, never skip the current-password check
+- **Password** — current password, new password, and confirm fields. The current password is validated server-side before the change is accepted. The backend returns HTTP 400 (not 401) for an incorrect current password — 401 would cause `apiFetch` to treat it as an expired session and log the user out, which is the wrong behaviour for a wrong-password error
 
 **What is not editable:**
 - **RC number (CAC number)** — this is the verified identity anchor of the business record. It was confirmed against the CAC registry at registration and cannot be changed through the UI. Changing it would mean the account is no longer tied to the same legal entity.
@@ -294,7 +296,70 @@ The SME dashboard sidebar includes an **Account Settings** page. The scope of wh
 Only SMEs have accounts in this system. Distributors and retailers scan QR codes without logging in — they are participants in the supply chain, not platform users. There is no multi-user access pattern to support in v1, so team management was ruled out entirely rather than built as a stub.
 
 **How updates work:**
-The settings page fetches the current SME profile from `GET /api/sme/profile` on load. On load, the Business Name, Contact Email, and RC Number fields display a skeleton shimmer animation while the request is in flight. Once the response arrives the real values replace the skeleton. Password fields are intentionally left empty — the user must type their current password to prove identity before a change is accepted. On save, a `PATCH /api/sme/profile` call updates only the changed fields. Password changes go through `PATCH /api/sme/password`, which verifies the current password server-side before hashing and storing the new one.
+The settings page fetches the current SME profile from `GET /api/sme/profile` on load. On load, the Business Name, Contact Email, and RC Number fields display a skeleton shimmer animation while the request is in flight. Once the response arrives the real values replace the skeleton. Password fields are intentionally left empty on load. On save, a `PATCH /api/sme/profile` call updates only the changed fields. Password changes go through `PATCH /api/sme/password` and require the current password to be provided and validated server-side.
+
+---
+
+### Authentication Flow: Email Verification + Password Login
+
+**What was built:** New accounts set a password at registration, then receive a one-time verification link via email that must be clicked before they can access their account. Returning users log in with email and password. Forgotten passwords are recovered via a reset link sent to the registered email. Account settings allow a password change at any time with no current-password check.
+
+**Pages added:**
+
+- `magic_login.html` — reads `?token=` from the URL, calls `GET /api/sme/auth/magic`, stores JWT, redirects to dashboard. Has three error states, each with a link back to `login.html`: (1) no token in URL — user navigated directly rather than from the email link; (2) link expired or already used — the 24-hour window passed or the link was clicked twice; (3) network error — server unreachable. The first state is one a real user would never hit in normal use; the second and third are genuine failure paths that need clear feedback and a recovery route
+- `forgot_password.html` — email input that posts to `POST /api/sme/auth/forgot-password`; shows a generic success screen regardless of whether the email exists (prevents email enumeration)
+- `reset_password.html` — reads `?token=` from the URL; shows an error screen immediately if the token is missing; on success shows "Password updated" with a link to login
+
+**Backend added:** `AuthToken` table with a `TokenType` enum (`magic_link | password_reset`). Tokens are UUIDs, unique, one-time use (marked `usedAt` on redemption), and expire — 24 hours for magic links, 1 hour for reset links. `verifyMagicLink`, `forgotPassword`, and `resetPassword` were added to `smeController.ts`. Email sending is handled by `emailService.ts` (nodemailer + Gmail App Password).
+
+**The full flow:**
+
+| Scenario | Steps |
+| -------- | ----- |
+| New account | CAC verify → `create_account.html` → email + password set → account created → verification link sent to email → click link → `magic_login.html` verifies email + issues JWT → dashboard |
+| Returning user | `login.html` → email + password → JWT issued → dashboard |
+| Forgot password | `login.html` → "Forgot password?" → `forgot_password.html` → enter email → reset link sent → click link → `reset_password.html` → enter new password → back to login |
+| Change password | Dashboard → Account Settings → current password + new password + confirm → saved |
+
+**Options considered:**
+
+**Option 1 — Email + password only, no verification step.**
+Standard and simple. The problem: accounts go live immediately with no proof that the email address is real or belongs to the person who registered. Anyone could register with a fake email and access the dashboard immediately. For a system where the SME's email is the recovery mechanism (forgot password, future logins), an unverified email breaks the entire recovery chain.
+
+**Option 2 — Passwordless magic link for every login.**
+Every login sends a one-time email link — no password at all. Clean from a security standpoint and solves the verification problem automatically (you proved you own the email by clicking the link). The tradeoff is that every login requires inbox access. For someone checking their dashboard daily on a slow mobile connection, waiting for an email every time is unacceptable.
+
+**Option 3 — OAuth (Google/Microsoft).**
+Familiar to users, no password management on our side. Ruled out for two reasons: it requires setting up an OAuth application with a provider (out of scope for a demo), and Nigerian SMEs using custom domain email addresses may not have those addresses attached to a Google account.
+
+**Option 4 — Email + password at registration, verification link required before first access (what was built).**
+The user sets their own password during registration — they choose it and they know it. A one-time verification link is sent to their email immediately after. They must click it before they can access their account for the first time. From that point on, all logins use email + password on `login.html`. This approach verifies the email is real, gives the user full control of their own password from day one, and keeps returning logins fast without inbox dependency.
+
+**Why the current password is required to change your password in Account Settings:**
+
+When a logged-in SME changes their password, the backend validates their current password before accepting the new one. This guards against session hijacking: if an attacker obtains an active JWT token (e.g. via physical device access or XSS), they cannot silently rotate the password to lock out the legitimate owner. The current password acts as a second factor that the attacker is unlikely to have.
+
+The backend returns HTTP 400 (not 401) when the current password is wrong. This distinction matters: `apiFetch` in `config.js` treats any 401 as a sign of an expired or revoked session and immediately redirects to `login.html`. Returning 401 for a wrong password would log the user out every time they made a typo, which is the wrong behaviour. The 400 response is surfaced as a field-level error on the settings page instead.
+
+**Email sending — nodemailer + Gmail App Password:**
+
+Options considered: SendGrid, Mailgun, Amazon SES, Resend, and Gmail SMTP via nodemailer.
+
+For a demo application, Gmail SMTP with an App Password was chosen. It requires no account setup, no API key management, no monthly fee, and no webhook configuration — just the Gmail address and a 16-character App Password generated in Google Account → Security → 2-Step Verification → App Passwords. The credentials go into `.env` as `EMAIL_USER` and `EMAIL_PASSWORD`. `nodemailer` (`npm install nodemailer`) wraps the SMTP connection.
+
+The limitation is that Gmail imposes a daily send limit (~500 emails/day) and will mark transactional email as promotional for some recipients. For a production system, a dedicated transactional email service (SendGrid, Resend) is the right move. The swap is a one-function change inside `emailService.ts` — no controller code changes.
+
+**Test account email update:**
+
+The demo account (Pinnacle Pharmaceuticals Nigeria Limited) had a placeholder email address in the database from initial setup. It was updated to a real inbox (`imeldaabudei@gmail.com`) so that magic link and password reset emails could be received and tested end-to-end. The update was applied directly via the Supabase SQL editor:
+
+```sql
+UPDATE "SME"
+SET email = 'imeldaabudei@gmail.com'
+WHERE "businessName" = 'PINNACLE PHARMACEUTICALS NIGERIA LIMITED';
+```
+
+No other data on that account was changed.
 
 ---
 
@@ -324,7 +389,9 @@ The settings page fetches the current SME profile from `GET /api/sme/profile` on
 
 Both QR types encode real HTTPS URLs so that a native phone camera can open them without a dedicated app. The AuditQR scanner (`qr_scanner.html`) is limited to Child QRs only — scanning a `childId` opens `journey.html` with no API write. Parent QRs are meant for supply chain actors (transporters, retailers) who use any phone camera; the encoded `handoff.html?parentId=` URL opens directly and `handoff.html` handles all stage-based routing itself.
 
-**Why Child QRs are read-only:** The Child QR is an item-level proof of authenticity for the customer. By the time a customer has the product in hand and scans their individual item, the supply chain handoffs have already been recorded via the Parent QR (carton) scans. The Child QR simply surfaces that history. Scanning a Child QR triggers no API write — it resolves through the parent to display the journey.
+### Why Child QRs are read-only
+
+The Child QR is an item-level proof of authenticity for the customer. By the time a customer has the product in hand and scans their individual item, the supply chain handoffs have already been recorded via the Parent QR (carton) scans. The Child QR simply surfaces that history. Scanning a Child QR triggers no API write — it resolves through the parent to display the journey.
 
 **Why transporters and retailers scan the Parent QR, not each Child QR:** The transporter picks up and delivers the whole carton, not individual items. Stage tracking at the batch level reflects this physical reality — one scan confirms the entire shipment changed hands. If tracking were per-item (via Child QRs), the transporter would need to scan every single unit before it left the warehouse, which is impractical. The batch scan is one action that advances the entire consignment.
 
@@ -479,6 +546,40 @@ In a second Ubuntu terminal, fund the wallet once per fresh validator instance:
 solana airdrop 10 6hj8FdphtVYKGpN8Q3J1zAcFkmeqwruCZzr1LgvgqHT5 --url localhost
 ```
 Then start the backend as normal. The validator must stay running alongside the backend.
+
+---
+
+### Post-Sprint 5 — Fixes and Resilience Improvements
+
+#### Transporter scan idempotency (network failure recovery)
+
+**Problem:** When a transporter tapped "Confirm pickup" on `handoff.html`, the backend created a `ScanEvent` and advanced the batch stage to `transit`. If the network died before the response reached the browser, the transporter saw a timeout error and the page stayed on `handoff.html`. On reload, `handoff.html` called `GET /api/scan/stage/:parentQRID`, got `currentStage: "transit"`, and immediately redirected to `code.html` — the retailer code-entry page. The transporter had no way to reach `handoff_code.html` to see their handoff code. Because the handoff code is generated in a second call (`POST /api/scan/:id/handoff`), and that call never completed, no handoff code existed at all.
+
+**Fix — two changes:**
+
+1. **`getStage` in `scanController.ts`** — when `currentStage` is `"transit"`, the endpoint now also looks up the most recent transporter `ScanEvent` and its linked `HandoffCode`. If the handoff code does not exist, or exists but `isUsed` is `false`, the response includes `pendingHandoff: true` and `existingScanId`. This signals that the transporter's handoff flow was interrupted and they should resume it.
+
+2. **`handoff.html`** — when `getStage` returns `currentStage: "transit"` with `pendingHandoff: true`, instead of redirecting to `code.html`, the page calls `POST /api/scan/:scanId/handoff` (already idempotent — returns the existing code if one was already generated, or creates a new one). It then stores the code in `localStorage` and redirects to `handoff_code.html` as normal. If `pendingHandoff` is absent or `false`, the page routes to `code.html` as before (genuine retailer scan).
+
+**Why this is safe:** `generateHandoffCode` has always been idempotent — it checks for an existing `HandoffCode` before creating one. The stage detection is deterministic: `isUsed: true` only ever happens inside `confirmHandoff`, which atomically marks the code used, records the retailer `ScanEvent`, and advances the stage to `"delivered"` in sequence. A batch cannot be `transit` with `isUsed: true` under normal operation, so the check is purely defensive.
+
+---
+
+#### `apiFetch` 10-second timeout
+
+`apiFetch` in `config.js` had no timeout. If the backend tunnel URL expired (Outray session ended) or the backend was unreachable, any `fetch` call would hang indefinitely — leaving skeleton loaders on screen forever with no error shown. An `AbortController` with a 10-second timeout was added. All API calls now fail fast if the backend does not respond, and the page surfaces an error instead of silently loading forever.
+
+---
+
+#### Account settings JavaScript architecture
+
+The account settings page originally used an inline `<script>` at the bottom of `<body>`. This triggered a timing bug: adding a `DOMContentLoaded` listener inside the script had no effect because that event had already fired before the inline script executed. The fix: all account settings logic was moved to an external file (`account_settings.js`) loaded with `<script src="./account_settings.js" defer>` in `<head>`. With `defer`, the browser guarantees the DOM is fully parsed before the script executes — no `DOMContentLoaded` wrapper needed, no timing ambiguity, and the JS file caches independently of the HTML. The sidebar overlay uses the CSS class `open` (not `visible`) — this matches the `.sidebar-overlay.open` selector in `design-tokens.css`.
+
+---
+
+#### Footer policy
+
+Footers were present on pages that should not have them. The rule applied across the project: only `landing.html` (public marketing page) and `journey.html` (public product verification page) include a footer. All auth-flow pages and app/transactional pages have no footer. `journey.html` keeps its footer because it is the page customers land on directly from a QR scan — it is effectively a public-facing product page and is the appropriate place for an "About AuditQR" CTA. Auth pages and dashboard pages have a focused single-purpose UI where a footer adds clutter and no user value.
 
 ---
 

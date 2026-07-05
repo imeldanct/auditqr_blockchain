@@ -221,11 +221,33 @@ export const getStage = async (req: Request, res: Response): Promise<any> => {
     if (!parentQR) {
       return res.status(404).json({ error: "QR code not found." });
     }
-    res.status(200).json({
+
+    const baseResponse: any = {
       currentStage: parentQR.currentStage,
       product: productPayload(parentQR),
       genesisAt: parentQR.createdAt,
-    });
+    };
+
+    // When in transit, detect whether the transporter's handoff flow was interrupted.
+    // pendingHandoff: true only when no HandoffCode exists yet — meaning the network
+    // failed between POST /api/scan (stage → transit) and POST /api/scan/:id/handoff.
+    // If a HandoffCode exists (even unused), the transporter already saw handoff_code.html
+    // (the code was stored in localStorage before that redirect), so any new scan is
+    // the retailer — route normally to code.html.
+    if (parentQR.currentStage === "transit") {
+      const lastTransporterScan = await prisma.scanEvent.findFirst({
+        where: { parentQRID, scannerRole: "transporter" },
+        orderBy: { timestamp: "desc" },
+        include: { handoffCode: true },
+      });
+
+      if (lastTransporterScan && !lastTransporterScan.handoffCode) {
+        baseResponse.pendingHandoff = true;
+        baseResponse.existingScanId = lastTransporterScan.scanID;
+      }
+    }
+
+    res.status(200).json(baseResponse);
   } catch (error) {
     console.error("Stage Check Error:", error);
     res.status(500).json({ error: "Internal server error." });

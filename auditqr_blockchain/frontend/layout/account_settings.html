@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../tailwind.css" />
     <script src="../config.js"></script>
     <script src="./toast.js"></script>
+    <script src="./account_settings.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -185,11 +186,9 @@
                   type="password"
                   id="current-password"
                   placeholder="Enter your current password"
-                  autocomplete="off"
-                  readonly
-                  onfocus="this.removeAttribute('readonly')"
+                  autocomplete="current-password"
                 />
-                <button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors" onclick="toggleVisibility('current-password', 'icon-current')">
+                <button type="button" tabindex="-1" id="btn-toggle-current" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors">
                   <span class="material-symbols-outlined text-[20px]" id="icon-current">visibility</span>
                 </button>
               </div>
@@ -202,11 +201,9 @@
                   type="password"
                   id="new-password"
                   placeholder="Min. 8 characters"
-                  autocomplete="off"
-                  readonly
-                  onfocus="this.removeAttribute('readonly')"
+                  autocomplete="new-password"
                 />
-                <button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors" onclick="toggleVisibility('new-password', 'icon-new')">
+                <button type="button" tabindex="-1" id="btn-toggle-new" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors">
                   <span class="material-symbols-outlined text-[20px]" id="icon-new">visibility</span>
                 </button>
               </div>
@@ -219,11 +216,9 @@
                   type="password"
                   id="confirm-password"
                   placeholder="Re-enter new password"
-                  autocomplete="off"
-                  readonly
-                  onfocus="this.removeAttribute('readonly')"
+                  autocomplete="new-password"
                 />
-                <button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors" onclick="toggleVisibility('confirm-password', 'icon-confirm')">
+                <button type="button" tabindex="-1" id="btn-toggle-confirm" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors">
                   <span class="material-symbols-outlined text-[20px]" id="icon-confirm">visibility</span>
                 </button>
               </div>
@@ -241,163 +236,6 @@
       </div>
     </main>
 
-    <script>
-      // â”€â”€ Auth guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      const token = localStorage.getItem("auditqr_token");
-      if (!token) window.location.href = "login.html";
-
-      // â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      function toggleSidebar() {
-        document.getElementById("sidebarMenu").classList.toggle("open");
-        document.getElementById("sidebarOverlay").classList.toggle("visible");
-      }
-      function closeSidebar() {
-        document.getElementById("sidebarMenu").classList.remove("open");
-        document.getElementById("sidebarOverlay").classList.remove("visible");
-      }
-      function logout() {
-        localStorage.removeItem("auditqr_token");
-        window.location.href = "login.html";
-      }
-
-      // â”€â”€ Password visibility toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      function toggleVisibility(inputId, iconId) {
-        const input = document.getElementById(inputId);
-        const icon = document.getElementById(iconId);
-        if (input.type === "password") {
-          input.type = "text";
-          icon.textContent = "visibility_off";
-        } else {
-          input.type = "password";
-          icon.textContent = "visibility";
-        }
-      }
-
-      // ── Load current profile ─────────────────────────────────────────
-      var _originalName = “”;
-      var _originalEmail = “”;
-
-      async function loadProfile() {
-        try {
-          const res = await apiFetch(“/api/sme/profile”);
-          if (!res || !res.ok) throw new Error(“HTTP “ + (res ? res.status : “null”));
-          const data = await res.json();
-          _originalName = data.businessName || “”;
-          _originalEmail = data.email || “”;
-          document.getElementById(“display-business-name”).textContent = _originalName || “—“;
-          document.getElementById(“display-email”).textContent = _originalEmail || “—“;
-          document.getElementById(“display-rc-number”).textContent = data.rcNumber || “—“;
-          document.getElementById(“rc-number”).textContent = data.rcNumber || “—“;
-        } catch (e) {
-          console.error(“loadProfile failed:”, e);
-          document.getElementById(“display-business-name”).textContent = “—“;
-          document.getElementById(“display-email”).textContent = “—“;
-          document.getElementById(“display-rc-number”).textContent = “—“;
-          showToast(“Could not load profile.”, “error”);
-        }
-      }
-
-      function startEditProfile() {
-        document.getElementById(“business-name”).value = _originalName;
-        document.getElementById(“email”).value = _originalEmail;
-        document.getElementById(“profile-display”).classList.add(“hidden”);
-        document.getElementById(“profile-edit”).classList.remove(“hidden”);
-        document.getElementById(“edit-profile-btn”).classList.add(“hidden”);
-      }
-
-      function cancelEditProfile() {
-        document.getElementById(“profile-display”).classList.remove(“hidden”);
-        document.getElementById(“profile-edit”).classList.add(“hidden”);
-        document.getElementById(“edit-profile-btn”).classList.remove(“hidden”);
-      }
-
-      // ── Save profile ─────────────────────────────────────────────────
-      async function saveProfile() {
-        const btn = document.getElementById(“save-profile-btn”);
-        const businessName = document.getElementById(“business-name”).value.trim();
-        const email = document.getElementById(“email”).value.trim();
-
-        if (!businessName || !email) {
-          showToast(“Business name and email cannot be empty.”, “error”);
-          return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = “Saving…”;
-
-        try {
-          const res = await apiFetch(“/api/sme/profile”, {
-            method: “PATCH”,
-            headers: { “Content-Type”: “application/json” },
-            body: JSON.stringify({ businessName, email }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            _originalName = businessName;
-            _originalEmail = email;
-            document.getElementById(“display-business-name”).textContent = businessName;
-            document.getElementById(“display-email”).textContent = email;
-            cancelEditProfile();
-            showToast(“Profile updated.”, “success”);
-          } else {
-            showToast(data.error || “Could not update profile.”, “error”);
-          }
-        } catch {
-          showToast(“Network error. Please try again.”, “error”);
-        } finally {
-          btn.disabled = false;
-          btn.textContent = “Save changes”;
-        }
-      }
-
-      // â”€â”€ Update password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      async function savePassword() {
-        const btn = document.getElementById("save-password-btn");
-        const currentPassword = document.getElementById("current-password").value;
-        const newPassword = document.getElementById("new-password").value;
-        const confirmPassword = document.getElementById("confirm-password").value;
-
-        if (!currentPassword || !newPassword || !confirmPassword) {
-          showToast("All three password fields are required.", "error");
-          return;
-        }
-        if (newPassword.length < 8) {
-          showToast("New password must be at least 8 characters.", "error");
-          return;
-        }
-        if (newPassword !== confirmPassword) {
-          showToast("New passwords do not match.", "error");
-          return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = "Updating…";
-
-        try {
-          const res = await apiFetch("/api/sme/password", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ currentPassword, newPassword }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            showToast("Password updated.", "success");
-            document.getElementById("current-password").value = "";
-            document.getElementById("new-password").value = "";
-            document.getElementById("confirm-password").value = "";
-          } else {
-            showToast(data.error || "Could not update password.", "error");
-          }
-        } catch {
-          showToast("Network error. Please try again.", "error");
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Update password";
-        }
-      }
-
-      loadProfile();
-    </script>
   </body>
 </html>
 
