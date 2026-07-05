@@ -1,31 +1,26 @@
 /**
  * AuditQR – shared frontend config
- * Update both URLs when Outray tunnels change between sessions.
+ * For local dev: set API_BASE to "http://localhost:3000" and FRONTEND_BASE to your Outray tunnel.
  */
-// const API_BASE = "http://localhost:3000";
-const API_BASE = "https://unadventurous-badger.outray.app";
+const API_BASE = "https://auditqr.onrender.com";
 
 // Solana cluster for explorer links.
 // local:   "custom"  → uses customUrl below
 // devnet:  "devnet"
 // mainnet: "mainnet-beta"
-const SOLANA_CLUSTER = "custom";
-const SOLANA_LOCAL_URL = "http%3A%2F%2Flocalhost%3A8899"; // URL-encoded localhost:8899
+const SOLANA_CLUSTER = "devnet";
 
 function solanaExplorerTx(txHash) {
   if (!txHash) return "#";
   if (SOLANA_CLUSTER === "custom") {
-    return "https://explorer.solana.com/tx/" + txHash + "?cluster=custom&customUrl=" + SOLANA_LOCAL_URL;
+    const LOCAL_URL = "http%3A%2F%2Flocalhost%3A8899";
+    return "https://explorer.solana.com/tx/" + txHash + "?cluster=custom&customUrl=" + LOCAL_URL;
   }
   return "https://explorer.solana.com/tx/" + txHash + "?cluster=" + SOLANA_CLUSTER;
 }
 
-// Frontend tunnel URL — used to embed real URLs inside QR codes.
-// Must be reachable from the scanning device (phone). Use the Outray tunnel, not localhost.
-// const FRONTEND_BASE = "https://introverted-copper.outray.app";
-const FRONTEND_BASE = "https://careless-college.outray.app/auditqr_blockchain/frontend";
-
-// const FRONTEND_BASE = "http://127.0.0.1:5500";
+// Frontend base URL — embedded inside QR codes. Must be reachable from the scanning device.
+const FRONTEND_BASE = "https://auditqr-blockchain.vercel.app";
 
 /**
  * Drop-in fetch wrapper.
