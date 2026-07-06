@@ -23,6 +23,42 @@ function solanaExplorerTx(txHash) {
 const FRONTEND_BASE = "https://auditqr-blockchain.vercel.app";
 
 /**
+ * Request GPS location from the browser, then reverse-geocode to a human-readable
+ * area name (e.g. "Ikeja, Lagos, Nigeria") via OpenStreetMap Nominatim.
+ * Falls back to raw "lat,lng" if geocoding fails; returns null if location is denied.
+ */
+function getGpsLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        try {
+          const res = await fetch(
+            "https://nominatim.openstreetmap.org/reverse?lat=" + lat + "&lon=" + lng + "&format=json",
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+          const a = data.address || {};
+          const parts = [
+            a.suburb || a.neighbourhood || a.village || a.town,
+            a.city || a.county,
+            a.state,
+            a.country,
+          ].filter(Boolean);
+          resolve(parts.length ? parts.join(", ") : lat.toFixed(6) + "," + lng.toFixed(6));
+        } catch (_) {
+          resolve(lat.toFixed(6) + "," + lng.toFixed(6));
+        }
+      },
+      () => resolve(null),
+      { timeout: 8000, maximumAge: 60000 }
+    );
+  });
+}
+
+/**
  * Drop-in fetch wrapper.
  * - Injects Authorization header automatically.
  * - Redirects to login.html on 401 (expired / missing token).

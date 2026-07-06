@@ -362,11 +362,12 @@
         btn.disabled = true;
         btn.textContent = "Recording…";
         try {
-          // Step 1: Record scan event in DB
+          // Step 1: Record scan event in DB (collect GPS first, non-blocking)
+          const gpsLocation = await getGpsLocation();
           const scanRes = await fetch(API_BASE + "/api/scan", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ parentQRID: _parentQRID }),
+            body: JSON.stringify({ parentQRID: _parentQRID, gpsLocation }),
           });
           if (!scanRes.ok) {
             const err = await scanRes.json();

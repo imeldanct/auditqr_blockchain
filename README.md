@@ -9,6 +9,7 @@
 - [Design Decisions](#design-decisions)
   - [Why not participant accounts?](#why-not-participant-accounts)
   - [Stage-based logic + handoff code gate](#chosen-approach-stage-based-logic--handoff-code-gate)
+  - [Scan Location: IP Address → GPS](#scan-location-ip-address--gps)
   - [Tailwind CSS: CDN → CLI Build](#tailwind-css-cdn--cli-build)
   - [Account Settings: Scope Decision](#account-settings-scope-decision)
   - [Authentication Flow: Email Verification + Password Login](#authentication-flow-email-verification--password-login)
@@ -105,7 +106,7 @@ Every scan event is recorded in two places: the database and the blockchain. The
 
 ### What is stored
 
-- `ScanEvent`: references `parentQRID`, scanner role (transporter/retailer), IP address, timestamp, optional blockchain tx hash
+- `ScanEvent`: references `parentQRID`, scanner role (transporter/retailer), GPS location (human-readable area name e.g. "Ikeja, Lagos, Nigeria"), timestamp, optional blockchain tx hash
 - `HandoffCode`: a 4-digit confirmation code generated at the transporter scan, required to be entered by the retailer — this is the multiparty confirmation step
 
 ### What is NOT stored
@@ -250,6 +251,42 @@ The CAC integration is currently a **mock**, because direct CAC API access was n
 - `src/data/cac-mock-db.json` — the seeded registry (10 sample Nigerian businesses).
 
 To go live, swap the JSON lookup inside `cacService.ts` for an HTTP call to a real provider (e.g. Mono, Dojah) with credentials in `.env`. **No controller code changes** — the service boundary is the swap point.
+
+---
+
+### Scan Location: IP Address → GPS
+
+The original implementation recorded the scanner's IP address with every scan event, stored in a field called `ipLocation` on `ScanEvent`.
+
+**Why IP address failed:**
+
+1. **`::1` on Render** — Render places the backend behind a reverse proxy. Without `app.set('trust proxy', 1)` in Express, `req.ip` returns `::1` (the IPv6 loopback address) — the internal proxy address, not the client's real IP. Every transporter and retailer scan was being recorded on the blockchain as `::1`, which is meaningless.
+
+2. **Real IP is still meaningless** — even with the trust proxy fix applied, the real IP carries no useful supply chain information. Nigerian mobile carriers (MTN, Airtel, Glo) use carrier-grade NAT (CGNAT), meaning thousands of devices share a single public IP. The IP does not identify a person, a device, or a location. It proves nothing about where the product changed hands.
+
+3. **Dynamic by nature** — mobile IPs change per session and per network. The same transporter picking up the same product on consecutive days could have a completely different IP each time.
+
+**Why GPS is better for supply chain:**
+
+GPS coordinates — reverse-geocoded to a human-readable area name — are directly meaningful in a custody context. Real supply chain and logistics systems (courier services, cold chain tracking, delivery verification platforms) all record GPS at handoff points because it answers the question that matters: *where was this product when it changed hands?*
+
+For AuditQR, seeing `Ikeja, Lagos, Nigeria` on the blockchain for a transporter scan and `Oshodi, Lagos, Nigeria` for the retailer scan tells a verifiable story about where the batch moved through the supply chain. An IP address could never tell that story.
+
+**Implementation:**
+
+- `getGpsLocation()` in `config.js` wraps the browser's Geolocation API in a promise with an 8-second timeout
+- On success, it calls OpenStreetMap's Nominatim API to reverse-geocode the coordinates into a human-readable area name (`suburb/city/state/country` filtered to whatever is available)
+- If geocoding fails (no internet, Nominatim unreachable), it falls back to raw `"lat,lng"` coordinates
+- If the user denies location permission, it records `null` — the scan proceeds normally; location simply shows as unavailable in the blockchain memo
+- The field was renamed from `ipLocation` to `gpsLocation` in the schema and made nullable (a migration handles the rename on the live database)
+
+**Three-level fallback:**
+
+| Scenario | What is recorded |
+| -------- | ---------------- |
+| Location allowed, Nominatim reachable | `"Ikeja, Lagos, Nigeria"` |
+| Location allowed, Nominatim fails | `"6.524400,3.379200"` |
+| Location denied or GPS unavailable | `"location-unavailable"` |
 
 ---
 
@@ -492,7 +529,7 @@ The local validator was chosen for reliability. Switching to Devnet later is a o
 
 3. **`src/services/solanaService.ts` created** — two exported functions:
    - `writeGenesisToChain(parentQRID)` — writes `AuditQR|parentQRID|genesis|timestamp` to the SPL Memo program. Called after every QR batch is created.
-   - `writeScanToChain(parentQRID, role, ip)` — writes `AuditQR|parentQRID|role|ip|timestamp`. Called after transporter and retailer scan events.
+   - `writeScanToChain(parentQRID, role, gpsLocation)` — writes `AuditQR|parentQRID|role|gpsLocation|timestamp`. Called after transporter and retailer scan events.
    Both return the transaction signature on success, `null` on failure — a Solana outage never blocks a scan or QR generation.
 
 4. **`qrController.ts` updated** — after `prisma.parentQRCode.create()`, `writeGenesisToChain()` is fired in the background without `await`. When it resolves, `prisma.parentQRCode.update()` saves the `genesisTxHash`. The QR generation endpoint responds immediately.
@@ -879,7 +916,7 @@ AuditQR|7134f545-b3da-4806-9a44-4941fd8fbc23|Garri|Retailer Scan|Lagos, NG|2026-
 | 2 | `parentQRID` | `7134f545-b3da-...` | UUID of the batch. The shared key that links all three transactions — the same value appears in every memo for that product |
 | 3 | Product name | `Garri` | Human-readable product name. Makes the transaction self-explanatory on the explorer without cross-referencing the database |
 | 4 | Event type | `QR Generation` / `Transporter Scan` / `Retailer Scan` | Which stage of the supply chain this transaction represents |
-| 5 | Location | `Lagos, NG` | IP-resolved location of the scan. Genesis transactions skip this field — location is only meaningful for physical handoffs |
+| 5 | Location | `Ikeja, Lagos, Nigeria` | GPS-derived area name of the scan, reverse-geocoded via Nominatim. Genesis transactions skip this field — location is only meaningful for physical handoffs. Falls back to raw coordinates if geocoding fails, or `location-unavailable` if the scanner denied location permission |
 | 6 | Timestamp | `2026-07-03T11:51:06.846Z` | UTC ISO timestamp of when the event occurred |
 
 The Solana Explorer shows this in two places:

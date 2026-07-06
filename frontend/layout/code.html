@@ -379,10 +379,11 @@
         confirmBtn.disabled = true;
         confirmBtn.textContent = "Confirming…";
         try {
+          const gpsLocation = await getGpsLocation();
           const res = await fetch(API_BASE + "/api/handoff/confirm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ codeValue, parentQRID }),
+            body: JSON.stringify({ codeValue, parentQRID, gpsLocation }),
           });
           const data = await res.json();
           if (res.ok) {

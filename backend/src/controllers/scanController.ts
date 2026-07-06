@@ -4,10 +4,6 @@ import { writeScanToChain } from "../services/solanaService";
 
 const prisma = new PrismaClient();
 
-function ip(req: Request) {
-  return (req.ip || "unknown").replace("::ffff:", "");
-}
-
 function productPayload(parentQR: any) {
   return {
     productName: parentQR.product.productName,
@@ -23,7 +19,7 @@ function productPayload(parentQR: any) {
 }
 
 export const recordScan = async (req: Request, res: Response): Promise<any> => {
-  const { parentQRID } = req.body;
+  const { parentQRID, gpsLocation = null } = req.body;
 
   if (!parentQRID) {
     return res.status(400).json({ error: "parentQRID is required." });
@@ -43,14 +39,14 @@ export const recordScan = async (req: Request, res: Response): Promise<any> => {
 
     if (stage === "pending") {
       const scanEvent = await prisma.scanEvent.create({
-        data: { parentQRID, scannerRole: "transporter", ipLocation: ip(req) },
+        data: { parentQRID, scannerRole: "transporter", gpsLocation },
       });
       await prisma.parentQRCode.update({
         where: { parentQRID },
         data: { currentStage: "transit" },
       });
 
-      writeScanToChain(parentQRID, parentQR.product.productName, "transporter", ip(req))
+      writeScanToChain(parentQRID, parentQR.product.productName, "transporter", gpsLocation)
         .then((txHash) => {
           if (txHash) {
             return prisma.scanEvent.update({
@@ -137,7 +133,7 @@ export const generateHandoffCode = async (req: Request, res: Response): Promise<
 };
 
 export const confirmHandoff = async (req: Request, res: Response): Promise<any> => {
-  const { codeValue, parentQRID } = req.body;
+  const { codeValue, parentQRID, gpsLocation = null } = req.body;
 
   if (!codeValue || !parentQRID) {
     return res.status(400).json({ error: "codeValue and parentQRID are required." });
@@ -186,14 +182,14 @@ export const confirmHandoff = async (req: Request, res: Response): Promise<any> 
       data: { isUsed: true },
     });
     const retailerScan = await prisma.scanEvent.create({
-      data: { parentQRID, scannerRole: "retailer", ipLocation: ip(req) },
+      data: { parentQRID, scannerRole: "retailer", gpsLocation },
     });
     await prisma.parentQRCode.update({
       where: { parentQRID },
       data: { currentStage: "delivered" },
     });
 
-    writeScanToChain(parentQRID, parentQR.product.productName, "retailer", ip(req))
+    writeScanToChain(parentQRID, parentQR.product.productName, "retailer", gpsLocation)
       .then((txHash) => {
         if (txHash) {
           return prisma.scanEvent.update({
@@ -281,7 +277,7 @@ export const getScanHistory = async (req: Request, res: Response): Promise<any> 
       events: scanEvents.map((e) => ({
         scanID: e.scanID,
         scannerRole: e.scannerRole,
-        ipLocation: e.ipLocation,
+        gpsLocation: e.gpsLocation,
         timestamp: e.timestamp,
         txHash: e.txHash ?? null,
       })),
@@ -324,7 +320,7 @@ export const getJourneyForChildQR = async (req: Request, res: Response): Promise
       events: scanEvents.map((e) => ({
         scanID: e.scanID,
         scannerRole: e.scannerRole,
-        ipLocation: e.ipLocation,
+        gpsLocation: e.gpsLocation,
         timestamp: e.timestamp,
         txHash: e.txHash ?? null,
       })),

@@ -39,12 +39,13 @@ export async function writeScanToChain(
   parentQRID: string,
   productName: string,
   scannerRole: string,
-  ipLocation: string
+  gpsLocation: string | null
 ): Promise<string | null> {
   try {
     const keypair = getKeypair();
     const roleLabel = scannerRole === "transporter" ? "Transporter Scan" : "Retailer Scan";
-    const memo = `AuditQR|${parentQRID}|${productName}|${roleLabel}|${ipLocation}|${new Date().toISOString()}`;
+    const location = gpsLocation ?? "location-unavailable";
+    const memo = `AuditQR|${parentQRID}|${productName}|${roleLabel}|${location}|${new Date().toISOString()}`;
 
     const tx = new Transaction().add(
       new TransactionInstruction({

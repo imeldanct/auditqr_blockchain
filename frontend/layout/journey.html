@@ -164,6 +164,9 @@
     const actionLabel = event.scannerRole === "transporter"
       ? "Picked up"
       : "Received";
+    const locationRow = event.gpsLocation && event.gpsLocation !== "location-unavailable"
+      ? `<div class="text-muted/60 text-[11px]">${event.gpsLocation}</div>`
+      : "";
     const txRow = event.txHash
       ? `<div class="flex items-center gap-1.5 mt-1">
            <a href="${solanaExplorerTx(event.txHash)}" target="_blank" rel="noopener noreferrer"
@@ -187,6 +190,7 @@
           </div>
           <div class="text-xs font-body text-blue">${actionLabel}</div>
           <div class="text-muted text-[11px]">${formatDate(event.timestamp)}</div>
+          ${locationRow}
           ${txRow}
         </div>
       </div>`;

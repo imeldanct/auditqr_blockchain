@@ -72,7 +72,7 @@ model ScanEvent {
   scanID      String   @id @default(uuid())
   parentQRID  String
   scannerRole String
-  ipLocation  String
+  gpsLocation String?
   timestamp   DateTime @default(now())
   txHash      String?
 
