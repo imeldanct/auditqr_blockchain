@@ -2,7 +2,7 @@
  * AuditQR – shared frontend config
  * For local dev: set API_BASE to "http://localhost:3000" and FRONTEND_BASE to your Outray tunnel.
  */
-const API_BASE = "https://auditqr.onrender.com";
+const API_BASE = "https://api.auditqr.site";
 
 // Solana cluster for explorer links.
 // local:   "custom"  → uses customUrl below
@@ -20,7 +20,7 @@ function solanaExplorerTx(txHash) {
 }
 
 // Frontend base URL — embedded inside QR codes. Must be reachable from the scanning device.
-const FRONTEND_BASE = "https://auditqr-blockchain.vercel.app";
+const FRONTEND_BASE = "https://auditqr.site";
 
 /**
  * Request GPS location from the browser, then reverse-geocode to a human-readable

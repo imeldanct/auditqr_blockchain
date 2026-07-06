@@ -25,7 +25,7 @@ const HEADER = `
 
 export async function sendMagicLinkEmail(to: string, businessName: string, magicLink: string) {
   await resend.emails.send({
-    from: "AuditQR <onboarding@resend.dev>",
+    from: "AuditQR <noreply@auditqr.site>",
     to: [to],
     subject: "Verify your AuditQR account",
     html: `
@@ -79,7 +79,7 @@ export async function sendMagicLinkEmail(to: string, businessName: string, magic
 
 export async function sendPasswordResetEmail(to: string, businessName: string, resetLink: string) {
   await resend.emails.send({
-    from: "AuditQR <onboarding@resend.dev>",
+    from: "AuditQR <noreply@auditqr.site>",
     to: [to],
     subject: "Reset your AuditQR password",
     html: `
