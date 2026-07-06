@@ -1,23 +1,12 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Pre-baked 96×96 PNG of the AuditQR logo (generated from the app SVG)
 const LOGO_PNG_B64 =
   "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAACs0lEQVR4nO3WQYoUURAEUAUv5Plcez4vJKiLXPajDMiqP9rxNkITxM+p2Pj56/efvz59ID++ffn855+/pvvVo/wpHeCwDnBYBzisAxzWAQ7jAPoDtqTvKi9pj/Jb9G4HGMpv0bsdYCi/Re92gKH8Fr3bAYbyW/RuBxjKb9G78QDKS9qzlZe0R3lJezrAUI/ykvZ0gKEe5SXt6QBDPcpL2tMBhnqUl7SnAwz1KC9pTwcY6lFe0p4OMNSjvKQ9HWCoR3lJezrAUI/ykvZ0gKEe5SXt6QBDPcpL2hMPsGXr3bQnzW/Rux1gKL9F73aAofwWvdsBhvJb9G4HGMpv0bsdYCi/Re9ygFPSD6H71aP8KR3gsA5wWAc4rAMc1gEOe3nkR6QPpw/9r/hnju8Ah3WAwzrAYR3gsP92AP1hqa0Pkd6jd9OeLek9HWBZek8HWJbe0wGWpfd0gGXpPR1gWXoPB0iLttz9rvrvpvs7wEN0fwd4iO7vAA/R/R3gIbq/AzxE9x855iPSBxINqR7lX/74jvThRB9UPcq//PEd6cOJPqh6lH/54zvShxN9UPUo//LHd6QPJ/qg6lH+5Y/vSB9O9EHVozz/G3qKDt26M+1XXtQjHWCoX3lRj3SAoX7lRT3SAYb6lRf1SAcY6lde1CMdYKhfeVGPcID04dTd7271b/VIB7iw1SMd4MJWj3SAC1s90gEubPVIB7iw1SPxAMpL2rOVT6X9yqc6wEj7lU91gJH2K5/qACPtVz7VAUbar3yqA4y0X/nUfzuA8qm0X3npABfSfuWlA1xI+5WXDnAh7VdeOsCFtF956QAX0n7lJR5gS/pumv9odH8HeIju7wAP0f0d4CG6vwM8RPd3gIfofg5wij7oqTvvvqcDXLj7ng5w4e57OsCFu+/pABfuvqcDXLj7nt9HQAKDOPMuBwAAAABJRU5ErkJggg==";
 
-const LOGO_ATTACHMENT = {
-  filename: "logo.png",
-  content: Buffer.from(LOGO_PNG_B64, "base64"),
-  contentType: "image/png",
-  cid: "auditqr-logo",
-};
+const LOGO_DATA_URI = `data:image/png;base64,${LOGO_PNG_B64}`;
 
 const HEADER = `
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#111111;">
@@ -26,7 +15,7 @@ const HEADER = `
         <table cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td style="vertical-align:middle;padding-right:10px;">
-              <img src="cid:auditqr-logo" width="36" height="36" alt="AuditQR" style="display:block;" />
+              <img src="${LOGO_DATA_URI}" width="36" height="36" alt="AuditQR" style="display:block;" />
             </td>
             <td style="vertical-align:middle;">
               <span style="font-size:26px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">AuditQR</span>
@@ -38,11 +27,10 @@ const HEADER = `
   </table>`;
 
 export async function sendMagicLinkEmail(to: string, businessName: string, magicLink: string) {
-  await transporter.sendMail({
-    from: `"AuditQR" <${process.env.EMAIL_USERNAME}>`,
-    to,
+  await resend.emails.send({
+    from: "AuditQR <onboarding@resend.dev>",
+    to: [to],
     subject: "Verify your AuditQR account",
-    attachments: [LOGO_ATTACHMENT],
     html: `
       <div style="background-color:#f0f2f5;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
         <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden;">
@@ -93,11 +81,10 @@ export async function sendMagicLinkEmail(to: string, businessName: string, magic
 }
 
 export async function sendPasswordResetEmail(to: string, businessName: string, resetLink: string) {
-  await transporter.sendMail({
-    from: `"AuditQR" <${process.env.EMAIL_USERNAME}>`,
-    to,
+  await resend.emails.send({
+    from: "AuditQR <onboarding@resend.dev>",
+    to: [to],
     subject: "Reset your AuditQR password",
-    attachments: [LOGO_ATTACHMENT],
     html: `
       <div style="background-color:#f0f2f5;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
         <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden;">

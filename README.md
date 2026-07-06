@@ -378,13 +378,23 @@ When a logged-in SME changes their password, the backend validates their current
 
 The backend returns HTTP 400 (not 401) when the current password is wrong. This distinction matters: `apiFetch` in `config.js` treats any 401 as a sign of an expired or revoked session and immediately redirects to `login.html`. Returning 401 for a wrong password would log the user out every time they made a typo, which is the wrong behaviour. The 400 response is surfaced as a field-level error on the settings page instead.
 
-**Email sending — nodemailer + Gmail App Password:**
+**Email sending — Resend HTTP API:**
 
 Options considered: SendGrid, Mailgun, Amazon SES, Resend, and Gmail SMTP via nodemailer.
 
-For a demo application, Gmail SMTP with an App Password was chosen. It requires no account setup, no API key management, no monthly fee, and no webhook configuration — just the Gmail address and a 16-character App Password generated in Google Account → Security → 2-Step Verification → App Passwords. The credentials go into `.env` as `EMAIL_USERNAME` and `EMAIL_PASSWORD`. `nodemailer` (`npm install nodemailer`) wraps the SMTP connection.
+**Original choice — Gmail SMTP via nodemailer:** No account setup, no API key, no monthly fee — just a Gmail address and a 16-character App Password. This worked fine in local development.
 
-The limitation is that Gmail imposes a daily send limit (~500 emails/day) and will mark transactional email as promotional for some recipients. For a production system, a dedicated transactional email service (SendGrid, Resend) is the right move. The swap is a one-function change inside `emailService.ts` — no controller code changes.
+**Why it was replaced:** Render's free tier blocks all outbound SMTP connections (ports 465 and 587) at the network level. Every email attempt failed with `ETIMEDOUT` / `code: 'CONN'` before the TCP handshake could even complete. This is a platform firewall restriction, not a credentials issue — no SMTP-based approach (Gmail, Mailgun SMTP, SendGrid SMTP) works on Render's free tier.
+
+**Fix — Resend:** Resend sends email over HTTPS (port 443), which Render does not block. The entire `emailService.ts` was rewritten to use the Resend SDK (`npm install resend`). The HTML email templates are identical; only the transport mechanism changed.
+
+```env
+RESEND_API_KEY     API key from resend.com dashboard
+```
+
+**Free tier note:** Resend's sandbox restricts the `from` address to `onboarding@resend.dev` and can only deliver to the email address used to sign up for Resend, until a custom domain is verified. Verifying a domain in the Resend dashboard (a few DNS records) unlocks sending to any recipient with a custom `from` address. For a production deployment, domain verification is required.
+
+The swap was a one-file change inside `emailService.ts` — no controller code changes.
 
 **Test account email update:**
 
@@ -638,8 +648,7 @@ The backend is deployed as a **Web Service** on Render at `https://auditqr.onren
 DATABASE_URL       Supabase transaction pooler (port 5432)
 DIRECT_URL         Supabase direct connection
 JWT_SECRET         64-byte hex string (generated via crypto.randomBytes)
-EMAIL_USERNAME     Gmail address used for sending magic link and reset emails
-EMAIL_PASSWORD     Gmail App Password (16 characters, from Google Account → Security → App Passwords)
+RESEND_API_KEY     API key from resend.com (replaces EMAIL_USERNAME + EMAIL_PASSWORD)
 SOLANA_KEYPAIR     base64-encoded 64-byte keypair
 SOLANA_PUBLIC_KEY  Ex6S244izw636k7t19Qo9NhDAgKV4oFJGA2RVzW52yfB
 FRONTEND_BASE      https://auditqr.vercel.app (or custom domain)
