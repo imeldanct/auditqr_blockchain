@@ -50,9 +50,26 @@ export const registerSME = async (req: Request, res: Response): Promise<any> => 
     });
 
     if (existingSME) {
-      return res
-        .status(400)
-        .json({ error: "SME with this RC Number or Email already exists." });
+      // Check if they've ever logged in via a magic link (i.e., account is active)
+      const hasLoggedIn = await prisma.authToken.findFirst({
+        where: { smeID: existingSME.smeID, type: "magic_link", usedAt: { not: null } },
+      });
+
+      if (hasLoggedIn) {
+        return res.status(400).json({ error: "An account with this email already exists. Please log in." });
+      }
+
+      // Account created but never verified — resend the magic link
+      const token = randomUUID();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await prisma.authToken.create({
+        data: { smeID: existingSME.smeID, token, type: "magic_link", expiresAt },
+      });
+      const magicLink = `${FRONTEND_BASE}/layout/magic_login.html?token=${token}`;
+      sendMagicLinkEmail(existingSME.email, existingSME.businessName, magicLink).catch((err) =>
+        console.error("Magic link resend failed:", err)
+      );
+      return res.status(201).json({ message: "Registration successful. Check your email to log in." });
     }
 
     const verificationResult: LookupResult = await lookupCAC(rcNumber, businessName);
@@ -195,12 +212,12 @@ export const loginSME = async (req: Request, res: Response): Promise<any> => {
   try {
     const sme = await prisma.sME.findUnique({ where: { email } });
     if (!sme) {
-      return res.status(401).json({ error: "Invalid email or password." });
+      return res.status(401).json({ error: "No account found with that email address." });
     }
 
     const isPasswordValid = await bcrypt.compare(password, sme.passwordHash);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid email or password." });
+      return res.status(401).json({ error: "Incorrect password." });
     }
 
     const secretKey = process.env.JWT_SECRET || "super_secret_auditqr_key_2026";

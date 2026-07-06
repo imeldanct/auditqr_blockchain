@@ -69,7 +69,7 @@
           id="account-details-card"
         >
           <div class="flex items-center gap-2 mb-8">
-            <span class="material-symbols-outlined text-blue text-[18px]">person</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-blue text-[18px]" style="display:block;"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="M12 12q-1.65 0-2.825-1.175T8 8t1.175-2.825T12 4t2.825 1.175T16 8t-1.175 2.825T12 12m-8 8v-2.8q0-.85.438-1.562T5.6 14.55q1.55-.775 3.15-1.162T12 13t3.25.388t3.15 1.162q.725.375 1.163 1.088T20 17.2V20z"/></svg>
             <h2 class="font-body text-[17px] font-medium text-white">Account Details</h2>
           </div>
           <div class="space-y-6">
@@ -97,13 +97,10 @@
                   type="button"
                   tabindex="-1"
                   id="toggle-password"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-blue transition-colors"
                 >
-                  <span
-                    class="material-symbols-outlined text-[20px]"
-                    id="toggle-password-icon"
-                    >visibility</span
-                  >
+                  <svg id="pw-eye-open" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-[20px]" style="display:block;"><path fill="currentColor" d="M15.188 14.688Q16.5 13.375 16.5 11.5t-1.312-3.187T12 7T8.813 8.313T7.5 11.5t1.313 3.188T12 16t3.188-1.312m-5.1-1.276Q9.3 12.625 9.3 11.5t.788-1.912T12 8.8t1.913.788t.787 1.912t-.787 1.913T12 14.2t-1.912-.787m-4.738 3.55Q2.35 14.925 1 11.5q1.35-3.425 4.35-5.462T12 4t6.65 2.038T23 11.5q-1.35 3.425-4.35 5.463T12 19t-6.65-2.037m11.838-1.45Q19.55 14.025 20.8 11.5q-1.25-2.525-3.613-4.012T12 6T6.813 7.488T3.2 11.5q1.25 2.525 3.613 4.013T12 17t5.188-1.487"/></svg>
+                  <svg id="pw-eye-closed" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-[20px]" style="display:none;"><path fill="currentColor" d="m16.1 13.3l-1.45-1.45q.225-1.175-.675-2.2t-2.325-.8L10.2 7.4q.425-.2.863-.3T12 7q1.875 0 3.188 1.313T16.5 11.5q0 .5-.1.938t-.3.862m3.2 3.15l-1.45-1.4q.95-.725 1.688-1.587T20.8 11.5q-1.25-2.525-3.588-4.012T12 6q-.725 0-1.425.1T9.2 6.4L7.65 4.85q1.025-.425 2.1-.638T12 4q3.775 0 6.725 2.087T23 11.5q-.575 1.475-1.513 2.738T19.3 16.45m.5 6.15l-4.2-4.15q-.875.275-1.762.413T12 19q-3.775 0-6.725-2.087T1 11.5q.525-1.325 1.325-2.463T4.15 7L1.4 4.2l1.4-1.4l18.4 18.4zM5.55 8.4q-.725.65-1.325 1.425T3.2 11.5q1.25 2.525 3.588 4.013T12 17q.5 0 .975-.062t.975-.138l-.9-.95q-.275.075-.525.113T12 16q-1.875 0-3.188-1.312T7.5 11.5q0-.275.038-.525t.112-.525zm4.2 4.2"/></svg>
                 </button>
               </div>
             </div>
@@ -121,13 +118,10 @@
                   type="button"
                   tabindex="-1"
                   id="toggle-confirm-password"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-blue transition-colors"
                 >
-                  <span
-                    class="material-symbols-outlined text-[20px]"
-                    id="toggle-confirm-password-icon"
-                    >visibility</span
-                  >
+                  <svg id="cpw-eye-open" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-[20px]" style="display:block;"><path fill="currentColor" d="M15.188 14.688Q16.5 13.375 16.5 11.5t-1.312-3.187T12 7T8.813 8.313T7.5 11.5t1.313 3.188T12 16t3.188-1.312m-5.1-1.276Q9.3 12.625 9.3 11.5t.788-1.912T12 8.8t1.913.788t.787 1.912t-.787 1.913T12 14.2t-1.912-.787m-4.738 3.55Q2.35 14.925 1 11.5q1.35-3.425 4.35-5.462T12 4t6.65 2.038T23 11.5q-1.35 3.425-4.35 5.463T12 19t-6.65-2.037m11.838-1.45Q19.55 14.025 20.8 11.5q-1.25-2.525-3.613-4.012T12 6T6.813 7.488T3.2 11.5q1.25 2.525 3.613 4.013T12 17t5.188-1.487"/></svg>
+                  <svg id="cpw-eye-closed" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-[20px]" style="display:none;"><path fill="currentColor" d="m16.1 13.3l-1.45-1.45q.225-1.175-.675-2.2t-2.325-.8L10.2 7.4q.425-.2.863-.3T12 7q1.875 0 3.188 1.313T16.5 11.5q0 .5-.1.938t-.3.862m3.2 3.15l-1.45-1.4q.95-.725 1.688-1.587T20.8 11.5q-1.25-2.525-3.588-4.012T12 6q-.725 0-1.425.1T9.2 6.4L7.65 4.85q1.025-.425 2.1-.638T12 4q3.775 0 6.725 2.087T23 11.5q-.575 1.475-1.513 2.738T19.3 16.45m.5 6.15l-4.2-4.15q-.875.275-1.762.413T12 19q-3.775 0-6.725-2.087T1 11.5q.525-1.325 1.325-2.463T4.15 7L1.4 4.2l1.4-1.4l18.4 18.4zM5.55 8.4q-.725.65-1.325 1.425T3.2 11.5q1.25 2.525 3.588 4.013T12 17q.5 0 .975-.062t.975-.138l-.9-.95q-.275.075-.525.113T12 16q-1.875 0-3.188-1.312T7.5 11.5q0-.275.038-.525t.112-.525zm4.2 4.2"/></svg>
                 </button>
               </div>
             </div>
@@ -150,7 +144,7 @@
       <div class="flex-1 flex items-center justify-center hidden" id="email-sent-view">
         <div class="text-center px-6 max-w-sm">
           <div class="w-16 h-16 rounded-full bg-blue/10 border border-blue/30 flex items-center justify-center mx-auto mb-6">
-            <span class="material-symbols-outlined text-blue text-[32px]" style="font-variation-settings:'FILL' 1">mark_email_read</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-blue text-[32px]" style="display:block;"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="m16.5 21l-3.5-3.5l1.425-1.425L16.5 18.15l3.575-3.575L21.5 16zm-14.5.5L0 19.5V4q0-.825.588-1.412T2 2h16q.825 0 1.413.588T20 4v7.35q-.475-.2-.975-.275T18 11q-1 0-1.9.337t-1.625.938L10 15.5L2 11V4l8 5l8-5V9.1q-.65.2-1.238.538T13.75 10.5L10 8L2 13v6.5h1.5z"/></svg>
           </div>
           <h1 class="font-headline text-[26px] font-medium text-white mb-3">Check your email</h1>
           <p class="font-body text-muted text-[15px]">We've sent a verification link to</p>
@@ -162,25 +156,17 @@
 
     <script>
       // Password visibility toggles
-      function setupToggle(btnId, inputId, iconId) {
+      function setupToggle(btnId, inputId, openId, closedId) {
         document.getElementById(btnId).addEventListener("click", () => {
           const input = document.getElementById(inputId);
-          const icon = document.getElementById(iconId);
-          if (input.type === "password") {
-            input.type = "text";
-            icon.textContent = "visibility_off";
-          } else {
-            input.type = "password";
-            icon.textContent = "visibility";
-          }
+          const showing = input.type === "password";
+          input.type = showing ? "text" : "password";
+          document.getElementById(openId).style.display = showing ? "none" : "block";
+          document.getElementById(closedId).style.display = showing ? "block" : "none";
         });
       }
-      setupToggle("toggle-password", "password", "toggle-password-icon");
-      setupToggle(
-        "toggle-confirm-password",
-        "confirm-password",
-        "toggle-confirm-password-icon",
-      );
+      setupToggle("toggle-password", "password", "pw-eye-open", "pw-eye-closed");
+      setupToggle("toggle-confirm-password", "confirm-password", "cpw-eye-open", "cpw-eye-closed");
 
       async function completeRegistration(e) {
         e.preventDefault();

@@ -820,6 +820,42 @@ rm -rf /mnt/c/Users/user/Documents/Dev-ing/qr-code-blockchain/test-ledger
 
 ---
 
+#### Login error specificity
+
+The login endpoint previously returned the same generic `"Invalid email or password."` message for both failure cases. This is now split:
+
+- **No account found** — `"No account found with that email address."` (HTTP 404)
+- **Wrong password** — `"Incorrect password."` (HTTP 401)
+
+These are surfaced by `showToast()` on `login.html` so the SME knows immediately whether to check their email address or retry with the correct password, rather than guessing which field is wrong.
+
+**Security note:** Some authentication systems intentionally return the same message for both failures to prevent email enumeration — an attacker submitting a list of email addresses could learn which are registered from the "No account found" response. For this system, the tradeoff was accepted: the user base is small (verified Nigerian businesses), CAC gating already limits who can register, and usability for legitimate users outweighs the enumeration risk in this context. The `forgot_password.html` endpoint deliberately does the opposite — it returns a generic success message regardless of whether the email exists, which is the right choice for password recovery (that flow targets unauthenticated attackers, not logged-in users making a typo).
+
+---
+
+#### Stale JWT detection on login page
+
+When `login.html` loads and `auditqr_token` exists in `localStorage`, it previously redirected immediately to `dashboard.html`. If the token was expired or revoked (e.g. the JWT secret rotated, or the user's session was invalidated server-side), the redirect landed on the dashboard with a dead token — the first API call would then return 401, logging the user out again, resulting in a redirect loop.
+
+**Fix:** Before redirecting, the login page now verifies the token is still valid by calling `GET /api/sme/profile` with the stored token. If the response is `200 OK`, the redirect proceeds. If it returns any non-OK status, `auditqr_token` is cleared from `localStorage` and the user stays on the login page. If there is a network error (backend unreachable), the catch block does nothing — the user stays on login rather than bouncing.
+
+---
+
+#### Registration idempotency (magic link re-send)
+
+If a user completes the registration form but never clicks the verification link (e.g. the email went to spam, they closed the tab, or the link expired), they have no way to proceed — `POST /api/sme/register` would return `"An account with this email already exists"` and block them permanently.
+
+**Fix:** `registerSME` now distinguishes between two states for an existing SME record:
+
+- **Already logged in** (`usedAt IS NOT NULL` on a `magic_link` token) — the account is active. Return `400: "An account with this email already exists. Please log in."`
+- **Never logged in** (no used magic link token) — the registration was incomplete. A new magic link is generated, the old unused token (if any) is replaced, and the verification email is re-sent. Return `201` with the same success message as a fresh registration.
+
+This handles the case cleanly without leaking whether the account exists — the user gets a "check your email" screen either way.
+
+**CAC enforcement is not skipped in this path.** The idempotency branch only applies to SMEs who already passed CAC verification on their initial registration attempt. No new SME can be created without `lookupCAC()` returning a valid match — this check runs for every genuinely new registration. Anyone attempting to generate a magic link for a business not in the CAC registry gets a field-specific error pointing to the wrong field before any account record is created.
+
+---
+
 ## Blockchain Architecture (Solana)
 
 The target chain is **Solana** — chosen for low transaction fees and high throughput, which matters when writing a scan event per supply chain handoff.

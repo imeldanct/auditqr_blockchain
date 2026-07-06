@@ -114,20 +114,20 @@ async function savePassword() {
 // ── Eye toggles ───────────────────────────────────────────────────────────────
 // defer guarantees DOM is ready when this runs — no DOMContentLoaded needed
 [
-  ["btn-toggle-current", "current-password", "icon-current"],
-  ["btn-toggle-new",     "new-password",     "icon-new"],
-  ["btn-toggle-confirm", "confirm-password", "icon-confirm"],
-].forEach(function (triple) {
-  var btn = document.getElementById(triple[0]);
+  ["btn-toggle-current", "current-password", "cur-eye-open",  "cur-eye-closed"],
+  ["btn-toggle-new",     "new-password",     "new-eye-open",  "new-eye-closed"],
+  ["btn-toggle-confirm", "confirm-password", "conf-eye-open", "conf-eye-closed"],
+].forEach(function (quad) {
+  var btn = document.getElementById(quad[0]);
   if (!btn) return;
   btn.addEventListener("click", function (e) {
     e.preventDefault();
-    var inp = document.getElementById(triple[1]);
-    var icn = document.getElementById(triple[2]);
-    if (!inp || !icn) return;
+    var inp = document.getElementById(quad[1]);
+    if (!inp) return;
     var show = inp.getAttribute("type") === "password";
     inp.setAttribute("type", show ? "text" : "password");
-    icn.textContent = show ? "visibility_off" : "visibility";
+    document.getElementById(quad[2]).style.display = show ? "none" : "block";
+    document.getElementById(quad[3]).style.display = show ? "block" : "none";
   });
 });
 
