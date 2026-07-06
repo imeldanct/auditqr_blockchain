@@ -288,6 +288,14 @@ For AuditQR, seeing `Ikeja, Lagos, Nigeria` on the blockchain for a transporter 
 | Location allowed, Nominatim fails | `"6.524400,3.379200"` |
 | Location denied or GPS unavailable | `"location-unavailable"` |
 
+**Why location is not mandatory (the scan is not blocked if location fails):**
+
+The browser's Geolocation API cannot be forced — permission is granted by the user, not the application. More critically, blocking the handoff confirmation until GPS resolves would break legitimate supply chain operations: transporters work inside warehouses, loading bays, and rural areas where GPS signal is genuinely unavailable. If confirmation were blocked on GPS, a real handoff could not be completed under those conditions.
+
+The `location-unavailable` value is the correct fallback for these cases. The blockchain record still proves the event happened — the timestamp, parentQRID, and transporter/retailer role are all immutably recorded even without coordinates. Location enriches the audit trail when available; it does not gate it.
+
+In testing, `location-unavailable` typically appears because desktop browsers do not have GPS hardware, or the permission was denied during a development session. On a real transporter's phone in the field, location permission is typically granted and GPS resolves within the 8-second timeout.
+
 ---
 
 ### Tailwind CSS: CDN → CLI Build

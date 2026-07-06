@@ -40,7 +40,7 @@ function openRowMenu(btn) {
     '<button class="w-full text-left px-4 py-3 text-[13px] text-blue hover:bg-blue/5 transition-colors flex items-center justify-between"' +
     ' onclick="closeRowMenu(); viewBlockchainRecords(\'' + (parentQRID || "") + '\', \'' + productName.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + '\')">' +
     '<span>View on blockchain explorer</span>' +
-    '<span class="material-symbols-outlined text-[14px]">open_in_new</span></button>' +
+    '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-[14px]"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h7v2H5v14h14v-7h2v7q0 .825-.587 1.413T19 21zm4.7-5.3l-1.4-1.4L17.6 5H14V3h7v7h-2V6.4z"/></svg></button>' +
     '<div class="border-t border-outline-variant/20"></div>' +
     '<button class="w-full text-left px-4 py-3 text-[13px] text-danger/70 hover:bg-danger/5 hover:text-danger transition-colors flex items-center gap-2"' +
     ' onclick="closeRowMenu(); _deleteProductId=\'' + productId + '\'; document.getElementById(\'delete-modal-name\').textContent=\'' + productName.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + '\'; document.getElementById(\'delete-modal\').classList.remove(\'hidden\')">' +
@@ -134,7 +134,7 @@ function renderProducts(products) {
       ' data-product-name="' + (p.productName || "").replace(/"/g, "&quot;") + '"' +
       ' data-parent-qrid="' + (p.parentQRID || "") + '"' +
       ' onclick="event.stopPropagation(); openRowMenu(this)">' +
-      '<span class="material-symbols-outlined text-[20px]">more_vert</span>' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-[20px]"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="M12 20q-.825 0-1.412-.587T10 18t.588-1.412T12 16t1.413.588T14 18t-.587 1.413T12 20m0-6q-.825 0-1.412-.587T10 12t.588-1.412T12 10t1.413.588T14 12t-.587 1.413T12 14m0-6q-.825 0-1.412-.587T10 6t.588-1.412T12 4t1.413.588T14 6t-.587 1.413T12 8"/></svg>' +
       "</button>" +
       "</td>";
     tbody.appendChild(tr);

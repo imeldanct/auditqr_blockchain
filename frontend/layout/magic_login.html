@@ -61,7 +61,7 @@
           } else {
             document.getElementById("status-heading").textContent = "Link expired or already used";
             document.getElementById("status-body").innerHTML =
-              data.error + '<br><br><a href="login.html" class="text-blue hover:underline">Go to login</a>';
+              '<a href="login.html" class="text-blue hover:underline">Go to login</a>';
           }
         } catch (err) {
           document.getElementById("status-heading").textContent = "Something went wrong";
