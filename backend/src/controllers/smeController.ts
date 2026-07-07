@@ -85,7 +85,15 @@ export const registerSME = async (req: Request, res: Response): Promise<any> => 
     const passwordHash = await bcrypt.hash(password, salt);
 
     const newSME = await prisma.sME.create({
-      data: { businessName, rcNumber, email, passwordHash, isVerified: true },
+      data: {
+        businessName,
+        rcNumber,
+        email,
+        passwordHash,
+        isVerified: true,
+        businessAddress: verificationResult.cacDetails.registeredAddress ?? null,
+        businessState: verificationResult.cacDetails.state ?? null,
+      },
     });
 
     const token = randomUUID();

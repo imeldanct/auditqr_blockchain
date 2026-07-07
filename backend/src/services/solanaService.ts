@@ -16,10 +16,16 @@ function getKeypair(): Keypair {
   return Keypair.fromSecretKey(Buffer.from(raw, "base64"));
 }
 
-export async function writeGenesisToChain(parentQRID: string, productName: string): Promise<string | null> {
+export async function writeGenesisToChain(
+  parentQRID: string,
+  productName: string,
+  businessName: string,
+  businessAddress?: string | null
+): Promise<string | null> {
   try {
     const keypair = getKeypair();
-    const memo = `AuditQR|${parentQRID}|${productName}|QR Generation|${new Date().toISOString()}`;
+    const location = businessAddress ?? "address-unavailable";
+    const memo = `AuditQR|genesis|${parentQRID}|${productName}|${businessName}|${location}|${new Date().toISOString()}`;
     const tx = new Transaction().add(
       new TransactionInstruction({
         keys: [],

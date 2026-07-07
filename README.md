@@ -13,6 +13,7 @@
   - [Tailwind CSS: CDN → CLI Build](#tailwind-css-cdn--cli-build)
   - [Account Settings: Scope Decision](#account-settings-scope-decision)
   - [Authentication Flow: Email Verification + Password Login](#authentication-flow-email-verification--password-login)
+  - [SME Business Address: Stored at Registration, Shown on Journey](#sme-business-address-stored-at-registration-shown-on-journey)
 - [Blockchain Architecture (Solana)](#blockchain-architecture-solana)
 - [Architecture](#architecture)
 - [QR Code Structure](#qr-code-structure)
@@ -415,6 +416,35 @@ WHERE "businessName" = 'PINNACLE PHARMACEUTICALS NIGERIA LIMITED';
 ```
 
 No other data on that account was changed.
+
+---
+
+### SME Business Address: Stored at Registration, Shown on Journey
+
+**Decision date:** 2026-07-07
+
+The product journey page had no location context for the manufacturer. A customer scanning a product could see the business name and CAC verification status, but nothing about where the product came from.
+
+**What was changed:** When an SME registers, the `registeredAddress` and `state` fields returned by the CAC lookup are now persisted on the SME record. These are surfaced in two places:
+
+1. **Journey page header** — a location line (e.g. `Lagos, Nigeria`) appears beneath the business name on `journey.html` whenever the data is available.
+2. **Genesis blockchain memo** — the SME's registered address is embedded in the `AuditQR|genesis|...` memo written to Solana when QR codes are generated, so the manufacturer's location is part of the immutable on-chain record.
+
+**Why store it at registration rather than look it up later:** The CAC data is already fetched and verified at registration time. Storing it once is cheaper than re-querying on every product journey load, and it ensures the address cannot silently change if the mock/live CAC data is updated later. If an SME's address changes, it can be updated through a future account settings flow.
+
+**Schema change:**
+
+```prisma
+model SME {
+  ...
+  businessAddress String?
+  businessState   String?
+}
+```
+
+Migration: `20260707120000_add_sme_address`
+
+**Files affected:** `prisma/schema.prisma`, `prisma/migrations/20260707120000_add_sme_address/migration.sql`, `src/controllers/smeController.ts` (stores address at registration), `src/controllers/qrController.ts` (passes address to genesis write), `src/services/solanaService.ts` (includes address in genesis memo), `src/controllers/scanController.ts` (`productPayload()` includes address fields in all scan/journey API responses), `frontend/layout/journey.html` (displays location in header and genesis timeline entry).
 
 ---
 

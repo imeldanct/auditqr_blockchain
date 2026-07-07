@@ -12,13 +12,15 @@ datasource db {
 }
 
 model SME {
-  smeID        String   @id @default(uuid())
-  businessName String
-  rcNumber     String   @unique
-  email        String   @unique
-  passwordHash String
-  isVerified   Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  smeID           String   @id @default(uuid())
+  businessName    String
+  rcNumber        String   @unique
+  email           String   @unique
+  passwordHash    String
+  isVerified      Boolean  @default(false)
+  businessAddress String?
+  businessState   String?
+  createdAt       DateTime @default(now())
 
   products     Product[]
   authTokens   AuthToken[]

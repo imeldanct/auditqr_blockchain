@@ -19,6 +19,7 @@ export const generateQRCodes = async (req: AuthRequest, res: Response): Promise<
   try {
     const product = await prisma.product.findFirst({
       where: { productID: productId, smeID: req.sme!.smeId },
+      include: { sme: { select: { businessName: true, businessAddress: true } } },
     });
 
     if (!product) {
@@ -50,7 +51,7 @@ export const generateQRCodes = async (req: AuthRequest, res: Response): Promise<
       });
     }
 
-    writeGenesisToChain(parentQRID, product.productName)
+    writeGenesisToChain(parentQRID, product.productName, product.sme.businessName, product.sme.businessAddress ?? null)
       .then((txHash) => {
         if (txHash) {
           return prisma.parentQRCode.update({

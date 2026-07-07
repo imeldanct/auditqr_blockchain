@@ -57,6 +57,7 @@
         <span id="verified-badge" class="bg-blue/10 border border-blue/30 text-blue text-[10px] font-body font-medium px-2 py-0.5 rounded-full uppercase tracking-wider hidden">CAC verified</span>
         <span id="cac-number" class="text-muted text-sm font-mono text-[11px]">RC—</span>
       </div>
+      <span id="business-location" class="text-muted text-[12px] hidden">—</span>
     </div>
   </section>
 
@@ -132,7 +133,7 @@
     });
   }
 
-  function buildGenesisItem(genesisAt, genesisTxHash) {
+  function buildGenesisItem(genesisAt, genesisTxHash, businessName, businessAddress) {
     const txRow = genesisTxHash
       ? `<div class="flex items-center gap-1.5 mt-1">
            <a href="${solanaExplorerTx(genesisTxHash)}" target="_blank" rel="noopener noreferrer"
@@ -151,8 +152,9 @@
           <div class="w-[9px] h-[9px] rounded-full bg-blue"></div>
         </div>
         <div class="space-y-1">
-          <span class="text-white font-medium">Manufacturer</span>
+          <span class="text-white font-medium">${businessName || "Manufacturer"}</span>
           <div class="text-xs font-body text-blue">QR codes generated</div>
+          ${businessAddress ? `<div class="text-muted/60 text-[11px]">${businessAddress}</div>` : ""}
           <div class="text-muted text-[11px]">${formatDate(genesisAt)}</div>
           ${txRow}
         </div>
@@ -228,6 +230,11 @@
       if (product.isVerified) {
         document.getElementById("verified-badge").classList.remove("hidden");
       }
+      if (product.businessState || product.businessAddress) {
+        const locEl = document.getElementById("business-location");
+        locEl.textContent = product.businessState ? product.businessState + ", Nigeria" : product.businessAddress;
+        locEl.classList.remove("hidden");
+      }
 
       // Fill details
       document.getElementById("detail-name").textContent = product.productName;
@@ -237,7 +244,7 @@
 
       // Build timeline — genesis always first, then scan events
       const timeline = document.getElementById("timeline");
-      const allItems = [buildGenesisItem(genesisAt, genesisTxHash ?? null)];
+      const allItems = [buildGenesisItem(genesisAt, genesisTxHash ?? null, product.businessName, product.businessAddress)];
       events.forEach(function(e) { allItems.push(buildScanItem(e)); });
       timeline.innerHTML = allItems.join("");
 

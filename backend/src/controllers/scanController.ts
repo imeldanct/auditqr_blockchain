@@ -15,6 +15,8 @@ function productPayload(parentQR: any) {
     businessName: parentQR.product.sme.businessName,
     rcNumber: parentQR.product.sme.rcNumber,
     isVerified: parentQR.product.sme.isVerified,
+    businessAddress: parentQR.product.sme.businessAddress ?? null,
+    businessState: parentQR.product.sme.businessState ?? null,
   };
 }
 
