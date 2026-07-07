@@ -88,11 +88,7 @@
           <div class="absolute inset-0 rounded-full border border-blue/10 ring-3"></div>
           <!-- Center icon -->
           <div class="absolute inset-0 flex items-center justify-center">
-            <span
-              class="material-symbols-outlined text-blue text-5xl animate-spin-slow"
-              style="font-variation-settings: &quot;FILL&quot; 1"
-              >qr_code_2</span
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-blue text-5xl animate-spin-slow"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="M13 21v-2h2v2zm-2-2v-5h2v5zm8-3v-4h2v4zm-2-4v-2h2v2zM5 14v-2h2v2zm-2-2v-2h2v2zm9-7V3h2v2zM4.5 7.5h3v-3h-3zM3 9V3h6v6zm1.5 10.5h3v-3h-3zM3 21v-6h6v6zM16.5 7.5h3v-3h-3zM15 9V3h6v6zm2 12v-3h-2v-2h4v3h2v2zm-4-7v-2h4v2zm-4 0v-2H7v-2h6v2h-2v2zm1-5V5h2v2h2v2zM5.25 6.75v-1.5h1.5v1.5zm0 12v-1.5h1.5v1.5zm12-12v-1.5h1.5v1.5z"/></svg>
           </div>
         </div>
 
@@ -108,37 +104,26 @@
         >
           <!-- Step 1: Complete -->
           <div class="flex items-center gap-4">
-            <span
-              class="material-symbols-outlined text-blue text-[20px]"
-              style="font-variation-settings: &quot;FILL&quot; 1"
-              >check_circle</span
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-blue text-[20px]"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="m10.6 16.6l7.05-7.05l-1.4-1.4l-5.65 5.65l-2.85-2.85l-1.4 1.4zM12 22q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22"/></svg>
             <span class="text-white text-[14px]">Product details saved</span>
           </div>
           <!-- Step 2: In progress -->
           <div class="flex items-center gap-4 progress-active">
-            <span
-              class="material-symbols-outlined text-blue text-[20px] animate-spin-slow"
-              >progress_activity</span
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-blue text-[20px] animate-spin-slow"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="M8.125 21.213q-1.825-.788-3.187-2.15t-2.15-3.188T2 11.988t.788-3.875t2.15-3.175t3.187-2.15T12 2q.425 0 .713.288T13 3t-.288.713T12 4Q8.675 4 6.337 6.338T4 12t2.338 5.663T12 20t5.663-2.337T20 12q0-.425.288-.712T21 11t.713.288T22 12q0 2.05-.788 3.875t-2.15 3.188t-3.175 2.15t-3.875.787t-3.887-.787"/></svg>
             <span class="text-blue text-[14px] font-medium"
               >Generating 1 Parent QR code...</span
             >
           </div>
           <!-- Step 3: Pending -->
           <div class="flex items-center gap-4 opacity-40">
-            <span class="material-symbols-outlined text-muted text-[20px]"
-              >radio_button_unchecked</span
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-muted text-[20px]"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="M12 22q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22m0-2q3.35 0 5.675-2.325T20 12t-2.325-5.675T12 4T6.325 6.325T4 12t2.325 5.675T12 20"/></svg>
             <span class="text-muted text-[14px]" id="step3-label"
               >Generating Child QR codes</span
             >
           </div>
           <!-- Step 4: Pending -->
           <div class="flex items-center gap-4 opacity-40">
-            <span class="material-symbols-outlined text-muted text-[20px]"
-              >radio_button_unchecked</span
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-muted text-[20px]"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="M12 22q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22m0-2q3.35 0 5.675-2.325T20 12t-2.325-5.675T12 4T6.325 6.325T4 12t2.325 5.675T12 20"/></svg>
             <span class="text-muted text-[14px]"
               >Recording genesis event on blockchain</span
             >
