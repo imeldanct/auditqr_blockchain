@@ -17,14 +17,14 @@ if (!token || !productId) {
 
 var stepEls = document.querySelectorAll(".text-left.space-y-5 > div");
 
+var CHECK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-blue text-[20px]"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="m10.6 16.6l7.05-7.05l-1.4-1.4l-5.65 5.65l-2.85-2.85l-1.4 1.4zM12 22q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22"/></svg>';
+var SPINNER_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" class="text-blue text-[20px] animate-spin-slow"><path d="M0 0h24v24H0z" fill="none"/><path fill="currentColor" d="M8.125 21.213q-1.825-.788-3.187-2.15t-2.15-3.188T2 11.988t.788-3.875t2.15-3.175t3.187-2.15T12 2q.425 0 .713.288T13 3t-.288.713T12 4Q8.675 4 6.337 6.338T4 12t2.338 5.663T12 20t5.663-2.337T20 12q0-.425.288-.712T21 11t.713.288T22 12q0 2.05-.788 3.875t-2.15 3.188t-3.175 2.15t-3.875.787t-3.887-.787"/></svg>';
+
 function completeStep(i) {
   var el = stepEls[i];
   el.classList.remove("progress-active", "opacity-40");
-  var icon = el.querySelector("span:first-child");
-  icon.textContent = "check_circle";
-  icon.className = "material-symbols-outlined text-blue text-[20px]";
-  icon.style.fontVariationSettings = "'FILL' 1";
-  var label = el.querySelector("span:last-child");
+  el.firstElementChild.outerHTML = CHECK_SVG;
+  var label = el.querySelector("span");
   label.className = "text-white text-[14px]";
 }
 
@@ -32,10 +32,8 @@ function activateStep(i, text) {
   var el = stepEls[i];
   el.classList.remove("opacity-40");
   el.classList.add("progress-active");
-  var icon = el.querySelector("span:first-child");
-  icon.textContent = "progress_activity";
-  icon.className = "material-symbols-outlined text-blue text-[20px] animate-spin-slow";
-  var label = el.querySelector("span:last-child");
+  el.firstElementChild.outerHTML = SPINNER_SVG;
+  var label = el.querySelector("span");
   if (text) label.textContent = text;
   label.className = "text-blue text-[14px] font-medium";
 }
