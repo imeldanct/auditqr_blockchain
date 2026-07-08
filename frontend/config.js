@@ -58,6 +58,25 @@ function getGpsLocation() {
   });
 }
 
+// On bfcache restore (browser back button), re-check auth for protected pages.
+// bfcache bypasses normal JS execution, so without this the page stays visible
+// even after logout or account deletion.
+(function () {
+  var PROTECTED = [
+    "dashboard.html", "products_list.html", "account_settings.html",
+    "scan_events.html", "create_product.html", "qr_ready.html",
+    "generate.html", "confirm_product.html",
+  ];
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted && !localStorage.getItem("auditqr_token")) {
+      var page = window.location.pathname.split("/").pop();
+      if (PROTECTED.indexOf(page) !== -1) {
+        window.location.replace("login.html");
+      }
+    }
+  });
+})();
+
 /**
  * Drop-in fetch wrapper.
  * - Injects Authorization header automatically.
