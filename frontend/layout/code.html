@@ -324,6 +324,7 @@
           const events = data.events || [];
           const genesisAt = data.genesisAt;
           const roleLabel = { transporter: "Transporter", retailer: "Retailer", unknown: "Unknown" };
+          const businessName = (data.product && data.product.businessName) || "Manufacturer";
 
           const genesisRow = `
             <div class="flex gap-4">
@@ -332,7 +333,7 @@
                 ${events.length > 0 ? '<div class="timeline-line"></div>' : ""}
               </div>
               <div class="pb-2">
-                <p class="text-white font-medium text-[14px]">Manufacturer</p>
+                <p class="text-white font-medium text-[14px]">${businessName}</p>
                 <p class="text-blue text-[12px] font-medium mt-0.5">QR codes generated</p>
                 <p class="text-muted text-[11px] mt-1">${fmt(genesisAt)}</p>
               </div>
@@ -346,8 +347,11 @@
               </div>
               <div class="pb-2">
                 <p class="text-white font-medium text-[14px]">${roleLabel[e.scannerRole] || e.scannerRole}</p>
-                <p class="text-blue text-[12px] font-medium mt-0.5">${e.scannerRole === "transporter" ? "Picked up" : "Handoff recorded"}</p>
+                <p class="text-blue text-[12px] font-medium mt-0.5">${e.scannerRole === "transporter" ? "Picked up" : "Received"}</p>
                 <p class="text-muted text-[11px] mt-1">${fmt(e.timestamp)}</p>
+                ${e.gpsLocation && e.gpsLocation !== "location-unavailable"
+                  ? `<p class="text-muted/60 text-[11px] mt-1">${e.gpsLocation}</p>`
+                  : ""}
               </div>
             </div>`).join("");
 

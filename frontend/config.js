@@ -25,11 +25,11 @@ const FRONTEND_BASE = "https://auditqr.site";
 /**
  * Request GPS location from the browser, then reverse-geocode to a human-readable
  * area name (e.g. "Ikeja, Lagos, Nigeria") via OpenStreetMap Nominatim.
- * Falls back to raw "lat,lng" if geocoding fails; returns null if location is denied.
+ * Falls back to raw "lat,lng" if geocoding fails; returns "location-unavailable" if denied.
  */
 function getGpsLocation() {
   return new Promise((resolve) => {
-    if (!navigator.geolocation) return resolve(null);
+    if (!navigator.geolocation) return resolve("location-unavailable");
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const lat = pos.coords.latitude;
@@ -52,7 +52,7 @@ function getGpsLocation() {
           resolve(lat.toFixed(6) + "," + lng.toFixed(6));
         }
       },
-      () => resolve(null),
+      () => resolve("location-unavailable"),
       { timeout: 8000, maximumAge: 60000 }
     );
   });
