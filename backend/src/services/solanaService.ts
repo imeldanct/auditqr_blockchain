@@ -25,7 +25,7 @@ export async function writeGenesisToChain(
   try {
     const keypair = getKeypair();
     const location = businessAddress ?? "address-unavailable";
-    const memo = `AuditQR|genesis|${parentQRID}|${productName}|${businessName}|${location}|${new Date().toISOString()}`;
+    const memo = `AuditQR|QR Generation|${parentQRID}|${productName}|${businessName}|${location}|${new Date().toISOString()}`;
     const tx = new Transaction().add(
       new TransactionInstruction({
         keys: [],

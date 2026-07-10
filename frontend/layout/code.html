@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../tailwind.css" />
     <script src="../config.js"></script>
     <script src="./toast.js"></script>
+    <script src="./mini-timeline.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -321,38 +322,8 @@
           const res = await fetch(API_BASE + "/api/scan/history/" + parentQRID);
           if (!res.ok) return;
           const data = await res.json();
-          const events = data.events || [];
-          const genesisAt = data.genesisAt;
-          const roleLabel = { transporter: "Transporter", retailer: "Retailer", unknown: "Unknown" };
-
-          const genesisRow = `
-            <div class="flex gap-4">
-              <div class="flex flex-col items-center">
-                <div class="w-[9px] h-[9px] rounded-full bg-blue mt-1.5"></div>
-                ${events.length > 0 ? '<div class="timeline-line"></div>' : ""}
-              </div>
-              <div class="pb-2">
-                <p class="text-white font-medium text-[14px]">Manufacturer</p>
-                <p class="text-blue text-[12px] font-medium mt-0.5">QR codes generated</p>
-                <p class="text-muted text-[11px] mt-1">${fmt(genesisAt)}</p>
-              </div>
-            </div>`;
-
-          const eventRows = events.map((e, i) => `
-            <div class="flex gap-4 ${i < events.length - 1 ? "mb-4" : ""}">
-              <div class="flex flex-col items-center">
-                <div class="w-[9px] h-[9px] rounded-full bg-blue mt-1.5"></div>
-                ${i < events.length - 1 ? '<div class="timeline-line"></div>' : ""}
-              </div>
-              <div class="pb-2">
-                <p class="text-white font-medium text-[14px]">${roleLabel[e.scannerRole] || e.scannerRole}</p>
-                <p class="text-blue text-[12px] font-medium mt-0.5">${e.scannerRole === "transporter" ? "Picked up" : "Handoff recorded"}</p>
-                <p class="text-muted text-[11px] mt-1">${fmt(e.timestamp)}</p>
-              </div>
-            </div>`).join("");
-
           const timeline = document.getElementById("code-timeline");
-          if (timeline) timeline.innerHTML = genesisRow + eventRows;
+          if (timeline) renderMiniTimeline(timeline, fmt, data);
         } catch (e) { /* non-fatal */ }
       }
 
