@@ -103,6 +103,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (countEl) countEl.textContent = data.quantity + " Items";
       var badge = document.getElementById("child-count-badge");
       if (badge) badge.textContent = data.quantity + " Items";
+      if (!data.quantity) {
+        var childSection = document.getElementById("child-qr-section");
+        if (childSection) childSection.classList.add("hidden");
+      }
 
       // Parent QR — preview at 180px, download at 512px
       _parentQRText = FRONTEND_BASE + "/layout/handoff.html?parentId=" + data.parentQRID;
