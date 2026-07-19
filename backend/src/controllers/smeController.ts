@@ -288,22 +288,39 @@ export const getStats = async (req: any, res: any): Promise<any> => {
   try {
     const smeID = req.sme.smeId;
     const childBase = { parentQR: { product: { smeID } } };
+    // A batch generated with quantity 0 has no ChildQRCode rows, so it would
+    // otherwise never appear in these counts. Count it as one unit instead,
+    // using the parent itself as a stand-in for its (nonexistent) children.
+    const childlessParentBase = { product: { smeID }, childQRs: { none: {} } };
 
-    const [productCount, childQRCount, pendingCount, inTransitCount, deliveredCount] =
-      await Promise.all([
-        prisma.product.count({ where: { smeID } }),
-        prisma.childQRCode.count({ where: childBase }),
-        prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "pending" } } }),
-        prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "transit" } } }),
-        prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "delivered" } } }),
-      ]);
+    const [
+      productCount,
+      childQRCount,
+      childlessParentCount,
+      pendingCount,
+      childlessPendingCount,
+      inTransitCount,
+      childlessTransitCount,
+      deliveredCount,
+      childlessDeliveredCount,
+    ] = await Promise.all([
+      prisma.product.count({ where: { smeID } }),
+      prisma.childQRCode.count({ where: childBase }),
+      prisma.parentQRCode.count({ where: childlessParentBase }),
+      prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "pending" } } }),
+      prisma.parentQRCode.count({ where: { ...childlessParentBase, currentStage: "pending" } }),
+      prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "transit" } } }),
+      prisma.parentQRCode.count({ where: { ...childlessParentBase, currentStage: "transit" } }),
+      prisma.childQRCode.count({ where: { parentQR: { product: { smeID }, currentStage: "delivered" } } }),
+      prisma.parentQRCode.count({ where: { ...childlessParentBase, currentStage: "delivered" } }),
+    ]);
 
     res.status(200).json({
       productCount,
-      childQRCount,
-      pendingCount,
-      inTransitCount,
-      deliveredCount,
+      childQRCount: childQRCount + childlessParentCount,
+      pendingCount: pendingCount + childlessPendingCount,
+      inTransitCount: inTransitCount + childlessTransitCount,
+      deliveredCount: deliveredCount + childlessDeliveredCount,
     });
   } catch (error) {
     console.error("Stats Error:", error);

@@ -95,8 +95,10 @@ export const getProducts = async (req: AuthRequest, res: Response): Promise<any>
     });
 
     const productsWithCount = products.map((p) => {
+      // A batch generated with quantity 0 has no ChildQRCode rows — count the
+      // parent itself as one unit instead of letting it disappear as 0.
       const childQRCount = p.parentQRs.reduce(
-        (sum, parent) => sum + parent._count.childQRs,
+        (sum, parent) => sum + (parent._count.childQRs || 1),
         0,
       );
       const parentQRID = p.parentQRs[0]?.parentQRID ?? null;
