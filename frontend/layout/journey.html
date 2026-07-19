@@ -154,7 +154,7 @@
         <div class="space-y-1">
           <span class="text-white font-medium">${businessName || "Manufacturer"}</span>
           <div class="text-xs font-body text-blue">QR codes generated</div>
-          ${businessAddress ? `<div class="text-muted/60 text-[11px]">${businessAddress}</div>` : ""}
+          ${businessAddress ? `<div class="text-muted text-[11px]">${businessAddress}</div>` : ""}
           <div class="text-muted text-[11px]">${formatDate(genesisAt)}</div>
           ${txRow}
         </div>
@@ -167,7 +167,7 @@
       ? "Picked up"
       : "Received";
     const locationRow = event.gpsLocation && event.gpsLocation !== "location-unavailable"
-      ? `<div class="text-muted/60 text-[11px]">${event.gpsLocation}</div>`
+      ? `<div class="text-muted text-[11px]">${event.gpsLocation}</div>`
       : "";
     const txRow = event.txHash
       ? `<div class="flex items-center gap-1.5 mt-1">

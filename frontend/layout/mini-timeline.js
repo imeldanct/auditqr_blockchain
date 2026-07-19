@@ -29,7 +29,7 @@ function buildMiniGenesisRow(fmt, genesisAt, genesisTxHash, businessName, busine
       '<div class="pb-2">' +
         '<p class="text-white font-medium text-[14px]">' + (businessName || "Manufacturer") + '</p>' +
         '<p class="text-blue text-[12px] font-medium mt-0.5">QR codes generated</p>' +
-        (businessAddress ? '<p class="text-muted/60 text-[11px] mt-0.5">' + businessAddress + '</p>' : '') +
+        (businessAddress ? '<p class="text-muted text-[11px] mt-0.5">' + businessAddress + '</p>' : '') +
         '<p class="text-muted text-[11px] mt-1">' + fmt(genesisAt) + '</p>' +
         miniTxRow(genesisTxHash) +
       '</div>' +
@@ -51,7 +51,7 @@ function buildMiniEventRow(fmt, event, isLast) {
         '<p class="text-white font-medium text-[14px]">' + label + '</p>' +
         '<p class="text-blue text-[12px] font-medium mt-0.5">' + actionLabel + '</p>' +
         '<p class="text-muted text-[11px] mt-1">' + fmt(event.timestamp) + '</p>' +
-        (location ? '<p class="text-muted/60 text-[11px] mt-0.5">' + location + '</p>' : '') +
+        (location ? '<p class="text-muted text-[11px] mt-0.5">' + location + '</p>' : '') +
         miniTxRow(event.txHash) +
       '</div>' +
     '</div>'
