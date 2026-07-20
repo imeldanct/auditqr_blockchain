@@ -5,6 +5,7 @@ import smeRoutes from "./routes/smeRoutes";
 import productRoutes from "./routes/productRoutes";
 import qrRoutes from "./routes/qrRoutes";
 import scanRoutes from "./routes/scanRoutes";
+import { retryPendingBlockchainWrites } from "./services/solanaService";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -23,6 +24,17 @@ app.get("/api/health", async (req, res) => {
     res
       .status(500)
       .json({ status: "error", database: "disconnected", error: String(error) });
+  }
+});
+
+// Pinged periodically by UptimeRobot (same as /api/health) to retry any
+// blockchain writes that failed even after the inline retries in solanaService.
+app.get("/api/internal/retry-blockchain-writes", async (req, res) => {
+  try {
+    const result = await retryPendingBlockchainWrites();
+    res.status(200).json({ status: "ok", ...result });
+  } catch (error) {
+    res.status(500).json({ status: "error", error: String(error) });
   }
 });
 

@@ -903,6 +903,40 @@ This handles the case cleanly without leaking whether the account exists — the
 
 ---
 
+#### Dashboard unit counts: childless parent batches
+
+**Problem:** A batch can be generated with `quantity: 0` — a parent-only batch with no individual item stickers (`generate.html` explicitly supports this, showing "No child QR codes (parent only)"). But `getStats()` and `getProducts()` only ever counted `ChildQRCode` rows. A batch with zero children had zero rows to count, so it never appeared in the dashboard's pending/in-transit/delivered totals or the products list's "Units" column — even though its `currentStage` was genuinely advancing through the supply chain underneath.
+
+**Options considered:**
+
+- **Never allow zero-child batches** — force `quantity >= 1` at generation time, removing the edge case entirely. Rejected: this is a real feature (some products don't need per-unit stickers, only a carton-level QR), and removing it to simplify a counting query would change actual product behavior to fix a display bug.
+- **Show childless batches as a separate metric** (e.g. "N batches with no individual units") instead of folding them into the existing counts. Keeps the numbers semantically clean, but adds a second set of stats to the dashboard for what is, from the SME's point of view, still just one batch moving through the same pipeline.
+- **Count the parent itself as one unit when it has no children** (chosen). When a `ParentQRCode` has no `ChildQRCode` rows, it is counted as 1 unit in whichever stage it currently occupies, on top of the normal child-row counts.
+
+**Why this one:** it keeps a single, consistent set of numbers on the dashboard and products list — the SME never needs to know or care that "units" sometimes means literal child stickers and sometimes means the batch standing in for itself. The batch is still one real thing moving through pending → transit → delivered; it should still be visible doing that.
+
+**Implementation:** `getStats()` (`smeController.ts`) and `getProducts()` (`productController.ts`) each add a childless-parent count (`ParentQRCode` rows with `childQRs: { none: {} } }`) on top of the existing child-row counts, per stage. This is a counting-logic change only — the underlying `ParentQRCode 1 — 0..* ChildQRCode` relationship is untouched; a batch with zero children is still a completely valid, real state in the schema.
+
+---
+
+#### Blockchain write retries
+
+**Problem:** `writeGenesisToChain` and `writeScanToChain` are fired in the background without `await`, specifically so a Solana outage never blocks a scan or QR generation — the SME's browser gets its response immediately regardless of whether the blockchain write succeeds. But the original implementation made a single attempt: if that one `sendAndConfirmTransaction` call failed for any reason — a brief RPC blip, momentary devnet congestion, the network conditions this project's own README already documents (Nigerian mobile hotspots blocking Devnet endpoints) — the write was gone permanently. Nothing retried it, nothing flagged it. `genesisTxHash` or `txHash` just stayed `null` forever. This is exactly what happened to a real batch during development (see the SME business address section above) — the record never got a genesis transaction, and nothing in the system would ever have noticed or recovered on its own.
+
+**The tradeoff being made, both before and after this fix, is the same:** availability over blockchain consistency. The SME's core workflow (generate QR codes, confirm a handoff) must never be held hostage to a third-party blockchain being slow or unreachable. That part of the design is correct and unchanged.
+
+**What was missing** was any attempt to *recover* from a failed write once the outage passed. A single silent failure is a reasonable cost for keeping the app available — but "silent and permanent" is not, given that an immutable blockchain audit trail is this product's actual value proposition, not a secondary feature.
+
+**Fix — two layers:**
+
+1. **Inline retry (`sendMemoWithRetry` in `solanaService.ts`).** Each write now attempts up to 3 times, 1 second apart, rebuilding the transaction fresh on each attempt (reusing one across retries risks sending a transaction with a stale blockhash). This catches the common case — a brief connectivity blip — without adding any new infrastructure, and still runs entirely in the background; it does not add latency to the SME's or scanner's response.
+
+2. **Periodic sweep (`retryPendingBlockchainWrites`, exposed at `GET /api/internal/retry-blockchain-writes`).** Catches anything that outlasts the inline retries — a validator down for minutes, a sustained network block. It queries for any `ParentQRCode`/`ScanEvent` row still missing its `genesisTxHash`/`txHash` and retries the write. Rather than standing up a dedicated scheduler, this reuses the UptimeRobot monitor already pinging `/api/health` every 5 minutes to keep Render awake — a second monitor on the same free account hits this endpoint on the same cadence, at zero additional cost or infrastructure.
+
+**Option not taken:** a dashboard button letting the SME manually retry a missing blockchain record. Rejected because it shifts the burden of noticing and fixing the failure onto a non-technical business owner, which cuts against this product's whole design principle of hiding blockchain mechanics from the SME entirely. With the two layers above in place, there is nothing left for a human to have to notice.
+
+---
+
 ## Blockchain Architecture (Solana)
 
 The target chain is **Solana** — chosen for low transaction fees and high throughput, which matters when writing a scan event per supply chain handoff.
