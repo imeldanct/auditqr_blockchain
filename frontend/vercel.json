@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/layout/landing.html" }
+    { "source": "/", "destination": "/layout/landing.html" },
+    { "source": "/:page.html", "destination": "/layout/:page.html" }
   ],
   "cleanUrls": false,
   "trailingSlash": false
