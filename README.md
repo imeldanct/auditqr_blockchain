@@ -937,6 +937,22 @@ This handles the case cleanly without leaking whether the account exists — the
 
 ---
 
+#### Email verification actually gates login (`emailVerified` flag)
+
+**Problem:** The intent was always that an SME must verify their email before accessing their account — register, verify, then use, the same pattern most apps follow. Nothing enforced this. The password is set immediately at registration (`create_account.html`), before the verification email is even sent, and neither `loginSME` nor the auth middleware ever checked whether the magic link had been clicked. An SME could register and log straight into the dashboard without ever opening their inbox.
+
+**Options considered:**
+
+- **Remove the password from registration entirely**, so no credential exists until the magic link is clicked, making verification structurally unavoidable rather than checked for. Rejected: touches the registration frontend, `registerSME`, `loginSME`, and `updatePassword` all at once — real surgery for a benefit a much smaller fix already delivers.
+- **Derive verification status from `AuthToken`** by querying for a used `magic_link` token on every login. Works, but is an indirect signal — verification status lives as a side effect of a different table's row state — and costs an extra join on every login attempt.
+- **An explicit `emailVerified` boolean on SME** (chosen), set the moment `verifyMagicLink` succeeds, checked directly in `loginSME` before a JWT is issued.
+
+**Why this one:** it's the standard pattern most apps use for exactly this problem — a single cheap field check rather than a join — and it doesn't depend on `AuthToken` rows surviving indefinitely, since verification status now lives directly on the SME record. Once the flag existed, the registration idempotency check (which previously re-derived "has this account ever verified" from `AuthToken.usedAt`) was simplified to read `existingSME.emailVerified` directly, removing a redundant query and a second source of truth for the same fact.
+
+**Why this doesn't strand anyone with an expired link:** the existing registration-idempotency logic already provides self-service recovery — resubmitting the registration form with the same email is recognized as an incomplete, unverified account, and a fresh 24-hour link is issued automatically rather than the attempt being rejected as a duplicate. This behaviour is unchanged by the new gate; the two checks operate on different steps (registration vs. login) and never conflict.
+
+---
+
 ## Blockchain Architecture (Solana)
 
 The target chain is **Solana** — chosen for low transaction fees and high throughput, which matters when writing a scan event per supply chain handoff.

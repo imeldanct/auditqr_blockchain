@@ -50,12 +50,7 @@ export const registerSME = async (req: Request, res: Response): Promise<any> => 
     });
 
     if (existingSME) {
-      // Check if they've ever logged in via a magic link (i.e., account is active)
-      const hasLoggedIn = await prisma.authToken.findFirst({
-        where: { smeID: existingSME.smeID, type: "magic_link", usedAt: { not: null } },
-      });
-
-      if (hasLoggedIn) {
+      if (existingSME.emailVerified) {
         return res.status(400).json({ error: "An account with this email already exists. Please log in." });
       }
 
@@ -136,6 +131,7 @@ export const verifyMagicLink = async (req: Request, res: Response): Promise<any>
     }
 
     await prisma.authToken.update({ where: { id: authToken.id }, data: { usedAt: new Date() } });
+    await prisma.sME.update({ where: { smeID: authToken.smeID }, data: { emailVerified: true } });
 
     const secretKey = process.env.JWT_SECRET!;
     const jwt_token = jwt.sign(
@@ -226,6 +222,10 @@ export const loginSME = async (req: Request, res: Response): Promise<any> => {
     const isPasswordValid = await bcrypt.compare(password, sme.passwordHash);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Incorrect password." });
+    }
+
+    if (!sme.emailVerified) {
+      return res.status(403).json({ error: "Please verify your email before logging in. Check your inbox for the verification link." });
     }
 
     const secretKey = process.env.JWT_SECRET || "super_secret_auditqr_key_2026";
