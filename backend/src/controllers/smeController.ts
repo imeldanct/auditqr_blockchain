@@ -60,7 +60,7 @@ export const registerSME = async (req: Request, res: Response): Promise<any> => 
       await prisma.authToken.create({
         data: { smeID: existingSME.smeID, token, type: "magic_link", expiresAt },
       });
-      const magicLink = `${FRONTEND_BASE}/layout/magic_login.html?token=${token}`;
+      const magicLink = `${FRONTEND_BASE}/magic_login.html?token=${token}`;
       sendMagicLinkEmail(existingSME.email, existingSME.businessName, magicLink).catch((err) =>
         console.error("Magic link resend failed:", err)
       );
@@ -97,7 +97,7 @@ export const registerSME = async (req: Request, res: Response): Promise<any> => 
       data: { smeID: newSME.smeID, token, type: "magic_link", expiresAt },
     });
 
-    const magicLink = `${FRONTEND_BASE}/layout/magic_login.html?token=${token}`;
+    const magicLink = `${FRONTEND_BASE}/magic_login.html?token=${token}`;
     sendMagicLinkEmail(email, businessName, magicLink).catch((err) =>
       console.error("Magic link email failed:", err)
     );
@@ -165,7 +165,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<any> 
       data: { smeID: sme.smeID, token, type: "password_reset", expiresAt },
     });
 
-    const resetLink = `${FRONTEND_BASE}/layout/reset_password.html?token=${token}`;
+    const resetLink = `${FRONTEND_BASE}/reset_password.html?token=${token}`;
     sendPasswordResetEmail(email, sme.businessName, resetLink).catch((err) =>
       console.error("Reset email failed:", err)
     );

@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Parent QR — preview at 180px, download at 512px
-      _parentQRText = FRONTEND_BASE + "/layout/handoff.html?parentId=" + data.parentQRID;
+      _parentQRText = FRONTEND_BASE + "/handoff.html?parentId=" + data.parentQRID;
       makeQRDataURL(_parentQRText, 180, function (url) {
         _parentDataURL = url;
         var img = document.getElementById("parent-qr-img");
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!grid) return;
       grid.innerHTML = "";
       _childQRs.forEach(function (child) {
-        var childQRText = FRONTEND_BASE + "/layout/journey.html?childId=" + child.childQRID;
+        var childQRText = FRONTEND_BASE + "/journey.html?childId=" + child.childQRID;
         makeQRDataURL(childQRText, 90, function (url) {
           var wrapper = document.createElement("div");
           wrapper.className =
@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Generate all QR images in parallel
         var promises = _childQRs.map(function (child, idx) {
           return new Promise(function (resolve) {
-            var childQRText = FRONTEND_BASE + "/layout/journey.html?childId=" + child.childQRID;
+            var childQRText = FRONTEND_BASE + "/journey.html?childId=" + child.childQRID;
             makeQRDataURL(childQRText, 300, function (url) {
               if (url) {
                 // strip data:image/png;base64, prefix
