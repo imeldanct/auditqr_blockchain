@@ -20,6 +20,23 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
+  // Live character counters
+  function wireCounter(inputId, counterId, max) {
+    var el = document.getElementById(inputId);
+    var counter = document.getElementById(counterId);
+    if (!el || !counter) return;
+    function update() {
+      var len = el.value.length;
+      counter.textContent = len + "/" + max;
+      counter.classList.toggle("text-danger", len >= max);
+    }
+    el.addEventListener("input", update);
+    update();
+  }
+  wireCounter("product-name", "product-name-counter", 150);
+  wireCounter("product-description", "product-description-counter", 500);
+  wireCounter("category", "category-counter", 50);
+
   var btn = document.getElementById("confirm-details-btn");
   if (!btn) { return; }
 
@@ -39,6 +56,10 @@ document.addEventListener("DOMContentLoaded", function() {
       showToast("Please enter a product name.", "error");
       return;
     }
+    if (productName.length < 3) {
+      showToast("Product name must be at least 3 characters.", "error");
+      return;
+    }
 
     var qtyEl = document.getElementById("items-per-carton");
     var qtyRaw = qtyEl ? qtyEl.value : "";
@@ -55,10 +76,19 @@ document.addEventListener("DOMContentLoaded", function() {
     var expEl  = document.getElementById("exp-date");
 
     var desc = descEl ? descEl.value.trim() : "";
-    var cat  = catEl  ? catEl.value         : "";
+    var cat  = catEl  ? catEl.value.trim()  : "";
     var wt   = wtEl   ? wtEl.value          : "";
     var mfg  = mfgEl  ? mfgEl.value         : "";
     var exp  = expEl  ? expEl.value         : "";
+
+    if (desc.length < 10) {
+      showToast("Description must be at least 10 characters.", "error");
+      return;
+    }
+    if (cat && cat.length < 4) {
+      showToast("Category must be at least 4 characters.", "error");
+      return;
+    }
 
     var expErrEl = document.getElementById("exp-date-error");
     if (mfg && exp && new Date(exp) < new Date(mfg)) {

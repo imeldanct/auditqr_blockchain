@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import { lookupCAC, LookupResult } from "../services/cacService";
 import { sendMagicLinkEmail, sendPasswordResetEmail } from "../services/emailService";
+import { isValidLength, isValidEmail, isValidRcNumber, isValidPassword } from "../utils/validation";
 
 const FRONTEND_BASE = process.env.FRONTEND_BASE || "http://127.0.0.1:5500/auditqr_blockchain/frontend";
 
@@ -17,6 +18,18 @@ export const verifyCACEndpoint = async (req: Request, res: Response): Promise<an
     return res.status(400).json({
       error: "Business name and RC Number are required.",
       field: null,
+    });
+  }
+  if (!isValidLength(businessName, 3, 150)) {
+    return res.status(400).json({
+      error: "Business name must be between 3 and 150 characters.",
+      field: "businessName",
+    });
+  }
+  if (!isValidRcNumber(rcNumber)) {
+    return res.status(400).json({
+      error: "RC Number must be in the format RC-123456.",
+      field: "rcNumber",
     });
   }
 
@@ -43,6 +56,22 @@ export const verifyCACEndpoint = async (req: Request, res: Response): Promise<an
 
 export const registerSME = async (req: Request, res: Response): Promise<any> => {
   const { businessName, rcNumber, email, password } = req.body;
+
+  if (!businessName || !rcNumber || !email || !password) {
+    return res.status(400).json({ error: "All fields are required." });
+  }
+  if (!isValidLength(businessName, 3, 150)) {
+    return res.status(400).json({ error: "Business name must be between 3 and 150 characters." });
+  }
+  if (!isValidRcNumber(rcNumber)) {
+    return res.status(400).json({ error: "RC Number must be in the format RC-123456." });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: "Please enter a valid email address." });
+  }
+  if (!isValidPassword(password)) {
+    return res.status(400).json({ error: "Password must be between 8 and 72 characters." });
+  }
 
   try {
     const existingSME = await prisma.sME.findFirst({
@@ -183,8 +212,8 @@ export const resetPassword = async (req: Request, res: Response): Promise<any> =
   if (!token || !newPassword) {
     return res.status(400).json({ error: "Token and new password are required." });
   }
-  if (newPassword.length < 8) {
-    return res.status(400).json({ error: "Password must be at least 8 characters." });
+  if (!isValidPassword(newPassword)) {
+    return res.status(400).json({ error: "Password must be between 8 and 72 characters." });
   }
 
   try {
@@ -369,6 +398,12 @@ export const updateProfile = async (req: any, res: any): Promise<any> => {
   if (!businessName && !email) {
     return res.status(400).json({ error: "Nothing to update." });
   }
+  if (businessName && !isValidLength(businessName, 3, 150)) {
+    return res.status(400).json({ error: "Business name must be between 3 and 150 characters.", field: "businessName" });
+  }
+  if (email && !isValidEmail(email)) {
+    return res.status(400).json({ error: "Please enter a valid email address.", field: "email" });
+  }
 
   try {
     if (email) {
@@ -402,8 +437,8 @@ export const updatePassword = async (req: any, res: any): Promise<any> => {
   if (!currentPassword || !newPassword) {
     return res.status(400).json({ error: "Current password and new password are required." });
   }
-  if (newPassword.length < 8) {
-    return res.status(400).json({ error: "New password must be at least 8 characters." });
+  if (!isValidPassword(newPassword)) {
+    return res.status(400).json({ error: "New password must be between 8 and 72 characters." });
   }
 
   try {

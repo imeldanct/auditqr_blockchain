@@ -27,7 +27,21 @@ function startEditProfile() {
   document.getElementById("profile-display").classList.add("hidden");
   document.getElementById("profile-edit").classList.remove("hidden");
   document.getElementById("edit-profile-btn").classList.add("hidden");
+  updateBusinessNameCounter();
 }
+
+function updateBusinessNameCounter() {
+  var el = document.getElementById("business-name");
+  var counter = document.getElementById("business-name-counter");
+  if (!el || !counter) return;
+  var len = el.value.length;
+  counter.textContent = len + "/150";
+  counter.classList.toggle("text-danger", len >= 150);
+}
+(function () {
+  var el = document.getElementById("business-name");
+  if (el) el.addEventListener("input", updateBusinessNameCounter);
+})();
 function cancelEditProfile() {
   document.getElementById("profile-display").classList.remove("hidden");
   document.getElementById("profile-edit").classList.add("hidden");
@@ -40,6 +54,14 @@ async function saveProfile() {
   var email = document.getElementById("email").value.trim();
   if (!businessName || !email) {
     showToast("Business name and email cannot be empty.", "error");
+    return;
+  }
+  if (businessName.length < 3) {
+    showToast("Business name must be at least 3 characters.", "error");
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast("Please enter a valid email address.", "error");
     return;
   }
   btn.disabled = true;
@@ -80,6 +102,10 @@ async function savePassword() {
   }
   if (newPassword.length < 8) {
     showToast("New password must be at least 8 characters.", "error");
+    return;
+  }
+  if (newPassword.length > 72) {
+    showToast("New password must be under 72 characters.", "error");
     return;
   }
   if (newPassword !== confirmPassword) {

@@ -140,7 +140,9 @@
                   placeholder="e.g. Premium Cassava Flour"
                   type="text"
                   id="product-name"
+                  maxlength="150"
                 />
+                <p class="text-[11px] text-muted mt-1 text-right" id="product-name-counter">0/150</p>
               </div>
 
               <!-- Product Description -->
@@ -153,7 +155,9 @@
                   placeholder="Briefly describe the product, its qualities, and any handling instructions..."
                   rows="4"
                   id="product-description"
+                  maxlength="500"
                 ></textarea>
+                <p class="text-[11px] text-muted mt-1 text-right" id="product-description-counter">0/500</p>
               </div>
 
               <!-- PARENT / CHILD QR CONFIGURATION -->
@@ -214,7 +218,9 @@
                     placeholder="e.g. Processed Food, Textiles..."
                     type="text"
                     id="category"
+                    maxlength="50"
                   />
+                  <p class="text-[11px] text-muted mt-1 text-right" id="category-counter">0/50</p>
                 </div>
                 <div class="space-y-2">
                   <label class="form-label" for="unit-weight">Unit Weight (KG)</label>

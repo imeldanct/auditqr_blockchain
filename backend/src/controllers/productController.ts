@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { isValidLength } from "../utils/validation";
 
 const prisma = new PrismaClient();
 
@@ -17,6 +18,16 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
     mfgDate?: string;
     expDate?: string;
   };
+
+  if (!productName || !isValidLength(productName, 3, 150)) {
+    return res.status(400).json({ error: "Product name must be between 3 and 150 characters." });
+  }
+  if (!description || !isValidLength(description, 10, 500)) {
+    return res.status(400).json({ error: "Description must be between 10 and 500 characters." });
+  }
+  if (category && !isValidLength(category, 4, 50)) {
+    return res.status(400).json({ error: "Category must be between 4 and 50 characters." });
+  }
 
   try {
     const product = await prisma.product.create({

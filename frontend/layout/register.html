@@ -108,16 +108,20 @@
                 type="text"
                 placeholder="e.g. Gbagada Logistics & Supply Ltd"
                 id="business-name"
+                maxlength="150"
               />
+              <p class="text-[11px] text-muted mt-1 text-right" id="business-name-counter">0/150</p>
             </div>
             <div>
               <label class="form-label" for="rc-number">RC Number</label>
               <input
                 class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white font-mono placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors"
                 type="text"
-                placeholder="e.g. RC-1293840"
+                placeholder="e.g. RC-129384"
                 id="rc-number"
+                maxlength="10"
               />
+              <p class="text-[11px] text-muted mt-1">Format: RC-123456</p>
             </div>
             <div>
               <label class="form-label" for="business-type">Business Type</label>
@@ -220,6 +224,17 @@
         registeredAddress: "registered-address",
       };
 
+      // Live character counter for business name
+      const businessNameInput = document.getElementById("business-name");
+      const businessNameCounter = document.getElementById("business-name-counter");
+      businessNameInput.addEventListener("input", () => {
+        const len = businessNameInput.value.length;
+        businessNameCounter.textContent = len + "/150";
+        businessNameCounter.classList.toggle("text-danger", len >= 150);
+      });
+
+      const RC_NUMBER_PATTERN = /^RC-\d{6}$/;
+
       function clearFieldErrors() {
         document.querySelectorAll(".field-error-msg").forEach((el) => el.remove());
         document.querySelectorAll(".field-error-border").forEach((el) => {
@@ -269,6 +284,14 @@
             !rcNumber ? "rcNumber" : "businessName",
             "This field is required.",
           );
+          return;
+        }
+        if (businessName.length < 3) {
+          showFieldError("businessName", "Business name must be at least 3 characters.");
+          return;
+        }
+        if (!RC_NUMBER_PATTERN.test(rcNumber)) {
+          showFieldError("rcNumber", "RC Number must be in the format RC-123456.");
           return;
         }
 

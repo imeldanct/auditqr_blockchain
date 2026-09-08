@@ -12,15 +12,15 @@ datasource db {
 }
 
 model SME {
-  smeID           String   @id @default(uuid())
-  businessName    String
-  rcNumber        String   @unique
-  email           String   @unique
-  passwordHash    String
+  smeID           String   @id @default(uuid()) @db.VarChar(36)
+  businessName    String   @db.VarChar(150)
+  rcNumber        String   @unique @db.VarChar(10)
+  email           String   @unique @db.VarChar(255)
+  passwordHash    String   @db.VarChar(60)
   isVerified      Boolean  @default(false)
   emailVerified   Boolean  @default(false)
-  businessAddress String?
-  businessState   String?
+  businessAddress String?  @db.VarChar(255)
+  businessState   String?  @db.VarChar(50)
   createdAt       DateTime @default(now())
 
   products     Product[]
@@ -28,11 +28,11 @@ model SME {
 }
 
 model Product {
-  productID   String    @id @default(uuid())
-  smeID       String
-  productName String
+  productID   String    @id @default(uuid()) @db.VarChar(36)
+  smeID       String    @db.VarChar(36)
+  productName String    @db.VarChar(150)
   description String
-  category    String?
+  category    String?   @db.VarChar(50)
   weight      Float?
   mfgDate     DateTime?
   expDate     DateTime?
@@ -43,11 +43,11 @@ model Product {
 }
 
 model ParentQRCode {
-  parentQRID    String   @id @default(uuid())
-  productID     String
-  qrData        String
+  parentQRID    String   @id @default(uuid()) @db.VarChar(36)
+  productID     String   @db.VarChar(36)
+  qrData        String   @db.VarChar(70)
   currentStage  QRStage  @default(pending)
-  genesisTxHash String?
+  genesisTxHash String?  @db.VarChar(88)
   createdAt     DateTime @default(now())
 
   product      Product      @relation(fields: [productID], references: [productID], onDelete: Cascade)
@@ -62,31 +62,31 @@ enum QRStage {
 }
 
 model ChildQRCode {
-  childQRID  String   @id @default(uuid())
-  parentQRID String
+  childQRID  String   @id @default(uuid()) @db.VarChar(36)
+  parentQRID String   @db.VarChar(36)
   itemNumber Int
-  qrData     String
+  qrData     String   @db.VarChar(70)
   createdAt  DateTime @default(now())
 
   parentQR   ParentQRCode @relation(fields: [parentQRID], references: [parentQRID], onDelete: Cascade)
 }
 
 model ScanEvent {
-  scanID      String   @id @default(uuid())
-  parentQRID  String
-  scannerRole String
-  gpsLocation String?
+  scanID      String   @id @default(uuid()) @db.VarChar(36)
+  parentQRID  String   @db.VarChar(36)
+  scannerRole String   @db.VarChar(20)
+  gpsLocation String?  @db.VarChar(150)
   timestamp   DateTime @default(now())
-  txHash      String?
+  txHash      String?  @db.VarChar(88)
 
   parentQR    ParentQRCode @relation(fields: [parentQRID], references: [parentQRID], onDelete: Cascade)
   handoffCode HandoffCode?
 }
 
 model HandoffCode {
-  codeID    String   @id @default(uuid())
-  scanID    String   @unique
-  codeValue String
+  codeID    String   @id @default(uuid()) @db.VarChar(36)
+  scanID    String   @unique @db.VarChar(36)
+  codeValue String   @db.VarChar(4)
   isUsed    Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -94,9 +94,9 @@ model HandoffCode {
 }
 
 model AuthToken {
-  id        String    @id @default(uuid())
-  smeID     String
-  token     String    @unique
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  smeID     String    @db.VarChar(36)
+  token     String    @unique @db.VarChar(36)
   type      TokenType
   expiresAt DateTime
   usedAt    DateTime?
