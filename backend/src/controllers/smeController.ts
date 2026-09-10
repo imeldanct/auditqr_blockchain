@@ -115,8 +115,8 @@ export const registerSME = async (req: Request, res: Response): Promise<any> => 
         email,
         passwordHash,
         isVerified: true,
-        businessAddress: verificationResult.cacDetails.registeredAddress ?? null,
-        businessState: verificationResult.cacDetails.state ?? null,
+        businessAddress: verificationResult.cacDetails.registeredAddress,
+        businessState: verificationResult.cacDetails.state,
       },
     });
 

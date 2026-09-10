@@ -60,6 +60,17 @@ export async function lookupCAC(
     };
   }
 
+  // A verified SME must have complete registered-location details. Reject an
+  // incomplete CAC response rather than creating an SME with missing data.
+  if (!record.registeredAddress?.trim() || !record.state?.trim()) {
+    return {
+      found: false,
+      field: null,
+      error:
+        "The CAC record is missing a registered address or state and cannot be used for verification.",
+    };
+  }
+
   const inputName = businessName.trim().toUpperCase();
   const cacName = record.businessName.trim().toUpperCase();
   if (inputName !== cacName && !cacName.includes(inputName)) {

@@ -19,8 +19,8 @@ model SME {
   passwordHash    String   @db.VarChar(60)
   isVerified      Boolean  @default(false)
   emailVerified   Boolean  @default(false)
-  businessAddress String?  @db.VarChar(255)
-  businessState   String?  @db.VarChar(50)
+  businessAddress String   @db.VarChar(255)
+  businessState   String   @db.VarChar(50)
   createdAt       DateTime @default(now())
 
   products     Product[]
