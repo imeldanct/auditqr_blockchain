@@ -212,24 +212,27 @@
               <!-- Category & Weight -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-2">
-                  <label class="form-label" for="category">Category</label>
+                  <label class="form-label" for="category">Category <span aria-hidden="true">*</span></label>
                   <input
                     class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
                     placeholder="e.g. Processed Food, Textiles..."
                     type="text"
                     id="category"
                     maxlength="50"
+                    required
                   />
                   <p class="text-[11px] text-muted mt-1 text-right" id="category-counter">0/50</p>
                 </div>
                 <div class="space-y-2">
-                  <label class="form-label" for="unit-weight">Unit Weight (KG)</label>
+                  <label class="form-label" for="unit-weight">Unit Weight (KG) <span aria-hidden="true">*</span></label>
                   <input
                     class="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-[14px] text-white placeholder-muted/50 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/30 transition-colors font-body"
                     placeholder="0.00"
                     step="0.01"
                     type="number"
                     id="unit-weight"
+                    min="0.01"
+                    required
                     onwheel="this.blur()"
                   />
                 </div>

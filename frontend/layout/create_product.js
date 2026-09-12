@@ -85,8 +85,15 @@ document.addEventListener("DOMContentLoaded", function() {
       showToast("Description must be at least 10 characters.", "error");
       return;
     }
-    if (cat && cat.length < 4) {
-      showToast("Category must be at least 4 characters.", "error");
+    if (cat.length < 4) {
+      showToast("Category must be between 4 and 50 characters.", "error");
+      if (catEl) catEl.focus();
+      return;
+    }
+    var parsedWeight = Number(wt);
+    if (!wt || !Number.isFinite(parsedWeight) || parsedWeight <= 0) {
+      showToast("Enter a unit weight greater than 0 kg.", "error");
+      if (wtEl) wtEl.focus();
       return;
     }
 

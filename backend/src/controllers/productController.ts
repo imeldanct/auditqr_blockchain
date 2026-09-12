@@ -13,8 +13,8 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
   const { productName, description, category, weight, mfgDate, expDate } = req.body as {
     productName: string;
     description: string;
-    category?: string;
-    weight?: number | string;
+    category: string;
+    weight: number | string;
     mfgDate?: string;
     expDate?: string;
   };
@@ -25,8 +25,12 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
   if (!description || !isValidLength(description, 10, 500)) {
     return res.status(400).json({ error: "Description must be between 10 and 500 characters." });
   }
-  if (category && !isValidLength(category, 4, 50)) {
+  if (!category || !isValidLength(category, 4, 50)) {
     return res.status(400).json({ error: "Category must be between 4 and 50 characters." });
+  }
+  const parsedWeight = parseFloat(String(weight));
+  if (weight === undefined || weight === null || weight === "" || !Number.isFinite(parsedWeight) || parsedWeight <= 0) {
+    return res.status(400).json({ error: "Unit weight must be a number greater than 0 kg." });
   }
 
   try {
@@ -35,8 +39,8 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
         smeID: req.sme.smeId,
         productName,
         description,
-        category: category || null,
-        weight: weight != null && weight !== "" ? parseFloat(String(weight)) : null,
+        category,
+        weight: parsedWeight,
         mfgDate: mfgDate ? new Date(mfgDate) : null,
         expDate: expDate ? new Date(expDate) : null,
       },
