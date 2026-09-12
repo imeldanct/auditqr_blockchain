@@ -128,10 +128,10 @@ Every product must have a category and a positive unit weight in kilograms. This
 |-------|------|-------------|---------|
 | `category` | `String` | Required | Classifies the product. |
 | `weight` | `Float` | Required; must be greater than 0 | Unit weight in kg, displayed to supply-chain participants. |
-| `mfgDate` | `DateTime?` | Optional | Manufacture date, where applicable. |
+| `mfgDate` | `DateTime` | Required | Manufacture date for the product. |
 | `expDate` | `DateTime?` | Optional | Expiry date, where applicable; it must be after the manufacture date when both dates are supplied. |
 
-Manufacture and expiry dates remain nullable because some products, such as durable plastic goods, do not have an expiry date. The `productPayload` helper in `scanController.ts` includes these optional values in scan responses so the frontend can show them only when supplied.
+The manufacture date is required for every product. The expiry date remains nullable because some products, such as durable plastic goods, do not have one. The `productPayload` helper in `scanController.ts` includes these values in scan responses.
 
 ---
 
@@ -560,7 +560,7 @@ Documents how each sprint was built and what files were touched. Sprint 5 includ
 
 **How it was achieved:**
 
-1. Created `backend/src/controllers/productController.ts` — `createProduct`, `getProducts`, `deleteProduct` endpoints. Product has optional fields: `weight`, `mfgDate`, `expDate`.
+1. Created `backend/src/controllers/productController.ts` — `createProduct`, `getProducts`, `deleteProduct` endpoints. Product details include weight, manufacture date, and an optional expiry date.
 2. Created `backend/src/controllers/qrController.ts` — `generateQR` endpoint. Takes a `quantity`, creates one `ParentQRCode` row and N `ChildQRCode` rows via `createMany`. The QR download page (`qr_ready.js`) uses the returned IDs and `FRONTEND_BASE` to render HTTPS URLs: Parent QRs open `handoff.html?parentId=<uuid>` and Child QRs open `journey.html?childId=<uuid>`.
 3. Frontend pages built: `create_product.html` (form with validation — expiry must be after manufacture date), `qr_ready.html` (shows parent QR + all child QRs, downloads child QRs as a single ZIP using JSZip).
 

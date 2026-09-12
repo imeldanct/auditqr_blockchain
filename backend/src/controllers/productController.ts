@@ -32,6 +32,15 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
   if (weight === undefined || weight === null || weight === "" || !Number.isFinite(parsedWeight) || parsedWeight <= 0) {
     return res.status(400).json({ error: "Unit weight must be a number greater than 0 kg." });
   }
+  if (!mfgDate || Number.isNaN(new Date(mfgDate).getTime())) {
+    return res.status(400).json({ error: "A valid manufacture date is required." });
+  }
+  if (expDate && Number.isNaN(new Date(expDate).getTime())) {
+    return res.status(400).json({ error: "Expiry date must be a valid date." });
+  }
+  if (expDate && new Date(expDate) < new Date(mfgDate)) {
+    return res.status(400).json({ error: "Expiry date must be after the manufacture date." });
+  }
 
   try {
     const product = await prisma.product.create({
@@ -41,7 +50,7 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<an
         description,
         category,
         weight: parsedWeight,
-        mfgDate: mfgDate ? new Date(mfgDate) : null,
+        mfgDate: new Date(mfgDate),
         expDate: expDate ? new Date(expDate) : null,
       },
     });

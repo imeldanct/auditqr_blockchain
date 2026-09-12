@@ -96,6 +96,11 @@ document.addEventListener("DOMContentLoaded", function() {
       if (wtEl) wtEl.focus();
       return;
     }
+    if (!mfg) {
+      showToast("Please enter the manufacture date.", "error");
+      if (mfgEl) mfgEl.focus();
+      return;
+    }
 
     var expErrEl = document.getElementById("exp-date-error");
     if (mfg && exp && new Date(exp) < new Date(mfg)) {
