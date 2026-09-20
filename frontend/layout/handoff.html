@@ -307,10 +307,8 @@
             document.getElementById("product-mfg-date").textContent = mfgFmt;
             document.getElementById("product-mfg-date-row").classList.remove("hidden");
           }
-          if (expFmt) {
-            document.getElementById("product-exp-date").textContent = expFmt;
-            document.getElementById("product-exp-date-row").classList.remove("hidden");
-          }
+          document.getElementById("product-exp-date").textContent = expFmt || "Non-perishable";
+          document.getElementById("product-exp-date-row").classList.remove("hidden");
 
           loadJourney();
         } catch (err) {

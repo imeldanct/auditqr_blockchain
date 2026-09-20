@@ -31,6 +31,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function fmtExpiryDate(d) {
+    return d ? fmtDate(d) : "Non-perishable";
+  }
+
   function setText(id, value) {
     var el = document.getElementById(id);
     if (el) el.textContent = value;
@@ -40,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setText("confirm-category", category || "\u2014");
   setText("confirm-weight", weight ? weight + " KG" : "\u2014");
   setText("confirm-mfg-date", fmtDate(mfgDate));
-  setText("confirm-exp-date", fmtDate(expDate));
+  setText("confirm-exp-date", fmtExpiryDate(expDate));
   setText("confirm-description", description || "No description provided.");
   setText("confirm-child-count", String(childCount));
 
