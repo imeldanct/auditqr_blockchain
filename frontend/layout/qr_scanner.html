@@ -441,8 +441,12 @@
           // Android Chrome can decode with its native detector more reliably than
           // a canvas frame, especially in low light or when the QR is small.
           if (nativeDetector) {
-            var detectedCodes = await nativeDetector.detect(videoEl);
-            if (detectedCodes.length) rawValue = detectedCodes[0].rawValue;
+            try {
+              var detectedCodes = await nativeDetector.detect(videoEl);
+              if (detectedCodes.length) rawValue = detectedCodes[0].rawValue;
+            } catch (e) {
+              nativeDetector = null;
+            }
           }
 
           // Keep jsQR as a cross-browser fallback. The higher resolution preserves
