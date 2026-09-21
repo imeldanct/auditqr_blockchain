@@ -11,7 +11,7 @@
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#3185FC" />
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="../vendor/jsQR.js"></script>
     <script src="../config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -489,6 +489,11 @@
       async function startCamera() {
         fallback.style.display = 'none';
         hideStatus();
+        if (typeof window.jsQR !== 'function') {
+          fallback.style.display = 'flex';
+          showStatus('Scanner decoder could not load. Refresh and try again.');
+          return;
+        }
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },

@@ -506,7 +506,7 @@ A separate but related question came up: since there's a maximum, should there a
 - **Blockchain**: Transaction hashes stored against scan events (`txHash` field on `ScanEvent`)
 - **Auth**: JWT stored in `localStorage` as `auditqr_token`; `apiFetch()` helper attaches token to all API calls
 - **QR Generator**: `qrcodejs` from cdnjs — generates QR code images on the client
-- **QR Scanner**: `jsQR 1.4.0` from cdnjs — decodes QR codes from camera frames in `qr_scanner.html`
+- **QR Scanner**: `jsQR 1.4.0`, bundled locally in `frontend/vendor/jsQR.js` — decodes QR codes from camera frames in `qr_scanner.html` without relying on an external CDN at scan time
 - **ZIP Library**: `JSZip` from cdnjs — used for client-side ZIP generation on the QR download page
 - **Icon Font**: `material-symbols` npm package (self-hosted) — the `.woff2` variable font file is copied from `node_modules/material-symbols/` into `frontend/fonts/material-symbols-outlined.woff2` and referenced via `@font-face` in `design-tokens.css`; no CDN dependency at runtime. The copy step is necessary because `node_modules/` is not served as a web path by Live Server or Outray tunnels
 - **Skeleton loading states**: all pages that fetch data on load show a shimmer placeholder animation while the API request is in flight. The `.skeleton` utility class is defined in `design-tokens.css`. Setting `textContent` or `innerHTML` on the element automatically clears the skeleton and shows real data once it arrives. This was extended to `handoff.html` (transporter page) and `code.html` (retailer code-entry page) after the initial "—" dash placeholder was identified as poor UX — a blank dash gives no visual feedback that content is actually loading, whereas a skeleton shimmer communicates that the page is working
@@ -523,6 +523,10 @@ A separate but related question came up: since there's a maximum, should there a
 - The SME dashboard shows **Units** (total child QRs) per product, not batches; stage counts reflect how many units belong to a batch at each stage
 
 Both QR types encode real HTTPS URLs so that a native phone camera can open them without a dedicated app. The AuditQR scanner (`qr_scanner.html`) accepts both types: a Child QR opens `journey.html` with no API write, while a Parent QR opens `handoff.html` and follows the stage-based handoff flow.
+
+### Scanner reliability
+
+The website scanner reads camera frames with the locally bundled `jsQR` decoder (`frontend/vendor/jsQR.js`). The decoder is stored in the project rather than loaded from a third-party CDN when the scan page opens. This prevents a network, content-blocking, or CDN-loading failure from leaving the camera preview visible while no QR decoder is available. Before the camera starts, `qr_scanner.html` also checks that the decoder loaded and displays an error instead of silently continuing if it is unavailable.
 
 ### Why Child QRs are read-only
 
