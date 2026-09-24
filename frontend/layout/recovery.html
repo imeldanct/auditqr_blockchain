@@ -89,10 +89,10 @@
 
         <section id="results" class="hidden">
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-            <article class="bg-surface border border-outline-variant/30 rounded-lg p-4"><p class="text-muted text-[11px] uppercase tracking-widest whitespace-nowrap">Scan events</p><p id="stat-events" class="font-mono tabular-nums text-[28px] text-white mt-2">0</p></article>
+            <article class="bg-surface border border-outline-variant/30 rounded-lg p-4"><p class="text-muted text-[11px] uppercase tracking-widest whitespace-nowrap">Scan events</p><p id="stat-events" class="font-mono tabular-nums text-[28px] text-blue mt-2">0</p></article>
             <article class="bg-surface border border-outline-variant/30 rounded-lg p-4"><p class="text-muted text-[11px] uppercase tracking-widest whitespace-nowrap">QR generations</p><p id="stat-genesis" class="font-mono tabular-nums text-[28px] text-blue mt-2">0</p></article>
-            <article class="bg-surface border border-outline-variant/30 rounded-lg p-4"><p class="text-muted text-[11px] uppercase tracking-widest whitespace-nowrap">Transporter scans</p><p id="stat-transporter" class="font-mono tabular-nums text-[28px] text-white mt-2">0</p></article>
-            <article class="bg-surface border border-outline-variant/30 rounded-lg p-4"><p class="text-muted text-[11px] uppercase tracking-widest whitespace-nowrap">Retailer scans</p><p id="stat-retailer" class="font-mono tabular-nums text-[28px] text-white mt-2">0</p></article>
+            <article class="bg-surface border border-outline-variant/30 rounded-lg p-4"><p class="text-muted text-[11px] uppercase tracking-widest whitespace-nowrap">Transporter scans</p><p id="stat-transporter" class="font-mono tabular-nums text-[28px] text-blue mt-2">0</p></article>
+            <article class="bg-surface border border-outline-variant/30 rounded-lg p-4"><p class="text-muted text-[11px] uppercase tracking-widest whitespace-nowrap">Retailer scans</p><p id="stat-retailer" class="font-mono tabular-nums text-[28px] text-blue mt-2">0</p></article>
           </div>
 
           <section class="bg-surface border border-outline-variant/30 rounded-xl p-5 sm:p-6 mb-6">
@@ -115,8 +115,8 @@
           <p id="result-count" class="text-sm text-muted mb-3"></p>
           <section class="bg-surface border border-outline-variant/30 rounded-xl overflow-hidden">
             <div class="table-scroll">
-              <table class="w-full min-w-[940px] text-left border-collapse">
-                <thead><tr class="border-b border-outline-variant/30"><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Time</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Event</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Product / batch</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Location</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Recorded by</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Transaction</th></tr></thead>
+              <table class="w-full min-w-[1040px] text-left border-collapse">
+                <thead><tr class="border-b border-outline-variant/30"><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Time</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Event</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Product</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Batch ID</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Location</th><th class="px-5 py-4 text-muted font-body text-[11px] uppercase tracking-widest font-medium">Transaction</th></tr></thead>
                 <tbody id="events-body"></tbody>
               </table>
             </div>

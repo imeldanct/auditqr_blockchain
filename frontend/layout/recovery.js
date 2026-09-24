@@ -103,29 +103,18 @@
       var eventCell = document.createElement("td");
       eventCell.className = "px-5 py-4 align-top";
       var eventLabel = document.createElement("span");
-      eventLabel.className = "inline-flex items-center gap-2 whitespace-nowrap text-[12px] font-medium text-white";
-      var eventDot = document.createElement("span");
-      eventDot.className = "w-1.5 h-1.5 rounded-full bg-blue shrink-0";
-      eventLabel.append(eventDot, document.createTextNode(formatEventName(event.eventType)));
+      eventLabel.className = "whitespace-nowrap text-[12px] font-medium text-white";
+      eventLabel.textContent = formatEventName(event.eventType);
       eventCell.appendChild(eventLabel);
       row.appendChild(eventCell);
 
-      var productCell = document.createElement("td");
-      productCell.className = "px-5 py-4 align-top";
-      var product = document.createElement("p");
-      product.className = "text-sm font-medium text-white";
-      product.textContent = event.productName;
-      var batch = document.createElement("p");
-      batch.className = "font-mono text-[11px] text-muted mt-1";
-      batch.textContent = truncate(event.parentQRID, 8, 6);
-      productCell.append(product, batch);
-      row.appendChild(productCell);
+      row.appendChild(createCell(event.productName, "text-white font-medium"));
+      row.appendChild(createCell(event.parentQRID, "font-mono text-[11px] text-muted whitespace-nowrap"));
 
       row.appendChild(createCell(
         locationIsUnavailable(event.location) ? "Location unavailable" : event.location,
-        locationIsUnavailable(event.location) ? "text-muted" : "text-white"
+        locationIsUnavailable(event.location) ? "text-green" : "text-white"
       ));
-      row.appendChild(createCell(event.businessName || event.scannerRole || "—", "text-muted"));
 
       var txCell = document.createElement("td");
       txCell.className = "px-5 py-4 align-top";
