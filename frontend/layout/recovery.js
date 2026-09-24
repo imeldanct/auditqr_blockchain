@@ -41,6 +41,14 @@
     return cell;
   }
 
+  function formatEventName(eventType) {
+    return eventType === "QR Generation"
+      ? "QR generation"
+      : eventType === "Transporter Scan"
+        ? "Transporter scan"
+        : "Retailer scan";
+  }
+
   function locationIsUnavailable(location) {
     return location === "location-unavailable" || location === "address-unavailable";
   }
@@ -94,10 +102,12 @@
 
       var eventCell = document.createElement("td");
       eventCell.className = "px-5 py-4 align-top";
-      var badge = document.createElement("span");
-      badge.className = "inline-flex rounded-full border border-blue/40 bg-blue/10 px-2.5 py-1 text-[11px] font-medium text-blue";
-      badge.textContent = event.eventType;
-      eventCell.appendChild(badge);
+      var eventLabel = document.createElement("span");
+      eventLabel.className = "inline-flex items-center gap-2 whitespace-nowrap text-[12px] font-medium text-white";
+      var eventDot = document.createElement("span");
+      eventDot.className = "w-1.5 h-1.5 rounded-full bg-blue shrink-0";
+      eventLabel.append(eventDot, document.createTextNode(formatEventName(event.eventType)));
+      eventCell.appendChild(eventLabel);
       row.appendChild(eventCell);
 
       var productCell = document.createElement("td");
@@ -113,7 +123,7 @@
 
       row.appendChild(createCell(
         locationIsUnavailable(event.location) ? "Location unavailable" : event.location,
-        locationIsUnavailable(event.location) ? "text-warning" : "text-white"
+        locationIsUnavailable(event.location) ? "text-muted" : "text-white"
       ));
       row.appendChild(createCell(event.businessName || event.scannerRole || "—", "text-muted"));
 
@@ -131,14 +141,14 @@
     });
 
     document.getElementById("result-count").textContent =
-      filtered.length + " of " + events.length + " recovered audit events";
+      filtered.length + " of " + events.length + " recovered records";
   }
 
   function renderSummary(data) {
     var genesis = events.filter(function (event) { return event.eventType === "QR Generation"; }).length;
     var transporter = events.filter(function (event) { return event.eventType === "Transporter Scan"; }).length;
     var retailer = events.filter(function (event) { return event.eventType === "Retailer Scan"; }).length;
-    document.getElementById("stat-events").textContent = String(events.length);
+    document.getElementById("stat-events").textContent = String(transporter + retailer);
     document.getElementById("stat-genesis").textContent = String(genesis);
     document.getElementById("stat-transporter").textContent = String(transporter);
     document.getElementById("stat-retailer").textContent = String(retailer);
