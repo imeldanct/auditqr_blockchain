@@ -364,7 +364,9 @@ export const getItemStatus = async (req: any, res: any): Promise<any> => {
       orderBy: { createdAt: "desc" },
       include: {
         parentQR: {
-          include: {
+          select: {
+            currentStage: true,
+            createdAt: true,
             product: { select: { productName: true, productID: true } },
             scanEvents: {
               orderBy: { timestamp: "desc" },
@@ -382,7 +384,9 @@ export const getItemStatus = async (req: any, res: any): Promise<any> => {
       currentStage: item.parentQR.currentStage,
       productName: item.parentQR.product.productName,
       productID: item.parentQR.product.productID,
-      lastScanAt: item.parentQR.scanEvents[0]?.timestamp ?? null,
+      // QR generation is the first event in every batch's journey. Before a
+      // handoff scan exists, it is therefore the latest activity to show.
+      lastEventAt: item.parentQR.scanEvents[0]?.timestamp ?? item.parentQR.createdAt,
     }));
 
     res.status(200).json({ items: result });

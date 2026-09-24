@@ -67,8 +67,8 @@ function renderProducts() {
   tbody.innerHTML = "";
   filtered.forEach(function (p) {
     var s = statusMap[p.currentStage] || statusMap.pending;
-    var lastEvent = p.lastScanAt
-      ? new Date(p.lastScanAt).toLocaleString("en-NG", {
+    var lastEvent = p.lastEventAt
+      ? new Date(p.lastEventAt).toLocaleString("en-NG", {
           day: "numeric",
           month: "short",
           year: "numeric",
@@ -125,16 +125,16 @@ document.addEventListener("DOMContentLoaded", function () {
               productID: it.productID,
               productName: it.productName,
               stages: [],
-              lastScanAt: null,
+              lastEventAt: null,
               unitCount: 0,
             };
           }
           var entry = productMap[it.productID];
           entry.stages.push(it.currentStage);
           entry.unitCount++;
-          if (it.lastScanAt) {
-            if (!entry.lastScanAt || new Date(it.lastScanAt) > new Date(entry.lastScanAt)) {
-              entry.lastScanAt = it.lastScanAt;
+          if (it.lastEventAt) {
+            if (!entry.lastEventAt || new Date(it.lastEventAt) > new Date(entry.lastEventAt)) {
+              entry.lastEventAt = it.lastEventAt;
             }
           }
         });
@@ -146,10 +146,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Most recently active first, then alphabetical
         _allProducts.sort(function (a, b) {
-          if (a.lastScanAt && b.lastScanAt)
-            return new Date(b.lastScanAt) - new Date(a.lastScanAt);
-          if (a.lastScanAt) return -1;
-          if (b.lastScanAt) return 1;
+          if (a.lastEventAt && b.lastEventAt)
+            return new Date(b.lastEventAt) - new Date(a.lastEventAt);
+          if (a.lastEventAt) return -1;
+          if (b.lastEventAt) return 1;
           return a.productName.localeCompare(b.productName);
         });
 
