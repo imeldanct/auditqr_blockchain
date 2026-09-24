@@ -8,6 +8,7 @@
   var results = document.getElementById("results");
   var eventsBody = document.getElementById("events-body");
   var emptyState = document.getElementById("empty-state");
+  var recoverIcon = document.getElementById("recover-icon");
   var filters = ["search-filter", "type-filter", "location-filter", "from-filter", "to-filter"];
 
   function showState(name) {
@@ -151,6 +152,7 @@
     recoverButton.disabled = true;
     recoverButton.setAttribute("aria-busy", "true");
     recoverLabel.textContent = "Recovering…";
+    recoverIcon.classList.add("is-spinning");
     showState("loading");
 
     try {
@@ -170,6 +172,7 @@
       recoverButton.disabled = false;
       recoverButton.removeAttribute("aria-busy");
       recoverLabel.textContent = "Recover audit trail";
+      recoverIcon.classList.remove("is-spinning");
     }
   }
 
