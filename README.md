@@ -1093,6 +1093,23 @@ Ex6S244izw636k7t19Qo9NhDAgKV4oFJGA2RVzW52yfB
 
 This returns every transaction that wallet has paid for — which is every AuditQR blockchain write. To find the three transactions for a specific product, open each result and check the `parentQRID` in the memo data. To do this programmatically (without the Explorer UI), use the Solana RPC method `getSignaturesForAddress` with the wallet address, then fetch and parse the memo from each transaction.
 
+### Database-Independent Audit Recovery
+
+`backend/scripts/recoverAuditTrail.js` rebuilds recognised AuditQR audit events directly from the platform wallet's Solana Devnet transaction history. It does not import Prisma or connect to PostgreSQL, so it can be used to demonstrate that the on-chain record remains recoverable if the database is unavailable or compromised.
+
+Run it from the `backend` directory with the wallet address as an argument, or omit the argument to use `SOLANA_PUBLIC_KEY` from `backend/.env`:
+
+```bash
+node scripts/recoverAuditTrail.js
+node scripts/recoverAuditTrail.js YOUR_WALLET_PUBLIC_KEY
+```
+
+The script retrieves all transaction-signature pages for the wallet, fetches each transaction, identifies instructions sent to the SPL Memo Program, decodes recognised AuditQR memo formats, prints the chronological result, and writes `recovered-audit.json` to the current working directory.
+
+The public Devnet RPC applies request-rate limits and may respond with HTTP `429 Too Many Requests` when queried too quickly. Because recovery reads one transaction at a time, the script deliberately spaces RPC calls by 500 ms and retries a failed request with exponential backoff. This makes a large wallet recovery slower, but avoids overwhelming the public endpoint and improves the chance of a complete recovery.
+
+For a browser-based view, the unlinked internal page `/recovery.html` provides a **Recover audit trail** button. It calls `GET /api/internal/recover-audit`, which performs the same database-independent Devnet recovery using `SOLANA_PUBLIC_KEY`. The page then organises the returned events and supports filtering by product or batch, event type, location status or specific location, and date range. It is not shown in the public navigation; it is intended for developer inspection. The backend keeps a successful result in memory for five minutes so repeated page refreshes do not repeatedly query Devnet.
+
 ### What a Customer Can Verify
 
 Opening the block explorer for any of the three transactions, a customer can see the memo data directly — the `parentQRID`, the event type, the timestamp, and the fee-payer wallet used by the AuditQR backend. This is verifiable without trusting the AuditQR database.

@@ -5,6 +5,7 @@ import smeRoutes from "./routes/smeRoutes";
 import productRoutes from "./routes/productRoutes";
 import qrRoutes from "./routes/qrRoutes";
 import scanRoutes from "./routes/scanRoutes";
+import recoveryRoutes from "./routes/recoveryRoutes";
 import { retryPendingBlockchainWrites } from "./services/solanaService";
 
 const app = express();
@@ -46,6 +47,8 @@ app.use("/api/products", productRoutes);
 app.use("/api", qrRoutes);
 // Mount Scan & Handoff Routes
 app.use("/api", scanRoutes);
+// Unlinked developer recovery view: rebuilds the public Devnet audit trail.
+app.use("/api", recoveryRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

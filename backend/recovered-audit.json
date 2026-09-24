@@ -1,0 +1,677 @@
+[
+  {
+    "signature": "b5jQzz1VjN4f1t1ewnvTe1ZtbpmiYykhuLqWV5SecWwifwFAPCkaAegZAdfs4MVTrs9PnjdJjCGB21YkRSm65uG",
+    "timestamp": "2026-07-06T12:08:51.720Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "670c6db2-0d8e-4f77-9973-6346843b1ddc",
+    "productName": "Amatem Soft Gel",
+    "location": "::1",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "L8odPi5USbK4C6UZ7dj7U8jafX3h3eeLvw63UBpYftELjve2g634nkVn8NXe58BSQySTV3YduJKhZqSKkbtRfSG",
+    "timestamp": "2026-07-06T12:13:01.579Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "670c6db2-0d8e-4f77-9973-6346843b1ddc",
+    "productName": "Amatem Soft Gel",
+    "location": "::1",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "4JFc5vQhyp9hPH1UBfapnQK9C4shmqoShJAweaCFvG2i1wfLyNqfwq9N8jwwTAgYmhdk3Hgk24N9dhh1iHe9Gn6a",
+    "timestamp": "2026-07-06T16:59:29.857Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "51d704ba-3338-450b-a560-87b13754d8fd",
+    "productName": "Skineal",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "2BR77H1N5uwHodwuM92b1K3KpGZHCcf6T2PE9z95bExyhqyjko1QXTqBQcBDN3U86EYsVivjYTT9zjia3h7nrRic",
+    "timestamp": "2026-07-07T17:13:48.689Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "1ee87fda-ae5a-43e8-a1ee-d65043efc513",
+    "productName": "Skineal",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "2ZEKgNrCJZLtAjCZBG658HTGpTpgWwWjZEQxnDMbSTWQdL68KWqokkdm9fjQXKj21aU9HFep87Q11wgUGHeahVrN",
+    "timestamp": "2026-07-07T17:17:58.378Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "1ee87fda-ae5a-43e8-a1ee-d65043efc513",
+    "productName": "Skineal",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "pYVRhkQog1EXZkWy1v3hZNRGULNMDu5PnERU4EGUJWYRNgV8nKMQHpZvtw46m9ymSrdG5maq3XYUqcMTYtpNbsJ",
+    "timestamp": "2026-07-07T19:45:37.676Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "4cdd5d39-dd7e-4c25-9629-21d89706de2c",
+    "productName": "Augumentin",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "3mNJfSQqCzoXV18eYeEvThguQj6hGbhLwgYhGDkboi1KHNbwHSn7uXZ9DFCJCujSGCdZjEqZoP396F1CSKFJTHys",
+    "timestamp": "2026-07-07T20:11:45.241Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "4cdd5d39-dd7e-4c25-9629-21d89706de2c",
+    "productName": "Augumentin",
+    "location": "location-unavailable",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "3gjMHWKTrxfWTv8DcCsGifLameufmHF8HP8oA3xWMousoPyBpL4d3RaA6Es3ygDLc8zHoCuH6wYGszkjPFLxpcky",
+    "timestamp": "2026-07-08T08:29:00.326Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "afaf7299-1094-4e22-a8e3-fce023ff43d3",
+    "productName": "Premium Cassava Flour",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "2uXwfsUbWLafLR7d4ApzvXGUG9jDE1mZBBm1XaB4o3dfzWC8gbYZvKGKqLzwq1g3ScZkA4Pjcq6Ks7AgLhXFiudF",
+    "timestamp": "2026-07-08T08:30:45.223Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "afaf7299-1094-4e22-a8e3-fce023ff43d3",
+    "productName": "Premium Cassava Flour",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "5a3Xn9Gfjxb4JaZu4ju2uFzQiwHo9BU7zz4PveLPQJDZqJo22Pj36PnYwkiePRXTjSeFeBxNSBAkYnu6ZdbZyGJJ",
+    "timestamp": "2026-07-10T14:55:54.297Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "b4964021-1434-4081-9222-ac676bdde7a1",
+    "productName": "Mesh Bag",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "XW5TiehPNmdWN6ykWPMNdTbQYR4soN948Ef81Qdwi17yxFvqQGjLqUWEXmM3zB2twreHnyhTKvPSsYdVWxjfzpj",
+    "timestamp": "2026-07-10T14:59:33.495Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "b4964021-1434-4081-9222-ac676bdde7a1",
+    "productName": "Mesh Bag",
+    "location": "location-unavailable",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "4FjQmEdpcW4ovSg9VpZpb3u6CfCAXikSR3dmqLtPbwT1gpApnKAxAGhJw1kRSXQcofUiQz2pzCoPUz7qs9UbwQ6y",
+    "timestamp": "2026-07-10T15:49:02.846Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "950de4ca-c379-451d-9776-a4aee69b59da",
+    "productName": "Premium Cassava Flour",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "4R3XuDMBpvx3rKwog6UZMk3PQHZuusF95XeNXVLrYmYQjRnZzJYYYQBjZfZQwh8XAKCMkq3LxNMheWWLhpWVLPZY",
+    "timestamp": "2026-07-10T15:49:37.537Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "950de4ca-c379-451d-9776-a4aee69b59da",
+    "productName": "Premium Cassava Flour",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "5gFJQqTTF5bxb626eyrrrB8Cg3jxvbh77QMkNs9Uw9e6t9K6KQ7GkLMLSbaHD2UJzNXcPj5F8h8DFEhSgX86DocK",
+    "timestamp": "2026-07-10T16:57:08.798Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "8f75fb99-3ad6-4c0c-81e8-3ba4d9cc3574",
+    "productName": "Rice Flour",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "5Q9AjE3G9eSNF2qiRZd2VjVSxTT5gWHvo84K6E19Xa4VP5DDcndVzdgL5gCoBtHs8dq1Ygh8kTPViGC9xtarf9P9",
+    "timestamp": "2026-07-10T16:59:27.129Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "8f75fb99-3ad6-4c0c-81e8-3ba4d9cc3574",
+    "productName": "Rice Flour",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "XSGPkHDpUrihBmQeUapMKHCFYB1TuRK5QDNXcxaZURGNxCDopV82BoZgYnafAYzqUhu7C1MVdSgHV3tQR4B2yP2",
+    "timestamp": "2026-07-10T18:08:23.323Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "482bc6ef-7ad1-4bc4-9c75-0230234258e7",
+    "productName": "Plantain",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "281CjG36TBxj25esxTqpB81SAB8kmwhAwXCBGnHm4NVVRotEDJYgrtu5yA1HX8bn7xUmKpjWCXxxWG1w5TyyKWAP",
+    "timestamp": "2026-07-10T18:09:15.962Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "482bc6ef-7ad1-4bc4-9c75-0230234258e7",
+    "productName": "Plantain",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "2w98ckX5SLXzAXswRVhQgxF5RdL8rbsN8fY8VDRsRg5qdo1t7ho9bj6inN2fzHULRvDfrfUVxAPkTpXfYHVUxmeg",
+    "timestamp": "2026-07-19T19:04:46.335Z",
+    "eventType": "QR Generation",
+    "parentQRID": "616f0e45-b1d0-4762-93da-85023f2d9e36",
+    "productName": "Bean Powder",
+    "location": "14, Broad Street, Lagos Island",
+    "businessName": "CHUKWUEMEKA AND SONS TRADING LIMITED"
+  },
+  {
+    "signature": "3rvK3Q8S3CiTZmhqGoFZUG5SVTiu7b66ZL4K1gdanAzLaZPcHzG72xJoMdT5VfC3f66nxUTepzYm6Nz63XVbE6vq",
+    "timestamp": "2026-07-19T19:08:23.740Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "616f0e45-b1d0-4762-93da-85023f2d9e36",
+    "productName": "Bean Powder",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "4Cp49Jjc9foXfEDS4WxjDKRxhjU6UZ1KAjPUyec8rvi9o9mwUra7JW9AeWfeUd3f1PJDiLuqw3CpaAEAL6VbCvoJ",
+    "timestamp": "2026-07-19T19:10:29.772Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "616f0e45-b1d0-4762-93da-85023f2d9e36",
+    "productName": "Bean Powder",
+    "location": "location-unavailable",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "22Cc8wdSUHfCvTHLSMukrPMU7Ro8FZSLHt8Ni37sbc2YMmaaev4VPUo88uEaJ8qGkGsEuCrEzZDHLkvbPfaV9go6",
+    "timestamp": "2026-07-19T19:23:40.000Z",
+    "eventType": "QR Generation",
+    "parentQRID": "82bd6135-74f0-45dc-85b4-4858d219aa98",
+    "productName": "Quaker Oats",
+    "location": "14, Broad Street, Lagos Island",
+    "businessName": "CHUKWUEMEKA AND SONS TRADING LIMITED"
+  },
+  {
+    "signature": "4xoXCEvjNuzCmTNWW1W9shyzG8XQ3ifYFcCxwsWs1chPdWaRfLUt6U5tm3eLTNGsjPD5HPHXiSa5EGx5Wru7UY4Y",
+    "timestamp": "2026-07-19T19:26:43.694Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "82bd6135-74f0-45dc-85b4-4858d219aa98",
+    "productName": "Quaker Oats",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "26rd9D5zaKYpNYJCFRSY4usEq1PuFB498dp4KFMTbRu4Rbb5dqKyx8fqpAUxJcHekffqBFwtFJHKP9N8Cn9fkieJ",
+    "timestamp": "2026-07-19T19:28:33.070Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "82bd6135-74f0-45dc-85b4-4858d219aa98",
+    "productName": "Quaker Oats",
+    "location": "location-unavailable",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "BHfgjypsDkmEGJSZfT9DpR8FijUK6KAARvP1KeBA9qGS7EYsyP1kJSACFXuEfiVoBSrVRJ7amQQ4XxSkWUiEneZ",
+    "timestamp": "2026-07-28T18:27:46.502Z",
+    "eventType": "QR Generation",
+    "parentQRID": "dce5a49c-fb58-4396-b272-5c5376b3ff6a",
+    "productName": "Vitamin C Syrup",
+    "location": "Suite 4, NNPC Towers Annex, Central Business District",
+    "businessName": "PINNACLE PHARMACEUTICALS NIGERIA LIMITED"
+  },
+  {
+    "signature": "124nCvKBMQP7fqdQB5Pw3mmhKvZDsCDCzhXMnfjx2E2PFEshpeR2eXTQs969iCHVf7iRq5cebAvfmuQJN8PwEFfL",
+    "timestamp": "2026-07-28T18:56:05.413Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "dce5a49c-fb58-4396-b272-5c5376b3ff6a",
+    "productName": "Vitamin C Syrup",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "43scMicfy9sXKnPaVaiAv9P4DLuthoRYpwKb6NT2zqWypLnH7vtFafJGuUfpgCCC45U4vV7vuHfghjKDdMKzbN5B",
+    "timestamp": "2026-07-28T19:56:50.237Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "dce5a49c-fb58-4396-b272-5c5376b3ff6a",
+    "productName": "Vitamin C Syrup",
+    "location": "Abuja, Federal Capital Territory, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "26dBm84paK4Pw4wr5xYJUCYbYkEWPCrQvPGqtedbwQZruHc3WNqzBJ8yFRZ7E9Zdwmp8KzJfUbSytqkF1XjB9ERV",
+    "timestamp": "2026-07-29T10:03:17.703Z",
+    "eventType": "QR Generation",
+    "parentQRID": "ff94e6bd-89cc-4e7f-8eae-fbae2c631b96",
+    "productName": "Injection kit",
+    "location": "Suite 4, NNPC Towers Annex, Central Business District",
+    "businessName": "PINNACLE PHARMACEUTICALS NIGERIA LIMITED"
+  },
+  {
+    "signature": "4eQrmGBeogv2m9iDD6faZNDyficpWmx2f6Vjidjy3F55UPmLzLjiesJCx3VH12nkt31JY8EnLyuNcSn9xtmUruCU",
+    "timestamp": "2026-07-29T10:23:40.842Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "ff94e6bd-89cc-4e7f-8eae-fbae2c631b96",
+    "productName": "Injection kit",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "4cdBAMDf47CdsyaTQ2UGUryMSRvG7PJ8kM8sYKmyeXFtmrZykeGdigTjb59cZJFL9Dfja9QbpdMo1LocR17Pf3y6",
+    "timestamp": "2026-07-29T16:52:44.521Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "ff94e6bd-89cc-4e7f-8eae-fbae2c631b96",
+    "productName": "Injection kit",
+    "location": "location-unavailable",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "5xxdY8usFCmd3yYfiTRoG1dPsmCVqu8vbCWy3uAHCzVhCDidbo8XY9B3wyM1RNvfnujCMsbDFPkhSYfs9dVpMmB9",
+    "timestamp": "2026-07-31T06:50:27.687Z",
+    "eventType": "QR Generation",
+    "parentQRID": "e8ef5a1a-8c34-4c72-b2a9-b9e2dc3f192b",
+    "productName": "Injection kit",
+    "location": "Suite 4, NNPC Towers Annex, Central Business District",
+    "businessName": "PINNACLE PHARMACEUTICALS NIGERIA LIMITED"
+  },
+  {
+    "signature": "jv3rRK4EFH1zE2kkFd8uKeGEKRK97w8AXz5urujeKS9AeLGjqdo7BSSYR6d8SmvmY77Jf6ezpdkRZCBuNi89Skv",
+    "timestamp": "2026-07-31T07:01:25.444Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "e8ef5a1a-8c34-4c72-b2a9-b9e2dc3f192b",
+    "productName": "Injection kit",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "64Hu2QJo2xFLJmgQbPyjTT3vsFjhLqdvR12ZCq9JBTLQ2wD1sNBhY7bAXVwnV7Aj1fRezpzRiyfps8SMdw4RTu4X",
+    "timestamp": "2026-07-31T09:32:37.167Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "e8ef5a1a-8c34-4c72-b2a9-b9e2dc3f192b",
+    "productName": "Injection kit",
+    "location": "Rumuodumaya, Obio/Akpor, Rivers State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "jy2xVo1knevcRMHPnAzmT4wTDRmBoaN1LwSaBwRrkUHheyu4tjm6qDFWQm4XkKEaLfjiYFuFvUQLicVXsgYCTfz",
+    "timestamp": "2026-09-03T15:39:43.515Z",
+    "eventType": "QR Generation",
+    "parentQRID": "8e675fdd-53ed-42ac-a2a2-db6b3e26b94e",
+    "productName": "Injection kit",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "51AUq3LHQL54Yk7k12BFsHK2rPfWcJVXYTpMCCkvF1guDUmT8y3hzRMg5YtMTS2mTA4ZBMFnwKSh6w27pxD4JtFJ",
+    "timestamp": "2026-09-17T18:55:15.088Z",
+    "eventType": "QR Generation",
+    "parentQRID": "9464c18e-67ad-41cc-bdeb-4c64ec5dcbf9",
+    "productName": "Premium Cassava Flour",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "4KG4MEyYGyo1K7HdsWikPaMhLeMMdpHXNPNdWvhA3WJiCjuUDovticMbPcgzt7UzuZXP49R7mJHymcrutHtPpqKX",
+    "timestamp": "2026-09-17T19:03:13.983Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "9464c18e-67ad-41cc-bdeb-4c64ec5dcbf9",
+    "productName": "Premium Cassava Flour",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "5kogkJL6rGzwEiukhCMxphTGgai68FFyCCY2qhUGZebWEmYVmyb5QTJgAbbM98mDXNCkC6sfroMmWMQ31QweYVeD",
+    "timestamp": "2026-09-17T19:06:30.703Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "9464c18e-67ad-41cc-bdeb-4c64ec5dcbf9",
+    "productName": "Premium Cassava Flour",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "7yod3mNr7oz1JQH25BBVqWKS4Gj45WEASNZwSeexGCVZTzrFEneNg75EbpmWbEsF51KXwDcJHTBsjcXFHCAA3c2",
+    "timestamp": "2026-09-19T07:53:23.776Z",
+    "eventType": "QR Generation",
+    "parentQRID": "270799a5-ed46-4e42-88e7-ff6db66f73ca",
+    "productName": "Vegetable Spices",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "r9GsD7CDVBySJ8GMpaqaK2E5NGTXGPCaZ7um67DE9S4Y6nk2FWEavgJfSKEw4bcG6BGPB7FWH3RTRMHeKb4tjMq",
+    "timestamp": "2026-09-20T09:34:18.335Z",
+    "eventType": "QR Generation",
+    "parentQRID": "74e75680-1cb6-45d4-b8a5-4c355546c1d0",
+    "productName": "Vegetable Sauce Spice",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "vfoEFhmGE2vTK2Fyc8DKFKod7Svw2p5LAjcbjMpy7anrFvVGGcsE6AeaGqisMV4Vpgw4ChVx3L9anMuZtN9kftG",
+    "timestamp": "2026-09-20T10:16:16.796Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "74e75680-1cb6-45d4-b8a5-4c355546c1d0",
+    "productName": "Vegetable Sauce Spice",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "iDfGgFLHebhKn1r1PbZM5pMPiMUeFiNMtKTPr7itt6ctJgMEGBjDHUzbbfZsksj9XAKq8fXiHkxYP8rK1X17EGP",
+    "timestamp": "2026-09-20T10:19:26.994Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "74e75680-1cb6-45d4-b8a5-4c355546c1d0",
+    "productName": "Vegetable Sauce Spice",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "vh7TSSMCWFZ2RNtZyD8XVyMdLksj4PxNNRup3hs8fCq5DiETwpTREEADc2JTx56p9ttyhnGKedLMnZiHXARTV2n",
+    "timestamp": "2026-09-20T10:24:52.628Z",
+    "eventType": "QR Generation",
+    "parentQRID": "693ccb99-0eda-4124-bb2d-dbceda1dfafb",
+    "productName": "Local Rice",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "5AC8Stu8qRwmmMiv7ajYxzUeW52SZVeDcx1DusDDXapvERsB1V3EkEnsiu5mK1UvQGpgQHzLTKB7BrzK7pmbDDvF",
+    "timestamp": "2026-09-20T10:26:39.325Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "693ccb99-0eda-4124-bb2d-dbceda1dfafb",
+    "productName": "Local Rice",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "3RRAjFBJpbg9SxTuQeooPSHGcoDfX9h2kWNDL67uDD7VammGKnew2Yw4waVPRkJAvKkPrPggEZ4fFrs9HQ5ZSveE",
+    "timestamp": "2026-09-20T10:28:10.990Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "693ccb99-0eda-4124-bb2d-dbceda1dfafb",
+    "productName": "Local Rice",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "4P6AJ5wKm3Rc9B6Fbv8nG4EA4DP9AJiuuAHXrDEdBwH4itshxVK7D6z4Uq4TWoKPgM7LfZnCcfAVJLpF2U8sV9fo",
+    "timestamp": "2026-09-20T10:31:41.269Z",
+    "eventType": "QR Generation",
+    "parentQRID": "4a42e639-dac7-4bcc-8129-ab2495f9cdcc",
+    "productName": "Fenugreek Seeds",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "2esKLydktHwaByc9nMhEyB4FgrAvKsxvRMvyaoqPwC4NYqWAjjwjqQRdmRF7iJSKPhgAK5Qvxew8wREjcUU2e6Qa",
+    "timestamp": "2026-09-20T10:33:12.946Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "4a42e639-dac7-4bcc-8129-ab2495f9cdcc",
+    "productName": "Fenugreek Seeds",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "3XvE9R3FfQMbK5KhReYncmh3SnVf9o3UQsLbqbM94bm9AUqtp7Feha5qKA2gMCQiRFqUKzMa4Mh3a5jTCo7JAnx6",
+    "timestamp": "2026-09-20T10:36:01.437Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "4a42e639-dac7-4bcc-8129-ab2495f9cdcc",
+    "productName": "Fenugreek Seeds",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "46q9YuUxbUo6RBJ9fmQeTeanYEEBA6tRVjBRkWPwFG7TRC3hfrrQHcxsD8KBBpHE6BkmX8iLpdGwimnUE5GDc4CA",
+    "timestamp": "2026-09-20T10:43:22.031Z",
+    "eventType": "QR Generation",
+    "parentQRID": "be5f61a7-ad39-48c7-b48e-460da1e9bc66",
+    "productName": "Ginger Powder",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "Fw6N4fhc3qVmZMU1FeWHkbeaCqMTm6WCQxHvCCBSYZUFw6unqMGEZriMTyDrHqzUP55jgY4fqWZfhxpeq1pstev",
+    "timestamp": "2026-09-20T10:46:06.020Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "be5f61a7-ad39-48c7-b48e-460da1e9bc66",
+    "productName": "Ginger Powder",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "bPEuY2qSQaLMCWB2wcuhYgqMKLkpw24sxGwbZpgpXWLLfhnsNUyXkjjc4tBi1hanJ2ugnPedXRnhCWHKxHahVv6",
+    "timestamp": "2026-09-20T10:47:43.637Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "be5f61a7-ad39-48c7-b48e-460da1e9bc66",
+    "productName": "Ginger Powder",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "2vxvyuHtdu976gP4hHXu7MGXMLzzMPnxrPdrNwhnqtsc8gNcirTyCwSSaHGYJa2tq6YatuDiovT2ReWesAsfh3oq",
+    "timestamp": "2026-09-20T10:54:35.130Z",
+    "eventType": "QR Generation",
+    "parentQRID": "49f19174-e281-4a74-a9af-5dc2556d9e7b",
+    "productName": "Curry powder",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "2CGTnMBBwPYF8JRk9wEi1jNZ1fVFNmy9BV16w1d1CvKQHpd5fWTuzkimzaqeqNf6Gy1Ka1m68wa3G6ct1vkySct2",
+    "timestamp": "2026-09-20T10:56:06.308Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "49f19174-e281-4a74-a9af-5dc2556d9e7b",
+    "productName": "Curry powder",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "rYrVsNggekSRVE1cbEDoxv9qMBTpgqF1516ETZ5S5vJ46aw8skyKKsm7Kgh2YvTe59qZA2pn1wA6znrXkZq52C8",
+    "timestamp": "2026-09-20T10:57:16.484Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "49f19174-e281-4a74-a9af-5dc2556d9e7b",
+    "productName": "Curry powder",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "2wAbyTjLjEjQAaykgHpBwWQEAMZvK71czCgmgmuAfvqWjcUNtuaoWUCzTBgv33G1fJ3eRixQw4Hbz8KkLQR1EwUG",
+    "timestamp": "2026-09-20T11:00:18.904Z",
+    "eventType": "QR Generation",
+    "parentQRID": "476c2399-e699-40e7-bede-aa1e6ed9d755",
+    "productName": "Ginseng Bulbs",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "2qJaBFxFrSQQPDe1rXtGP257JKjRxVL1qdvmoRr2xMZLysoNs2epi65Ycqmn9pMHfj3kHWWmpB8zwfSu8ZPux5Qj",
+    "timestamp": "2026-09-20T11:01:19.564Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "476c2399-e699-40e7-bede-aa1e6ed9d755",
+    "productName": "Ginseng Bulbs",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "61YsN1nJnFBmsoaXtx42mnaA3uETxP5XtFzk45HoDdKgpqCYmydj4tMa6KiHgPEcD5fM4iF7uxJB9QUMMEhdehme",
+    "timestamp": "2026-09-20T11:02:09.843Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "476c2399-e699-40e7-bede-aa1e6ed9d755",
+    "productName": "Ginseng Bulbs",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "4PbwMZP4SieqWzBobvcEiBMGu2UEifmCpLWFqmmGBY1yi2EZ656pLhgSYeGkDaChPBAU1AwV5UVWGvhWh9H9nTfx",
+    "timestamp": "2026-09-20T11:05:40.975Z",
+    "eventType": "QR Generation",
+    "parentQRID": "beae2875-46d8-486b-a7be-242292763451",
+    "productName": "Cous-Cous",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "4uRjoh2DS1Lxeht5btqRimKbZ878rFBo2Sb7kTBGSKtMpDoeekbwhgoGNab2ims15tPNn33vdDcw2LZi9SZL7Duu",
+    "timestamp": "2026-09-20T11:07:24.128Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "beae2875-46d8-486b-a7be-242292763451",
+    "productName": "Cous-Cous",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "5egiv5xDYiGLmBScDoZFoAEj8YvWJg3FUovUXeW6wNvyjLeELqQRG5VA8FbYam2cpT94QtX5QuLjnCdjc2MhvhLH",
+    "timestamp": "2026-09-20T11:08:35.015Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "beae2875-46d8-486b-a7be-242292763451",
+    "productName": "Cous-Cous",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "3C1fXAAP8VuzRBAWGoh8ExaPW3KLtk28vQoUJmmqqK84iuBRS6aML4UgPUNXTq7GWqbGB97kfsdfn4Qetsw4ZUZK",
+    "timestamp": "2026-09-20T11:13:13.895Z",
+    "eventType": "QR Generation",
+    "parentQRID": "3a4eb983-830b-43ad-b9ad-711553c4f873",
+    "productName": "Thyme Powder",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "63SRoDB3jBuN2aCpvwSVntNeD3tPBRdoGQpjB7TZ7HJCmd996TwBKGQrMZQfuet1gyaqR6wEhRCtqWJLWyDWHiJZ",
+    "timestamp": "2026-09-20T11:14:33.086Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "3a4eb983-830b-43ad-b9ad-711553c4f873",
+    "productName": "Thyme Powder",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "4kFxXrPNUE8ZTeVUTYyAcpkoZpE6dZWyiLaBUAi4dkb3vwbtb43ghTzBDxh6AcUr86wy3ywbNyeX9gvMBbuUDYAN",
+    "timestamp": "2026-09-20T11:15:37.162Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "3a4eb983-830b-43ad-b9ad-711553c4f873",
+    "productName": "Thyme Powder",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "hgxEhC4Hid8VBRtRKXv2LcGgoEPGAihyKbt6j1a3Uy1XjmSNmzqW4puaW3srqQ7Noe1z8EQPpjdLH3L2JjVn1QC",
+    "timestamp": "2026-09-20T11:18:59.063Z",
+    "eventType": "QR Generation",
+    "parentQRID": "f53effa9-92bf-4b92-af1a-a30b57f84190",
+    "productName": "Spaghetti",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "5YHoXMiweydjMKXzqz7twHWk3iTgv6yAgrZWG6ohMHbiJ68LVJdSZGgmxPGt1ehDhcTNEiKMR7TQcD8cQNJ2PdPQ",
+    "timestamp": "2026-09-20T11:19:46.252Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "f53effa9-92bf-4b92-af1a-a30b57f84190",
+    "productName": "Spaghetti",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "2oUnvJ2WS6zFyPxYhQryAcEFCSas58T3xZtL21LYw5swYgiWciL8DCTvzeXEya3tL9CZfmWZCGNzAYz43wL4n4P4",
+    "timestamp": "2026-09-20T11:20:36.554Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "f53effa9-92bf-4b92-af1a-a30b57f84190",
+    "productName": "Spaghetti",
+    "location": "Ihiagwa, Owerri West, Imo State, Nigeria",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "44qSD3kAyGkdUcb5uExCJzupdReMUdXufhXdy1orLie6FTrpLcc6WTMugqsYohpRLPQ58v1GuuGXciP1H7Z4KQnV",
+    "timestamp": "2026-09-20T19:24:09.597Z",
+    "eventType": "QR Generation",
+    "parentQRID": "6c3da989-0bd6-461a-9008-b9f18911203c",
+    "productName": "Ginger Powder",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "5Kq3Pzfj1yqs4qRLBktZn2Jzwjno8T1n66QobWi343cJ2ZARBPjcSZ1P3JC44gnz96uQCdhyuRazdXXWPJDySDvo",
+    "timestamp": "2026-09-20T19:29:16.360Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "6c3da989-0bd6-461a-9008-b9f18911203c",
+    "productName": "Ginger Powder",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "5LVmxPkaBssei5cyh6EYvrGMnwRGxoctxxmAvhaY36nMxdMJGgQQMgohwDNtYLzDQPfxWgEGB8jYAXk9cmo3huAA",
+    "timestamp": "2026-09-20T19:44:53.784Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "6c3da989-0bd6-461a-9008-b9f18911203c",
+    "productName": "Ginger Powder",
+    "location": "location-unavailable",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "5umHc2p3s3GqjfshtLFGU1Fm5Wf1ef9GMZjLixpmSfRTHFLzPn1ufMdHb1UxKRUy5EXvp27Yh28FKrySt1GNQuNv",
+    "timestamp": "2026-09-20T19:49:09.501Z",
+    "eventType": "QR Generation",
+    "parentQRID": "cd278163-6659-4ada-b76a-0c594a0b1472",
+    "productName": "Ginger Powder",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "2ScNo58xHVmRQ3qCxz52CyB8BCXmL6iSrCwjccP7U8QNofoAb3JPD8Ugitu6xM2Bm4jFJGZJceV1R5NPNp77YEEJ",
+    "timestamp": "2026-09-20T20:08:41.611Z",
+    "eventType": "QR Generation",
+    "parentQRID": "96b244b4-ed07-4092-acb3-2707837b4f42",
+    "productName": "Ginger Powder",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "5uDLe8tnssrd7EfqkwbixgzXd4v6HMuXpH3YoBhwUuCkpbCkKnZfSTymQLXFctuCwmyPG9NPXPn4AFsCi1QhiEie",
+    "timestamp": "2026-09-20T20:10:03.440Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "96b244b4-ed07-4092-acb3-2707837b4f42",
+    "productName": "Ginger Powder",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "4JB5D164QNYMcfLMb6joMs7MwNfiKp3CwjsE59eehTZyfU2h36r4YHCZayW1G83upLn67hC5S1mpi48TRKZjtymU",
+    "timestamp": "2026-09-20T20:19:27.534Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "96b244b4-ed07-4092-acb3-2707837b4f42",
+    "productName": "Ginger Powder",
+    "location": "location-unavailable",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "3LoCRdDhMDtm4Fwjmd57uBKTbR6jbUstVfDu11DPZHaFnsvaG872cVxHtuEkFCZujzqYuvyTCryvH7YzEN4h1D6W",
+    "timestamp": "2026-09-21T10:50:55.075Z",
+    "eventType": "QR Generation",
+    "parentQRID": "0a804c81-b318-49aa-b392-bbf804cbafc0",
+    "productName": "New Garden Leaves",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  },
+  {
+    "signature": "2xaMXUrv9ocVQD5LjBNbzgT8kqC2hNWRYeYLHxycXLtNHgGaiS27j7M56GQv6anMzKRfgc9i6oj9t6jHPo1bRnZT",
+    "timestamp": "2026-09-21T11:04:17.256Z",
+    "eventType": "Transporter Scan",
+    "parentQRID": "0a804c81-b318-49aa-b392-bbf804cbafc0",
+    "productName": "New Garden Leaves",
+    "location": "location-unavailable",
+    "scannerRole": "Transporter"
+  },
+  {
+    "signature": "2H81jCyHHnphP2s5q6DVGjsXTsF1Abp4qDY9t1ctyMqMHcjVhxAHfkFiRSQzUR2wsRLkW1pvbpXFopymQ17RdZhW",
+    "timestamp": "2026-09-21T11:06:20.545Z",
+    "eventType": "Retailer Scan",
+    "parentQRID": "0a804c81-b318-49aa-b392-bbf804cbafc0",
+    "productName": "New Garden Leaves",
+    "location": "location-unavailable",
+    "scannerRole": "Retailer"
+  },
+  {
+    "signature": "2mvNiQEu2CQgwbxWCrtwUybVkzTu2v3gisKmVcp471ca4pUBwqdEkxr51JXdQtr44QjHWCGtBcooxd7WmUYfVLso",
+    "timestamp": "2026-09-24T10:10:49.123Z",
+    "eventType": "QR Generation",
+    "parentQRID": "e518c5e2-1258-4060-8bca-b852a40f3a01",
+    "productName": "Bean Powder",
+    "location": "5, Ogundana Street, Allen Avenue, Ikeja",
+    "businessName": "EKO CONSUMER GOODS LIMITED"
+  }
+]
